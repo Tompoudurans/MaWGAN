@@ -96,7 +96,9 @@ def train_discriminator(self, x_train, batch_size, using_generator):
         idx = np.random.randint(0, x_train.shape[0], batch_size)
         true_imgs = x_train[idx]
 
-    noise = noise_vec(100)
+#---------------------------------------------
+    noise = noise_vec(100) #changed
+#-----------------------------------------------
     gen_imgs = self.generator.predict(noise)
 
     d_loss_real, d_acc_real =   self.discriminator.train_on_batch(true_imgs, valid)
@@ -125,11 +127,5 @@ def train(self, x_train, batch_size, epochs, run_folder
 
         self.d_losses.append(d)
         self.g_losses.append(g)
-
-        if epoch % print_every_n_batches == 0:
-            self.sample_images(run_folder)
-            self.model.save_weights(os.path.join(run_folder, 'weights/weights-%d.h5' % (epoch)))
-            self.model.save_weights(os.path.join(run_folder, 'weights/weights.h5'))
-            self.save_model(run_folder)
 
         self.epoch += 1
