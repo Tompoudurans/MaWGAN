@@ -6,10 +6,8 @@ Created on Wed Oct 23 15:32:32 2019
 """
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
-from sklearn import datasets
 import numpy as np
 import random as rd
-iris = datasets.load_iris()
 
 class dataGAN():
     #create the genartaeer network
@@ -114,8 +112,9 @@ class dataGAN():
     , print_every_n_batches = 50
     , using_generator = False):
 
-        for epoch in range(self.epoch, self.epoch + epochs):
-
+#-----------
+        for epoch in range(epochs):
+#------------
             d = self.train_discriminator(x_train, batch_size, using_generator)
             g = self.train_generator(batch_size)
 
