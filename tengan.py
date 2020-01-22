@@ -52,6 +52,15 @@ class dataGAN():
 # my old code:
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # foster code:
+    def get_opti(self, lr):
+        if self.optimiser == 'adam':
+            opti = Adam(lr=lr, beta_1=0.5)
+        elif self.optimiser == 'rmsprop':
+            opti = RMSprop(lr=lr)
+        else:
+            opti = Adam(lr=lr)
+
+
     def set_trainable(self, m, val):
         m.trainable = val
         for l in m.layers:
