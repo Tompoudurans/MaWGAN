@@ -16,8 +16,8 @@ class dataGAN():
         self.build_adversarial()
 
     #create the genartaeer network
-    def make_generator():
-
+    def make_generator(self):
+        self.generator = tf.keras.models.Sequential()
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))#adds one hiden layer with 99 nerons with relu activation fx\n",
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))
@@ -26,7 +26,7 @@ class dataGAN():
 
 
     #create the dicrinator network
-    def make_discriminator():
+    def make_discriminator(self):
         self.discriminator = tf.keras.models.Sequential()
         self.discriminator.add(tf.keras.layers.Dense(100,activation = tf.nn.relu))#adds one hiden layer with 128 nerons with relu activation fx\n",
         self.discriminator.add(tf.keras.layers.Dense(100,activation = tf.nn.relu))#adds one hiden layer with 128 nerons with relu activation fx\n",
