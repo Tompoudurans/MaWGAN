@@ -4,17 +4,20 @@ Created on Wed Oct 23 15:32:32 2019
 
 @author: Thomas
 """
+from keras.models import Model, Sequential
+from keras import backend as K
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
 import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser):
+    def __init__(self,optimiser,input):
         #discriminator_learning_rate,
         #generator_learning_rate,
         #self.discriminator_learning_rate = discriminator_learning_rate
         #self.generator_learning_rate = generator_learning_rate
+        self.input = input
         self.optimiser = optimiser
         self.make_discriminator()
         self.make_generator()
@@ -84,8 +87,7 @@ class dataGAN():
         ### COMPILE THE FULL GAN
 
         self.set_trainable(self.discriminator, False)
-
-        model_input = Input(shape=(self.z_dim,), name='model_input')
+        model_input = self.input
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
 
