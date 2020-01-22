@@ -12,7 +12,7 @@ import random as rd
 class dataGAN():
     #create the genartaeer network
     def make_generator():
-        self.generator= tf.keras.models.Sequential()
+        self.generator = tf.keras.models.Sequential()
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))#adds one hiden layer with 99 nerons with relu activation fx\n",
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))
@@ -108,7 +108,7 @@ class dataGAN():
         return self.model.train_on_batch(noise, valid)
 
 
-    def train(self, x_train, batch_size, epochs, run_folder
+    def train(self, x_train, batch_size, epochs
     , print_every_n_batches = 50
     , using_generator = False):
 
