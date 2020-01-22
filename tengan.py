@@ -10,9 +10,14 @@ import numpy as np
 import random as rd
 
 class dataGAN():
+    def __init__(self):
+        self.make_discriminator()
+        self.make_generator()
+        self.build_adversarial()
+
     #create the genartaeer network
     def make_generator():
-        self.generator = tf.keras.models.Sequential()
+
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))#adds one hiden layer with 99 nerons with relu activation fx\n",
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))
         self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))

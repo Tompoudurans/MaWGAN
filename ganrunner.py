@@ -4,5 +4,4 @@ from tengan import dataGAN
 iris = datasets.load_iris()
 
 mygan = dataGAN
-mygan.build_adversarial(mygan)
-mygan.train(iris.data,150,600)
+mygan.train(mygan,x_train=iris.data,batch_size=150,epochs=600)
