@@ -10,7 +10,12 @@ import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self):
+    def __init__(self,optimiser):
+        #discriminator_learning_rate,
+        #generator_learning_rate,
+        #self.discriminator_learning_rate = discriminator_learning_rate
+        #self.generator_learning_rate = generator_learning_rate
+        self.optimiser = optimiser
         self.make_discriminator()
         self.make_generator()
         self.build_adversarial()
@@ -71,7 +76,7 @@ class dataGAN():
         ### COMPILE DISCRIMINATOR
 
         self.discriminator.compile(
-        optimizer=self.get_opti(self.discriminator_learning_rate)
+        optimizer=self.optimiser
         , loss = 'binary_crossentropy'
         ,  metrics = ['accuracy']
         )
@@ -84,7 +89,7 @@ class dataGAN():
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
 
-        self.model.compile(optimizer=self.get_opti(self.generator_learning_rate) , loss='binary_crossentropy', metrics=['accuracy'])
+        self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
 
         self.set_trainable(self.discriminator, True)
 
