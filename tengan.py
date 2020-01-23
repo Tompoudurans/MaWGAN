@@ -4,7 +4,7 @@ Created on Wed Oct 23 15:32:32 2019
 
 @author: Thomas
 """
-from keras.models import Model, Sequential
+from keras.models import Model#, Sequential
 from keras import backend as K
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
@@ -12,34 +12,38 @@ import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser,input):
+    def __init__(self,optimiser,input,z_dim):
         #discriminator_learning_rate,
         #generator_learning_rate,
         #self.discriminator_learning_rate = discriminator_learning_rate
         #self.generator_learning_rate = generator_learning_rate
         self.input = input
         self.optimiser = optimiser
+        self.z_dim = z_dim
         self.make_discriminator()
         self.make_generator()
         self.build_adversarial()
 
     #create the genartaeer network
     def make_generator(self):
-        self.generator = tf.keras.models.Sequential()
-        self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))#adds one hiden layer with 99 nerons with relu activation fx\n",
-        self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))
-        self.generator.add(tkl.Dense(100,activation = 'linear'))#,kernel_regularizer=reg.l2(0.1)))
-        self.generator.add(tkl.Dense(4,activation = 'softmax'))
+        gen_input = tf.keras.layers.Input(shape=(100,),name='gen_input')
+        a =tf.keras.layers.Dense(100,activation = 'linear')(gen_input)
+        b =tf.keras.layers.Dense(100,activation = 'linear')(a)
+        c =tf.keras.layers.Dense(100,activation = 'linear')(b)#,kernel_regularizer=reg.l2(0.1)))
+        d =tf.keras.layers.Dense(4,activation = tf.nn.softmax)(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
+        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
         #model.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
 
 
     #create the dicrinator network
     def make_discriminator(self):
-        self.discriminator = tf.keras.models.Sequential()
-        self.discriminator.add(tf.keras.layers.Dense(100,activation = tf.nn.relu))#adds one hiden layer with 128 nerons with relu activation fx\n",
-        self.discriminator.add(tf.keras.layers.Dense(100,activation = tf.nn.relu))#adds one hiden layer with 128 nerons with relu activation fx\n",
-        self.discriminator.add(tf.keras.layers.Dense(100,activation = tf.nn.relu))
-        self.discriminator.add(tf.keras.layers.Dense(2,activation = 'sigmoid'))#,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
+        dis_input = tf.keras.layers.Input(shape=(4,),name='dis_input')
+        a =tf.keras.layers.Dense(100,activation = tf.nn.relu)(dis_input)
+        b =tf.keras.layers.Dense(100,activation = tf.nn.relu)(a)
+        c =tf.keras.layers.Dense(100,activation = tf.nn.relu)(b)
+        d =tf.keras.layers.Dense(2,activation = 'sigmoid')(c)
+        self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
+        #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
         #model.compile(optimizer='adam',loss = 'binary_crossentropy',metrics=['accuracy'])
 
     def noise_vec(vec):
@@ -87,12 +91,11 @@ class dataGAN():
         ### COMPILE THE FULL GAN
 
         self.set_trainable(self.discriminator, False)
-        model_input = self.input
+        #-------------------------------------------------
+        model_input = tkl.Input((self.z_dim,),name='model_input')
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
-
         self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
-
         self.set_trainable(self.discriminator, True)
 
 
