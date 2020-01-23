@@ -49,11 +49,7 @@ class dataGAN():
     def noise_vec(vec):
         noise = []
         for i in range(vec):
-            small =[]
-            for j in range(4):
-                small.append(rd.random())
-            #noise.append(rd.random())
-            noise.append(small)
+            noise.append(rd.random())
         return np.array(noise)
 
     def makedat(gen,real):
