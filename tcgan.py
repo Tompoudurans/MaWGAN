@@ -95,13 +95,13 @@ def gan(cycle):
     #transforms.Normalize(0,1)(data)
     g,optg = genet(len(data)*4)
     d,optd = disnet()
-    net,maker = contrain(data,[d,g,optd,optg],2,cycle)
+    net,maker = contrain(data,[d,g,optd,optg],cycle,500)
     return data,net,maker
 
 
 def contrain(data,net,cycle,discyc):
-    prevs = 1
-    confac = 0
+    #prevs = 1
+    #confac = 0
     t=0
     d=net[0]
     g=net[1]
@@ -117,28 +117,32 @@ def contrain(data,net,cycle,discyc):
     print('start')
 #    bad = 0
    # for t in range(cycle):
-    while confac < cycle:
+    while t < cycle:
         t = t + 1
-        fake_data = g(noise(size*4))
-        fake_data = fake_data.reshape(150,4)
-        #fake_data = fake_data*15
-        for tau in range(discyc):
-            d,optd,de = train_discriminator(d,optd,lossfun,data,fake_data,size)
-            errorrec.append(de.item())
-            if (tau+1) % 50 == True:
-                print('time=',t,':',tau,'discriminator:',de.item())
-        opt,ge = train_generator(optg,fake_data,d,data,size,g)
-        errorgen.append(ge.item())
-        #if (t+1) % 10 == True or (t+1) == cycle:
-        print('time=',t,':',discyc,'generator:',ge.item())
-        s = sum(fake_data)/150
-        print('avarage',s)
-        avdat1.append(s[0])
-        avdat2.append(s[1])
-        avdat3.append(s[2])
-        avdat4.append(s[3])
-        confac = dectectcon(s,prevs,confac)
-        prevs = s
+        try:
+            fake_data = g(noise(size*4))
+            fake_data = fake_data.reshape(150,4)
+            #fake_data = fake_data*15
+            for tau in range(discyc):
+                d,optd,de = train_discriminator(d,optd,lossfun,data,fake_data,size)
+                errorrec.append(de.item())
+                if (tau+1) % 50 == True:
+                    print('time=',t,':',tau,'discriminator:',de.item())
+            opt,ge = train_generator(optg,fake_data,d,data,size,g)
+            errorgen.append(ge.item())
+            #if (t+1) % 10 == True or (t+1) == cycle:
+            print('time=',t,':',discyc,'generator:',ge.item())
+            s = sum(fake_data)/150
+            print('avarage',s)
+            avdat1.append(s[0])
+            avdat2.append(s[1])
+            avdat3.append(s[2])
+            avdat4.append(s[3])
+        except:
+            t = 999999999999999999
+            print('exit')
+        #confac = dectectcon(s,prevs,confac)
+        #prevs = s
     #    if t == (cycle-1):
     print('discriminator')
     mp.plot(errorrec)
