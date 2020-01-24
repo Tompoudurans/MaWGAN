@@ -26,23 +26,25 @@ class dataGAN():
 
     #create the genartaeer network
     def make_generator(self):
-        gen_input = tkl.Input(shape=(100,),name='gen_input')
-        a =tkl.Dense(100,activation = 'linear')(gen_input)
-        b =tkl.Dense(100,activation = 'linear')(a)
-        c =tkl.Dense(100,activation = 'linear')(b)#,kernel_regularizer=reg.l2(0.1)))
-        d =tkl.Dense(4,activation = tf.nn.softmax)(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
-        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
+        self.generator = tf.keras.models.Sequential()#Model(inputs=gen_input,outputs=d)
+        #gen_input = tkl.Input(shape=(100,),name='gen_input')
+        self.generator.add(tkl.Dense(100,activation = 'linear'))#(gen_input)
+        self.generator.add(tkl.Dense(100,activation = 'linear'))#(a)
+        self.generator.add(tkl.Dense(100,activation = 'linear'))#(b)#,kernel_regularizer=reg.l2(0.1)))
+        self.generator.add(tkl.Dense(4,activation = tf.nn.softmax))#(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
+        #self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
         self.generator.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
 
 
     #create the dicrinator network
     def make_discriminator(self):
-        dis_input = tkl.Input(shape=(4,),name='dis_input')
-        a =tkl.Dense(100,activation = tf.nn.relu)(dis_input)
-        b =tkl.Dense(100,activation = tf.nn.relu)(a)
-        c =tkl.Dense(100,activation = tf.nn.relu)(b)
-        d =tkl.Dense(2,activation = 'sigmoid')(c)
-        self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
+        self.discriminator = tf.keras.models.Sequential()#Model(inputs=dis_input,outputs=d)
+        #dis_input = tkl.Input(shape=(4,),name='dis_input')
+        self.discriminator.add(tkl.Dense(100,activation = tf.nn.relu))#(dis_input)
+        self.discriminator.add(tkl.Dense(100,activation = tf.nn.relu))#b =tkl.Dense(100,activation = tf.nn.relu)(a)
+        self.discriminator.add(tkl.Dense(100,activation = tf.nn.relu))#c =tkl.Dense(100,activation = tf.nn.relu)(b)
+        self.discriminator.add(tkl.Dense(2,activation = 'sigmoid'))#(c)
+        #self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
         #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
         #model.compile(optimizer='adam',loss = 'binary_crossentropy',metrics=['accuracy'])
 
