@@ -18,6 +18,9 @@ class dataGAN():
         #self.discriminator_learning_rate = discriminator_learning_rate
         #self.generator_learning_rate = generator_learning_rate
         #self.inputs = inputs
+        self.d_losses = []
+        self.g_losses = []
+        self.epoch = 0
         self.optimiser = optimiser
         self.z_dim = z_dim
         self.make_discriminator()
@@ -32,7 +35,7 @@ class dataGAN():
         c =tkl.Dense(100,activation = 'linear')(b)#,kernel_regularizer=reg.l2(0.1)))
         d =tkl.Dense(4,activation = tf.nn.softmax)(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
-        self.generator.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
+        #self.generator.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
 
 
     #create the dicrinator network
@@ -41,7 +44,7 @@ class dataGAN():
         a =tkl.Dense(100,activation = tf.nn.relu)(dis_input)
         b =tkl.Dense(100,activation = tf.nn.relu)(a)
         c =tkl.Dense(100,activation = tf.nn.relu)(b)
-        d =tkl.Dense(2,activation = 'sigmoid')(c)
+        d =tkl.Dense(1,activation = 'sigmoid')(c)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
         #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
         #model.compile(optimizer='adam',loss = 'binary_crossentropy',metrics=['accuracy'])
@@ -117,7 +120,7 @@ class dataGAN():
         noise = self.noise_vec(100) #changed
     #-----------------------------------------------
         gen_imgs = self.generator.predict(noise)
-
+        print('GEN there are images',gen_imgs)
         d_loss_real, d_acc_real =   self.discriminator.train_on_batch(true_imgs, valid)
         d_loss_fake, d_acc_fake =   self.discriminator.train_on_batch(gen_imgs, fake)
         d_loss =  0.5 * (d_loss_real + d_loss_fake)
@@ -139,7 +142,7 @@ class dataGAN():
         for epoch in range(epochs):
 #------------
             d = self.train_discriminator(x_train, batch_size, using_generator)
-            g = self.train_generator(batch_size)
+            g = [1,2]# self.train_generator(batch_size)
 
             print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
 
