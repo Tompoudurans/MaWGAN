@@ -26,22 +26,22 @@ class dataGAN():
 
     #create the genartaeer network
     def make_generator(self):
-        gen_input = tf.keras.layers.Input(shape=(100,),name='gen_input')
-        a =tf.keras.layers.Dense(100,activation = 'linear')(gen_input)
-        b =tf.keras.layers.Dense(100,activation = 'linear')(a)
-        c =tf.keras.layers.Dense(100,activation = 'linear')(b)#,kernel_regularizer=reg.l2(0.1)))
-        d =tf.keras.layers.Dense(4,activation = tf.nn.softmax)(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
+        gen_input = tkl.Input(shape=(100,),name='gen_input')
+        a =tkl.Dense(100,activation = 'linear')(gen_input)
+        b =tkl.Dense(100,activation = 'linear')(a)
+        c =tkl.Dense(100,activation = 'linear')(b)#,kernel_regularizer=reg.l2(0.1)))
+        d =tkl.Dense(4,activation = tf.nn.softmax)(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
-        #model.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
+        #self.generator.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
 
 
     #create the dicrinator network
     def make_discriminator(self):
-        dis_input = tf.keras.layers.Input(shape=(4,),name='dis_input')
-        a =tf.keras.layers.Dense(100,activation = tf.nn.relu)(dis_input)
-        b =tf.keras.layers.Dense(100,activation = tf.nn.relu)(a)
-        c =tf.keras.layers.Dense(100,activation = tf.nn.relu)(b)
-        d =tf.keras.layers.Dense(2,activation = 'sigmoid')(c)
+        dis_input = tkl.Input(shape=(4,),name='dis_input')
+        a =tkl.Dense(100,activation = tf.nn.relu)(dis_input)
+        b =tkl.Dense(100,activation = tf.nn.relu)(a)
+        c =tkl.Dense(100,activation = tf.nn.relu)(b)
+        d =tkl.Dense(2,activation = 'sigmoid')(c)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
         #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
         #model.compile(optimizer='adam',loss = 'binary_crossentropy',metrics=['accuracy'])
@@ -89,10 +89,11 @@ class dataGAN():
         self.set_trainable(self.discriminator, False)
         #-------------------------------------------------
         model_input = tkl.Input((self.z_dim,),name='model_input')
-        model_output = self.discriminator(self.generator(model_input))
-        self.model = Model(model_input, model_output)
-        self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
-        self.set_trainable(self.discriminator, True)
+        mi2 = self.generator(model_input)
+        model_output = self.discriminator(mi2)
+        #self.model = Model(inputs = model_input,outputs = model_output)
+        #self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
+        #self.set_trainable(self.discriminator, True)
 
 
 
