@@ -45,8 +45,8 @@ def genet(neurons):
     return model,optimizer
 
 
-def disnet():
-    model = nn.Sequential(nn.Linear(4,150),
+def disnet(field):
+    model = nn.Sequential(nn.Linear(field,150),
                         nn.ReLU(),
                         nn.Linear(150,150),
                         nn.ReLU(),
@@ -91,37 +91,27 @@ def disdata(real,fake):
     return [tc.tensor(dat),tc.tensor(targ)]
 
 def gan(cycle):
+    fields = 4
     data = Variable(tc.tensor(iris.data)).float()
+    size = len(data)
     #transforms.Normalize(0,1)(data)
-    g,optg = genet(len(data)*4)
-    d,optd = disnet()
-    net,maker = contrain(data,[d,g,optd,optg],cycle,500)
-    return data,net,maker
-
-
-def contrain(data,net,cycle,discyc):
-    #prevs = 1
-    #confac = 0
+    g,optg = genet(fields*size)
+    d,optd = disnet(fields)
+    discyc = 100
     t=0
-    d=net[0]
-    g=net[1]
-    optd=net[2]
-    optg=net[3]
     errorrec = []
     errorgen = []
-    avdat1 = []
-    avdat2 = []
-    avdat3 = []
-    avdat4 = []
-    size = len(data)
+    avdat = []
+    for f in range(fields):
+        avdat.append([])
     print('start')
 #    bad = 0
    # for t in range(cycle):
     while t < cycle:
         t = t + 1
         try:
-            fake_data = g(noise(size*4))
-            fake_data = fake_data.reshape(150,4)
+            fake_data = g(noise(fields*size))
+            fake_data = fake_data.reshape(size,fields)
             #fake_data = fake_data*15
             for tau in range(discyc):
                 d,optd,de = train_discriminator(d,optd,lossfun,data,fake_data,size)
@@ -132,12 +122,10 @@ def contrain(data,net,cycle,discyc):
             errorgen.append(ge.item())
             #if (t+1) % 10 == True or (t+1) == cycle:
             print('time=',t,':',discyc,'generator:',ge.item())
-            s = sum(fake_data)/150
+            s = sum(fake_data)/size
             print('avarage',s)
-            avdat1.append(s[0])
-            avdat2.append(s[1])
-            avdat3.append(s[2])
-            avdat4.append(s[3])
+            for f in range(fields):
+                avdat[f].append(s[f])
         except:
             t = 999999999999999999
             print('exit')
@@ -151,15 +139,9 @@ def contrain(data,net,cycle,discyc):
     mp.plot(errorgen)
     mp.show()
     print('petals')
-    mp.plot(avdat1)
-    mp.show()
-    mp.plot(avdat2)
-    mp.show()
-    print('sepals')
-    mp.plot(avdat3)
-    mp.show()
-    mp.plot(avdat4)
-    mp.show()
+    for f in range(fields):
+        mp.plot(avdat[f])
+        mp.show()
     ploting(fake_data)
     return [d,g,optd,optg],fake_data
 
