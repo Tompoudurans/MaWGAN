@@ -4,7 +4,7 @@ Created on Wed Oct 23 15:32:32 2019
 
 @author: Thomas
 """
-#from keras.models import Model#, Sequential
+from keras.models import Model#, Sequential
 #from keras import backend as K
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
@@ -35,7 +35,7 @@ class dataGAN():
         c =tkl.Dense(100,activation = 'linear')(b)#,kernel_regularizer=reg.l2(0.1)))
         d =tkl.Dense(4,activation = tf.nn.softmax)(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
-        #self.generator.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
+        self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
 
 
     #create the dicrinator network
@@ -91,14 +91,14 @@ class dataGAN():
 
         ### COMPILE THE FULL GAN
 
-        self.set_trainable(self.discriminator, False)
+        #self.set_trainable(self.discriminator, False)
         #-------------------------------------------------
         model_input = tkl.Input((self.z_dim,),name='model_input')
         mi2 = self.generator(model_input)
         model_output = self.discriminator(mi2)
         #self.model = Model(inputs = model_input,outputs = model_output)
         #self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
-        #self.set_trainable(self.discriminator, True)
+        self.set_trainable(self.discriminator, True)
 
 
 
@@ -131,7 +131,7 @@ class dataGAN():
     def train_generator(self, batch_size):
         valid = np.ones((batch_size,1))
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        return self.model.train_on_batch(noise, valid)
+        return self.generator.train_on_batch(noise, valid)
 
 
     def train(self, x_train, batch_size, epochs
@@ -142,7 +142,7 @@ class dataGAN():
         for epoch in range(epochs):
 #------------
             d = self.train_discriminator(x_train, batch_size, using_generator)
-            g = [1,2]# self.train_generator(batch_size)
+            g = self.train_generator(batch_size)
 
             print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
 
