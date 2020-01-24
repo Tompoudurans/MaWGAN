@@ -3,4 +3,5 @@ from tengan import dataGAN
 
 iris = datasets.load_iris()
 
-mygan = dataGAN('adam',iris.data,100)
+mygan = dataGAN('adam',100)
+mygan.train(iris.data,100,100)

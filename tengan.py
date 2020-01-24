@@ -4,20 +4,20 @@ Created on Wed Oct 23 15:32:32 2019
 
 @author: Thomas
 """
-from keras.models import Model#, Sequential
-from keras import backend as K
+#from keras.models import Model#, Sequential
+#from keras import backend as K
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
 import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser,input,z_dim):
+    def __init__(self,optimiser,z_dim):
         #discriminator_learning_rate,
         #generator_learning_rate,
         #self.discriminator_learning_rate = discriminator_learning_rate
         #self.generator_learning_rate = generator_learning_rate
-        self.input = input
+        #self.inputs = inputs
         self.optimiser = optimiser
         self.z_dim = z_dim
         self.make_discriminator()
@@ -32,7 +32,7 @@ class dataGAN():
         c =tkl.Dense(100,activation = 'linear')(b)#,kernel_regularizer=reg.l2(0.1)))
         d =tkl.Dense(4,activation = tf.nn.softmax)(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
-        #self.generator.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
+        self.generator.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
 
 
     #create the dicrinator network
@@ -46,27 +46,29 @@ class dataGAN():
         #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
         #model.compile(optimizer='adam',loss = 'binary_crossentropy',metrics=['accuracy'])
 
-    def noise_vec(vec):
+    def noise_vec(self,vec):
         noise = []
         for i in range(vec):
             noise.append(rd.random())
-        return np.array(noise)
+        noise = np.array(noise)
+        noise = noise.reshape(1,100)
+        return noise
 
-    def makedat(gen,real):
-        nos = noise(len(real))
+  #  def makedat(gen,real):
+        #nos = noise_vec(len(real))
         #gen.fit(nos, real, epochs=3)
-        x = gen.predict(nos)
-        return [gen, x]
+  #      x = gen.predict(nos)
+   #     return [gen, x]
 # my old code:
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # foster code:
-    def get_opti(self, lr):
-        if self.optimiser == 'adam':
-            opti = Adam(lr=lr, beta_1=0.5)
-        elif self.optimiser == 'rmsprop':
-            opti = RMSprop(lr=lr)
-        else:
-            opti = Adam(lr=lr)
+#    def get_opti(self, lr):
+#        if self.optimiser == 'adam':
+#            opti = Adam(lr=lr, beta_1=0.5)
+#        elif self.optimiser == 'rmsprop':
+#            opti = RMSprop(lr=lr)
+ #       else:
+ #           opti = Adam(lr=lr)
 
 
     def set_trainable(self, m, val):
