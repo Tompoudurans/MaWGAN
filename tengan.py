@@ -4,7 +4,7 @@ Created on Wed Oct 23 15:32:32 2019
 
 @author: Thomas
 """
-from keras.models import Model#, Sequential
+from tensorflow.keras.models import Model#, Sequential
 #from keras import backend as K
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
@@ -31,12 +31,12 @@ class dataGAN():
 
     #create the genartaeer network
     def make_generator(self):
-        gen_input = tkl.Input(shape=(self.net_dim,),name='gen_input')
+        gen_input = tkl.Input(shape=(self.z_dim,),name='gen_input')
         a =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
         b =tkl.Dense(self.net_dim,activation = 'tanh')(a)
         c =tkl.Dense(self.net_dim,activation = 'tanh')(b)#,kernel_regularizer=reg.l2(0.1)))
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=c)
-        #self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
+        self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
 
 
     #create the dicrinator network
