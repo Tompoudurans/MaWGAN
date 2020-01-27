@@ -12,13 +12,13 @@ import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser,z_dim,data_dim):
+    def __init__(self,optimiser,z_dim,data_dim,net_dim):
         #discriminator_learning_rate,
         #generator_learning_rate,
         #self.discriminator_learning_rate = discriminator_learning_rate
         #self.generator_learning_rate = generator_learning_rate
         #self.inputs = inputs
-        self.net_dim = 13#net_dim
+        self.net_dim = net_dim
         self.data_dim =data_dim
         self.d_losses = []
         self.g_losses = []
@@ -34,9 +34,10 @@ class dataGAN():
         gen_input = tkl.Input(shape=(self.z_dim,),name='gen_input')
         a =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
         b =tkl.Dense(self.net_dim,activation = 'tanh')(a)
-        c =tkl.Dense(self.net_dim,activation = 'tanh')(b)#,kernel_regularizer=reg.l2(0.1)))
-        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=c)
-        self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
+        c =tkl.Dense(self.net_dim,activation = 'tanh')(b)
+        d =tkl.Dense(self.net_dim,activation = 'tanh')(c)#,kernel_regularizer=reg.l2(0.1)))
+        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
+        #self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
 
 
     #create the dicrinator network
@@ -44,6 +45,7 @@ class dataGAN():
         dis_input = tkl.Input(shape=(self.data_dim,),name='dis_input')
         a =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
         b =tkl.Dense(self.net_dim,activation = tf.nn.relu)(a)
+        c =tkl.Dense(self.net_dim,activation = tf.nn.relu)(b)
         d =tkl.Dense(1,activation = 'sigmoid')(b)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
         #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
@@ -129,7 +131,7 @@ class dataGAN():
     def train_generator(self, batch_size):
         valid = np.ones((batch_size,1))
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        return self.generator.train_on_batch(noise, valid)
+        return self.model.train_on_batch(noise, valid)
 
 
     def train(self, x_train, batch_size, epochs
@@ -142,7 +144,8 @@ class dataGAN():
             d = self.train_discriminator(x_train, batch_size, using_generator)
             g = self.train_generator(batch_size)
 
-            print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
+            if epoch % print_every_n_batches == 0:
+                print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
 
             self.d_losses.append(d)
             self.g_losses.append(g)
