@@ -18,6 +18,7 @@ class dataGAN():
         #self.discriminator_learning_rate = discriminator_learning_rate
         #self.generator_learning_rate = generator_learning_rate
         #self.inputs = inputs
+        self.net_dim = 13#net_dim
         self.data_dim =data_dim
         self.d_losses = []
         self.g_losses = []
@@ -30,10 +31,10 @@ class dataGAN():
 
     #create the genartaeer network
     def make_generator(self):
-        gen_input = tkl.Input(shape=(100,),name='gen_input')
-        a =tkl.Dense(100,activation = 'tanh')(gen_input)
-        b =tkl.Dense(100,activation = 'tanh')(a)
-        c =tkl.Dense(100,activation = 'tanh')(b)#,kernel_regularizer=reg.l2(0.1)))
+        gen_input = tkl.Input(shape=(self.net_dim,),name='gen_input')
+        a =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
+        b =tkl.Dense(self.net_dim,activation = 'tanh')(a)
+        c =tkl.Dense(self.net_dim,activation = 'tanh')(b)#,kernel_regularizer=reg.l2(0.1)))
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=c)
         #self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
 
@@ -41,8 +42,8 @@ class dataGAN():
     #create the dicrinator network
     def make_discriminator(self):
         dis_input = tkl.Input(shape=(self.data_dim,),name='dis_input')
-        a =tkl.Dense(100,activation = tf.nn.relu)(dis_input)
-        b =tkl.Dense(100,activation = tf.nn.relu)(a)
+        a =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
+        b =tkl.Dense(self.net_dim,activation = tf.nn.relu)(a)
         d =tkl.Dense(1,activation = 'sigmoid')(b)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
         #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
