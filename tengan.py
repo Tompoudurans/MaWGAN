@@ -12,12 +12,13 @@ import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser,z_dim):
+    def __init__(self,optimiser,z_dim,data_dim):
         #discriminator_learning_rate,
         #generator_learning_rate,
         #self.discriminator_learning_rate = discriminator_learning_rate
         #self.generator_learning_rate = generator_learning_rate
         #self.inputs = inputs
+        self.data_dim =data_dim
         self.d_losses = []
         self.g_losses = []
         self.epoch = 0
@@ -30,21 +31,19 @@ class dataGAN():
     #create the genartaeer network
     def make_generator(self):
         gen_input = tkl.Input(shape=(100,),name='gen_input')
-        a =tkl.Dense(100,activation = 'linear')(gen_input)
-        b =tkl.Dense(100,activation = 'linear')(a)
-        c =tkl.Dense(100,activation = 'linear')(b)#,kernel_regularizer=reg.l2(0.1)))
-        d =tkl.Dense(4,activation = tf.nn.softmax)(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
-        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
-        self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
+        a =tkl.Dense(100,activation = 'tanh')(gen_input)
+        b =tkl.Dense(100,activation = 'tanh')(a)
+        c =tkl.Dense(100,activation = 'tanh')(b)#,kernel_regularizer=reg.l2(0.1)))
+        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=c)
+        #self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
 
 
     #create the dicrinator network
     def make_discriminator(self):
-        dis_input = tkl.Input(shape=(4,),name='dis_input')
+        dis_input = tkl.Input(shape=(self.data_dim,),name='dis_input')
         a =tkl.Dense(100,activation = tf.nn.relu)(dis_input)
         b =tkl.Dense(100,activation = tf.nn.relu)(a)
-        c =tkl.Dense(100,activation = tf.nn.relu)(b)
-        d =tkl.Dense(1,activation = 'sigmoid')(c)
+        d =tkl.Dense(1,activation = 'sigmoid')(b)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
         #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
         #model.compile(optimizer='adam',loss = 'binary_crossentropy',metrics=['accuracy'])
@@ -91,13 +90,12 @@ class dataGAN():
 
         ### COMPILE THE FULL GAN
 
-        #self.set_trainable(self.discriminator, False)
+        self.set_trainable(self.discriminator, False)
         #-------------------------------------------------
-        model_input = tkl.Input((self.z_dim,),name='model_input')
-        mi2 = self.generator(model_input)
-        model_output = self.discriminator(mi2)
-        #self.model = Model(inputs = model_input,outputs = model_output)
-        #self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
+        model_input = tkl.Input(shape=(self.z_dim,), name='model_input')
+        model_output = self.discriminator(self.generator(model_input))
+        self.model = Model(model_input, model_output)
+        self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
         self.set_trainable(self.discriminator, True)
 
 
@@ -117,10 +115,9 @@ class dataGAN():
             true_imgs = x_train[idx]
 
     #---------------------------------------------
-        noise = self.noise_vec(100) #changed
+        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
     #-----------------------------------------------
         gen_imgs = self.generator.predict(noise)
-        print('GEN there are images',gen_imgs)
         d_loss_real, d_acc_real =   self.discriminator.train_on_batch(true_imgs, valid)
         d_loss_fake, d_acc_fake =   self.discriminator.train_on_batch(gen_imgs, fake)
         d_loss =  0.5 * (d_loss_real + d_loss_fake)
