@@ -41,6 +41,11 @@ class dataGAN():
         d =tkl.Dense(1,activation = 'sigmoid')(b)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
 
+    def set_trainable(self, m, val):
+        m.trainable = val
+        for l in m.layers:
+            l.trainable = val
+
     def build_adversarial(self):
 
         ### COMPILE DISCRIMINATOR
@@ -53,12 +58,13 @@ class dataGAN():
 
         ### COMPILE THE FULL GAN
 
-
+        self.set_trainable(self.discriminator, False)
         #-------------------------------------------------
         model_input = tkl.Input(shape=(self.z_dim,), name='model_input')
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
         self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
+        self.set_trainable(self.discriminator, True)
 
     def train_discriminator(self, x_train, batch_size, using_generator):
 
