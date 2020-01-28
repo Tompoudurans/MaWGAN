@@ -4,8 +4,7 @@ Created on Wed Oct 23 15:32:32 2019
 
 @author: Thomas
 """
-from tensorflow.keras.models import Model#, Sequential
-#from keras import backend as K
+from tensorflow.keras.models import Model
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
 import numpy as np
@@ -13,11 +12,6 @@ import random as rd
 
 class dataGAN():
     def __init__(self,optimiser,z_dim,data_dim,net_dim):
-        #discriminator_learning_rate,
-        #generator_learning_rate,
-        #self.discriminator_learning_rate = discriminator_learning_rate
-        #self.generator_learning_rate = generator_learning_rate
-        #self.inputs = inputs
         self.net_dim = net_dim
         self.data_dim =data_dim
         self.d_losses = []
@@ -37,7 +31,7 @@ class dataGAN():
         c =tkl.Dense(self.net_dim,activation = 'tanh')(b)
         d =tkl.Dense(self.data_dim,activation = 'linear')(c)#,kernel_regularizer=reg.l2(0.1)))
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
-        #self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
+
 
 
     #create the dicrinator network
@@ -48,38 +42,6 @@ class dataGAN():
         c =tkl.Dense(self.net_dim,activation = tf.nn.relu)(b)
         d =tkl.Dense(1,activation = 'sigmoid')(b)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
-        #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
-        #model.compile(optimizer='adam',loss = 'binary_crossentropy',metrics=['accuracy'])
-
-    def noise_vec(self,vec):
-        noise = []
-        for i in range(vec):
-            noise.append(rd.random())
-        noise = np.array(noise)
-        noise = noise.reshape(1,100)
-        return noise
-
-  #  def makedat(gen,real):
-        #nos = noise_vec(len(real))
-        #gen.fit(nos, real, epochs=3)
-  #      x = gen.predict(nos)
-   #     return [gen, x]
-# my old code:
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# foster code:
-#    def get_opti(self, lr):
-#        if self.optimiser == 'adam':
-#            opti = Adam(lr=lr, beta_1=0.5)
-#        elif self.optimiser == 'rmsprop':
-#            opti = RMSprop(lr=lr)
- #       else:
- #           opti = Adam(lr=lr)
-
-
-    def set_trainable(self, m, val):
-        m.trainable = val
-        for l in m.layers:
-            l.trainable = val
 
     def build_adversarial(self):
 
@@ -93,16 +55,12 @@ class dataGAN():
 
         ### COMPILE THE FULL GAN
 
-        self.set_trainable(self.discriminator, False)
+
         #-------------------------------------------------
         model_input = tkl.Input(shape=(self.z_dim,), name='model_input')
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
         self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
-        self.set_trainable(self.discriminator, True)
-
-
-
 
     def train_discriminator(self, x_train, batch_size, using_generator):
 
