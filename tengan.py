@@ -4,20 +4,19 @@ Created on Wed Oct 23 15:32:32 2019
 
 @author: Thomas
 """
-#from keras.models import Model#, Sequential
-#from keras import backend as K
+from tensorflow.keras.models import Model
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
 import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser,z_dim):
-        #discriminator_learning_rate,
-        #generator_learning_rate,
-        #self.discriminator_learning_rate = discriminator_learning_rate
-        #self.generator_learning_rate = generator_learning_rate
-        #self.inputs = inputs
+    def __init__(self,optimiser,z_dim,data_dim,net_dim):
+        self.net_dim = net_dim
+        self.data_dim =data_dim
+        self.d_losses = []
+        self.g_losses = []
+        self.epoch = 0
         self.optimiser = optimiser
         self.z_dim = z_dim
         self.make_discriminator()
@@ -26,57 +25,21 @@ class dataGAN():
 
     #create the genartaeer network
     def make_generator(self):
-        self.generator = tf.keras.models.Sequential()#Model(inputs=gen_input,outputs=d)
-        #gen_input = tkl.Input(shape=(100,),name='gen_input')
-        self.generator.add(tkl.Dense(100,activation = 'linear'))#(gen_input)
-        self.generator.add(tkl.Dense(100,activation = 'linear'))#(a)
-        self.generator.add(tkl.Dense(100,activation = 'linear'))#(b)#,kernel_regularizer=reg.l2(0.1)))
-        self.generator.add(tkl.Dense(4,activation = tf.nn.softmax))#(c)#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
-        #self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
-        self.generator.compile(optimizer='adam',loss = 'mse',metrics=['accuracy'])
-
+        gen_input = tkl.Input(shape=(self.z_dim,),name='gen_input')
+        a =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
+        b =tkl.Dense(self.net_dim,activation = 'tanh')(a)
+        c =tkl.Dense(self.net_dim,activation = 'tanh')(b)
+        d =tkl.Dense(self.data_dim,activation = 'linear')(c)#,kernel_regularizer=reg.l2(0.1)))
+        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
 
     #create the dicrinator network
     def make_discriminator(self):
-        self.discriminator = tf.keras.models.Sequential()#Model(inputs=dis_input,outputs=d)
-        #dis_input = tkl.Input(shape=(4,),name='dis_input')
-        self.discriminator.add(tkl.Dense(100,activation = tf.nn.relu))#(dis_input)
-        self.discriminator.add(tkl.Dense(100,activation = tf.nn.relu))#b =tkl.Dense(100,activation = tf.nn.relu)(a)
-        self.discriminator.add(tkl.Dense(100,activation = tf.nn.relu))#c =tkl.Dense(100,activation = tf.nn.relu)(b)
-        self.discriminator.add(tkl.Dense(2,activation = 'sigmoid'))#(c)
-        #self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
-        #,activity_regularizer=reg.l2(0.0001)))#adds ouput layer with 10 nerons with softmax activation fx
-        #model.compile(optimizer='adam',loss = 'binary_crossentropy',metrics=['accuracy'])
-
-    def noise_vec(self,vec):
-        noise = []
-        for i in range(vec):
-            noise.append(rd.random())
-        noise = np.array(noise)
-        noise = noise.reshape(1,100)
-        return noise
-
-  #  def makedat(gen,real):
-        #nos = noise_vec(len(real))
-        #gen.fit(nos, real, epochs=3)
-  #      x = gen.predict(nos)
-   #     return [gen, x]
-# my old code:
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# foster code:
-#    def get_opti(self, lr):
-#        if self.optimiser == 'adam':
-#            opti = Adam(lr=lr, beta_1=0.5)
-#        elif self.optimiser == 'rmsprop':
-#            opti = RMSprop(lr=lr)
- #       else:
- #           opti = Adam(lr=lr)
-
-
-    def set_trainable(self, m, val):
-        m.trainable = val
-        for l in m.layers:
-            l.trainable = val
+        dis_input = tkl.Input(shape=(self.data_dim,),name='dis_input')
+        a =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
+        b =tkl.Dense(self.net_dim,activation = tf.nn.relu)(a)
+        c =tkl.Dense(self.net_dim,activation = tf.nn.relu)(b)
+        d =tkl.Dense(1,activation = 'sigmoid')(b)
+        self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
 
     def build_adversarial(self):
 
@@ -90,17 +53,12 @@ class dataGAN():
 
         ### COMPILE THE FULL GAN
 
-        self.set_trainable(self.discriminator, False)
+
         #-------------------------------------------------
-        model_input = tkl.Input((self.z_dim,),name='model_input')
-        mi2 = self.generator(model_input)
-        model_output = self.discriminator(mi2)
-        #self.model = Model(inputs = model_input,outputs = model_output)
-        #self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
-        #self.set_trainable(self.discriminator, True)
-
-
-
+        model_input = tkl.Input(shape=(self.z_dim,), name='model_input')
+        model_output = self.discriminator(self.generator(model_input))
+        self.model = Model(model_input, model_output)
+        self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
 
     def train_discriminator(self, x_train, batch_size, using_generator):
 
@@ -116,10 +74,9 @@ class dataGAN():
             true_imgs = x_train[idx]
 
     #---------------------------------------------
-        noise = self.noise_vec(100) #changed
+        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
     #-----------------------------------------------
         gen_imgs = self.generator.predict(noise)
-
         d_loss_real, d_acc_real =   self.discriminator.train_on_batch(true_imgs, valid)
         d_loss_fake, d_acc_fake =   self.discriminator.train_on_batch(gen_imgs, fake)
         d_loss =  0.5 * (d_loss_real + d_loss_fake)
@@ -143,7 +100,8 @@ class dataGAN():
             d = self.train_discriminator(x_train, batch_size, using_generator)
             g = self.train_generator(batch_size)
 
-            print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
+            if epoch % print_every_n_batches == 0:
+                print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
 
             self.d_losses.append(d)
             self.g_losses.append(g)

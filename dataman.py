@@ -7,6 +7,7 @@ Created on Wed Oct 30 13:24:13 2019
 import numpy as np
 import random as rd
 import torch as tc
+import matplotlib.pyplot as mp
 
 def simplesplit(x,y,fac=10):
     size=len(x)
@@ -40,7 +41,7 @@ def xref(bas,h):
     return [datrain,htrain,datest,htest]
 
 def testmodel(mod,actual):
-    count = 0     
+    count = 0
     for i in range(len(actual)):
         p=np.argmax(mod[i])
         q=actual[i]
@@ -50,13 +51,22 @@ def testmodel(mod,actual):
         else:
             print(i,')',p,q,'x')
     print(count,'/',len(actual))
-    
+
 def acctest(mod,actual):
-    count = 0     
+    count = 0
     for i in range(len(actual)):
         p=tc.argmax(mod[i])
         q=actual[i]
         if p == q:
             count = count + 1
-    l = len(actual)        
+    l = len(actual)
     return str(count) + '/'+ str(l)
+
+def plotting(tenso):
+    tenso = tenso.transpose(1,0)
+    print('petals')
+    mp.scatter(tenso[0],tenso[1])
+    mp.show()
+    print('sepals')
+    mp.scatter(tenso[2],tenso[3])
+    mp.show()
