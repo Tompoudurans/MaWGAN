@@ -35,7 +35,7 @@ class dataGAN():
         a =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
         b =tkl.Dense(self.net_dim,activation = 'tanh')(a)
         c =tkl.Dense(self.net_dim,activation = 'tanh')(b)
-        d =tkl.Dense(self.net_dim,activation = 'tanh')(c)#,kernel_regularizer=reg.l2(0.1)))
+        d =tkl.Dense(self.data_dim,activation = 'Linear')(c)#,kernel_regularizer=reg.l2(0.1)))
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=d)
         #self.generator.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
 
