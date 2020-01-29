@@ -58,7 +58,7 @@ class dataGAN():
 
         ### COMPILE THE FULL GAN
 
-        self.set_trainable(self.discriminator, False)
+        self.set_trainable(self.discriminator, False)#temp freeze the dis wight so it does not efect the dis network
         #-------------------------------------------------
         model_input = tkl.Input(shape=(self.z_dim,), name='model_input')
         model_output = self.discriminator(self.generator(model_input))
