@@ -20,9 +20,14 @@ class dataGAN():
         self.epoch = 0
         self.optimiser = optimiser
         self.z_dim = z_dim
+        self.clip_threshold = 0.01
         self.make_discriminator()
         self.make_generator()
         self.build_adversarial()
+
+
+    def wasserstein(self, y_true, y_pred):
+        return -K.mean(y_true * y_pred)
 
     #create the genartaeer network
     def make_generator(self):
@@ -60,9 +65,6 @@ class dataGAN():
         # return the mean as loss over all the batch samples
         return K.mean(gradient_penalty)
 
-    def wasserstein(self, y_true, y_pred):
-        return -K.mean(y_true * y_pred)
-
     def set_trainable(self, m, val):
         m.trainable = val
         for l in m.layers:
@@ -73,8 +75,8 @@ class dataGAN():
         ### COMPILE DISCRIMINATOR
 
         self.discriminator.compile(
-        optimizer=self.wasserstein
-        , loss = 'binary_crossentropy'
+        optimizer=self.optimiser
+        , loss =self.wasserstein
         ,  metrics = ['accuracy']
         )
 
@@ -85,7 +87,8 @@ class dataGAN():
         model_input = tkl.Input(shape=(self.z_dim,), name='model_input')
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
-        self.model.compile(optimizer=self.wasserstein , loss='binary_crossentropy', metrics=['accuracy'])
+
+        self.model.compile(optimizer=self.optimiser, loss=self.wasserstein, metrics=['accuracy'])
         self.set_trainable(self.discriminator, True)
 
     def train_discriminator(self, x_train, batch_size, using_generator):
