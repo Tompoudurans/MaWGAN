@@ -43,7 +43,7 @@ class dataGAN():
         a =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
         b =tkl.Dense(self.net_dim,activation = tf.nn.relu)(a)
         c =tkl.Dense(self.net_dim,activation = tf.nn.relu)(b)
-        d =tkl.Dense(1,activation = 'sigmoid')(b)
+        d =tkl.Dense(1,activation = None)(b)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
 
     def gradient_penalty_loss(self, y_true, y_pred, interpolated_samples):
@@ -93,7 +93,7 @@ class dataGAN():
 
         clip_threshold = 0.01
         valid = np.ones((batch_size,1))
-        fake = np.zeros((batch_size,1))
+        fake = -np.ones((batch_size,1))
 
         if using_generator:
             true_imgs = next(x_train)[0]
