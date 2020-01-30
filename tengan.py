@@ -5,6 +5,7 @@ Created on Wed Oct 23 15:32:32 2019
 @author: Thomas
 """
 from tensorflow.keras.models import Model
+from tensorflow.keras import backend as K
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
 import numpy as np
@@ -40,6 +41,24 @@ class dataGAN():
         c =tkl.Dense(self.net_dim,activation = tf.nn.relu)(b)
         d =tkl.Dense(1,activation = 'sigmoid')(b)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
+
+    def gradient_penalty_loss(self, y_true, y_pred, interpolated_samples):
+        """
+        Computes gradient penalty based on prediction and weighted real / fake samples
+        """
+        gradients = K.gradients(y_pred, interpolated_samples)[0]
+
+        # compute the euclidean norm by squaring ...
+        gradients_sqr = K.square(gradients)
+        #   ... summing over the rows ...
+        gradients_sqr_sum = K.sum(gradients_sqr,
+                                  axis=np.arange(1, len(gradients_sqr.shape)))
+        #   ... and sqrt
+        gradient_l2_norm = K.sqrt(gradients_sqr_sum)
+        # compute lambda * (1 - ||grad||)^2 still for each single sample
+        gradient_penalty = K.square(1 - gradient_l2_norm)
+        # return the mean as loss over all the batch samples
+        return K.mean(gradient_penalty)
 
     def wasserstein(self, y_true, y_pred):
         return -K.mean(y_true * y_pred)
