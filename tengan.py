@@ -73,7 +73,7 @@ class dataGAN():
         ### COMPILE DISCRIMINATOR
 
         self.discriminator.compile(
-        optimizer=self.optimiser
+        optimizer=self.wasserstein
         , loss = 'binary_crossentropy'
         ,  metrics = ['accuracy']
         )
@@ -85,7 +85,7 @@ class dataGAN():
         model_input = tkl.Input(shape=(self.z_dim,), name='model_input')
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
-        self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
+        self.model.compile(optimizer=self.wasserstein , loss='binary_crossentropy', metrics=['accuracy'])
         self.set_trainable(self.discriminator, True)
 
     def train_discriminator(self, x_train, batch_size, using_generator):
@@ -109,6 +109,12 @@ class dataGAN():
         d_loss_fake, d_acc_fake =   self.discriminator.train_on_batch(gen_imgs, fake)
         d_loss =  0.5 * (d_loss_real + d_loss_fake)
         d_acc = 0.5 * (d_acc_real + d_acc_fake)
+
+        for l in self.discriminator.layers:
+            weights = l.get_weights()
+            weights = [np.clip(w, -clip_threshold, clip_threshold) for w in weights]
+            l.set_weights(weights)
+
 
         return [d_loss, d_loss_real, d_loss_fake, d_acc, d_acc_real, d_acc_fake]
 
