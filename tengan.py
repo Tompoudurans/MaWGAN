@@ -41,6 +41,9 @@ class dataGAN():
         d =tkl.Dense(1,activation = 'sigmoid')(b)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
 
+    def wasserstein(self, y_true, y_pred):
+        return -K.mean(y_true * y_pred)
+
     def set_trainable(self, m, val):
         m.trainable = val
         for l in m.layers:
@@ -108,8 +111,7 @@ class dataGAN():
 
             if epoch % print_every_n_batches == 0:
                 print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
-
-            self.d_losses.append(d)
-            self.g_losses.append(g)
+                self.d_losses.append(d)
+                self.g_losses.append(g)
 
             self.epoch += 1
