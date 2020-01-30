@@ -20,7 +20,6 @@ class dataGAN():
         self.epoch = 0
         self.optimiser = optimiser
         self.z_dim = z_dim
-        self.clip_threshold = 0.01
         self.make_discriminator()
         self.make_generator()
         self.build_adversarial()
@@ -77,7 +76,6 @@ class dataGAN():
         self.discriminator.compile(
         optimizer=self.optimiser
         , loss =self.wasserstein
-        ,  metrics = ['accuracy']
         )
 
         ### COMPILE THE FULL GAN
@@ -88,11 +86,12 @@ class dataGAN():
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
 
-        self.model.compile(optimizer=self.optimiser, loss=self.wasserstein, metrics=['accuracy'])
+        self.model.compile(optimizer=self.optimiser, loss=self.wasserstein)
         self.set_trainable(self.discriminator, True)
 
     def train_discriminator(self, x_train, batch_size, using_generator):
 
+        clip_threshold = 0.01
         valid = np.ones((batch_size,1))
         fake = np.zeros((batch_size,1))
 
@@ -108,10 +107,9 @@ class dataGAN():
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
     #-----------------------------------------------
         gen_imgs = self.generator.predict(noise)
-        d_loss_real, d_acc_real =   self.discriminator.train_on_batch(true_imgs, valid)
-        d_loss_fake, d_acc_fake =   self.discriminator.train_on_batch(gen_imgs, fake)
+        d_loss_real =   self.discriminator.train_on_batch(true_imgs, valid)
+        d_loss_fake =   self.discriminator.train_on_batch(gen_imgs, fake)
         d_loss =  0.5 * (d_loss_real + d_loss_fake)
-        d_acc = 0.5 * (d_acc_real + d_acc_fake)
 
         for l in self.discriminator.layers:
             weights = l.get_weights()
@@ -119,7 +117,7 @@ class dataGAN():
             l.set_weights(weights)
 
 
-        return [d_loss, d_loss_real, d_loss_fake, d_acc, d_acc_real, d_acc_fake]
+        return [d_loss, d_loss_real, d_loss_fake]
 
     def train_generator(self, batch_size):
         valid = np.ones((batch_size,1))
@@ -134,11 +132,12 @@ class dataGAN():
 #-----------
         for epoch in range(epochs):
 #------------
-            d = self.train_discriminator(x_train, batch_size, using_generator)
+            for n in range(5):
+                d = self.train_discriminator(x_train, batch_size, using_generator)
             g = self.train_generator(batch_size)
 
             if epoch % print_every_n_batches == 0:
-                print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
+                print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [G loss: %.3f]" % (epoch, d[0], d[1], d[2], g))
                 self.d_losses.append(d)
                 self.g_losses.append(g)
 
