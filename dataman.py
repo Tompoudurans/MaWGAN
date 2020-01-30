@@ -65,14 +65,15 @@ def acctest(mod,actual):
 def plotting(tenso,other):
     tenso = tenso.transpose(1,0)
     other = other.transpose(1,0)
-    print('petals')
-    mp.scatter(tenso[0],tenso[1])
-    mp.scatter(other[0],other[1])
-    mp.show()
-    print('sepals')
-    mp.scatter(tenso[2],tenso[3])
-    mp.scatter(other[2],other[3])
-    mp.show()
+    for x in range(len(tenso)):
+        for y in range(len(tenso)):
+            if x < y:
+                print(x,y)
+                mp.scatter(tenso[x],tenso[y])
+                mp.scatter(other[x],other[y])
+                mp.show()
+
+
 
 def show_loss_progress(loss_discriminator,loss_generator):
         print('discriminator')
