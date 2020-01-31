@@ -112,3 +112,8 @@ class dataGAN():
                 self.g_losses.append(g)
 
             self.epoch += 1
+
+    def save_model(self):
+        self.model.save('model.h5')
+        self.discriminator.save('discriminator.h5')
+        self.generator.save('generator.h5')
