@@ -4,6 +4,8 @@ Created on Wed Oct 30 13:24:13 2019
 
 @author: user
 """
+import seaborn as sns
+import pandas as pd
 import numpy as np
 import random as rd
 import torch as tc
@@ -73,7 +75,14 @@ def plotting(tenso,other):
                 mp.scatter(other[x],other[y])
                 mp.show()
 
-
+def dagpolt(x,y):
+    fake = pd.DataFrame(x)
+    real = pd.DataFrame(y)
+    fake['dataset'] = ['fake']*100
+    real['dataset'] = ['real']*150
+    result = pd.concat([real, fake])
+    sns.pairplot(result,hue='tf')
+    mp.show()
 
 def show_loss_progress(loss_discriminator,loss_generator):
         print('discriminator')
