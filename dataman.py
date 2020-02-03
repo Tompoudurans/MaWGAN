@@ -78,10 +78,10 @@ def plotting(tenso,other):
 def dagpolt(x,y):
     fake = pd.DataFrame(x)
     real = pd.DataFrame(y)
-    fake['dataset'] = ['fake']*100
-    real['dataset'] = ['real']*150
+    fake['dataset'] = ['fake']*len(x)
+    real['dataset'] = ['real']*len(y)
     result = pd.concat([real, fake])
-    sns.pairplot(result,hue='tf')
+    sns.pairplot(result,hue='dataset')
     mp.show()
 
 def show_loss_progress(loss_discriminator,loss_generator):
