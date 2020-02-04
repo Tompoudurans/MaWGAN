@@ -114,10 +114,12 @@ class dataGAN():
 
             self.epoch += 1
 
-    def save_model(self):
-        self.model.save('model.h5')
-        self.discriminator.save('discriminator.h5')
-        self.generator.save('generator.h5')
+    def save_model(self,filepath):
+        self.model.save(filepath + 'model.h5')
+        self.discriminator.save(filepath + 'discriminator.h5')
+        self.generator.save(filepath + 'generator.h5')
 
     def load_weights(self, filepath):
-        self.model.load_weights(filepath)
+        self.model.load_weights(filepath + 'model.h5')
+        self.discriminator.load_weights(filepath + 'discriminator.h5')
+        self.generator.load_weights(filepath + 'generator.h5')
