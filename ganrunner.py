@@ -3,6 +3,7 @@ from tengan import dataGAN
 from dataman import dagpolt,show_loss_progress
 from math import ceil
 import numpy as np
+import flower
 
 def run(mode):
     set = input("set? 'w'/'i' ")
@@ -56,6 +57,22 @@ def run(mode):
         generated_data = mygan.generator.predict(noise)
         print(generated_data)
         dagpolt(generated_data,datab)
+    if wt == 't':
+        test_for_con = input('test y/n')
+        if test_for_con == 'y':
+            image,actual = [],[]
+            for ge in range(len(generated_data)):
+                im,ac=np.split(generated_data[ge],[4])
+                image.append(im)
+                actual.append(int(round(ac[0])))
+            sets = flower.xref(database.data,database.target)
+            print('seperating done')
+            mods = flower.make_model()
+            print('model done')
+            truemod = flower.complexfit(mods,sets)
+            print('fiting done')
+            truemod.summary()
+            flower.testmod(np.array(image),actual,truemod)
     if mode == 's':
         return mygan
 

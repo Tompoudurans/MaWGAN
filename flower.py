@@ -9,8 +9,6 @@ from time import time
 import numpy as np
 import tensorflow as tf
 from sklearn import datasets
-tensorboard = tf.keras.callbacks.TensorBoard(log_dir ='simplog/{}'.format(time()))
-#import tensorflow.keras.regularizers as reg
 
 iris = datasets.load_iris()
 idat=iris.data
@@ -62,7 +60,7 @@ def simplefit(train,tar,mod,ep=3):
     mod.fit(train, tar, epochs=ep,callbacks=[tensorboard])
     return mod
 
-def testmod(test,actual,model):     
+def testmod(test,actual,model):
     res=model.predict(test)
     model.evaluate(test,actual)
     for i in range(len(actual)):
@@ -72,23 +70,10 @@ def testmod(test,actual,model):
             print(i,')',p,q,'v')
         else:
             print(i,')',p,q,'x')
-    
+
 def complexfit(mod,batch):
     for i in range(10):
         #mod.train_on_batch(batch[0][i],batch[1][i])
         mod.fit(batch[0][i], batch[1][i], epochs=3)
         print(mod.test_on_batch(batch[2][i],batch[3][i]))
     return mod
-
-
-sets = xref(idat,itar)
-print('seperating done')
-mods = make_model()
-print('model done')
-truemod = complexfit(mods,sets)
-print('fiting done')
-truemod.summary()
-
-
-#mod = tf.keras.models.load_model('name.HDF5')
-#mod.save('name.HDF5')
