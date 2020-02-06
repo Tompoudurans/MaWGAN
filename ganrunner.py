@@ -34,17 +34,38 @@ def run(mode):
     else:
         filepath = input('savepath? ')
     epochs = int(input('epochs? '))
+    if epochs < 50000 and mode == 'm':
+        print('epochs to small switch to normal')
+        mode = 'n'
     if epochs > 0:
         step = int(ceil(epochs*0.01))
         try:
-            mygan.train(datab,batch,epochs,step)
+            if mode == 'm':
+                while epochs > 0 :
+                    mygan.train(datab,batch,50000,1000)
+                    mygan.save_model(filepath)
+                    np.savetxt(filepath + str(epochs) +'_d_losses.txt' ,mygan.g_losses)
+                    np.savetxt(filepath + str(epochs) +'_g_losses.txt' ,mygan.g_losses)
+                    mygan.d_losses,mygan.g_losses = [],[]
+                    epochs = epochs - 50000
+                    if epochs < 50000 and epochs > 0:
+                        print('almost done')
+                        mygan.train(datab,batch,epochs,1000)
+                        break
+                    if epochs == 0:
+                        noise = np.random.normal(0, 1, (batch, z))
+                        generated_data = mygan.generator.predict(noise)
+                        print(generated_data)
+                        dagpolt(generated_data,datab)
+                        epochs = int(input('contenue?, enter n* of epochs'))
+            else:
+                mygan.train(datab,batch,epochs,step)
         except:
             if mode == 's':
                 return mygan
             else:
-                if mode != 'd':
-                    print('error try to save..')
-                    mygan.save_model(filepath)
+                print('error try to save..')
+                mygan.save_model(filepath)
                 return
         if mode == 's':
             return mygan
@@ -76,7 +97,7 @@ def run(mode):
     if mode == 's':
         return mygan
 
-mode = input('mode (s/d/n)')
+mode = input('mode?(s)pyder/(n)ormal/(m)arathon)')
 if mode == 's':
     gan = run(mode)
 else:
