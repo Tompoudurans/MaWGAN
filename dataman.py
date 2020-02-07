@@ -4,6 +4,8 @@ Created on Wed Oct 30 13:24:13 2019
 
 @author: user
 """
+import seaborn as sns
+import pandas as pd
 import numpy as np
 import random as rd
 import torch as tc
@@ -65,13 +67,21 @@ def acctest(mod,actual):
 def plotting(tenso,other):
     tenso = tenso.transpose(1,0)
     other = other.transpose(1,0)
-    print('petals')
-    mp.scatter(tenso[0],tenso[1])
-    mp.scatter(other[0],other[1])
-    mp.show()
-    print('sepals')
-    mp.scatter(tenso[2],tenso[3])
-    mp.scatter(other[2],other[3])
+    for x in range(len(tenso)):
+        for y in range(len(tenso)):
+            if x < y:
+                print(x,y)
+                mp.scatter(tenso[x],tenso[y])
+                mp.scatter(other[x],other[y])
+                mp.show()
+
+def dagpolt(x,y):
+    fake = pd.DataFrame(x)
+    real = pd.DataFrame(y)
+    fake['dataset'] = ['fake']*len(x)
+    real['dataset'] = ['real']*len(y)
+    result = pd.concat([real, fake])
+    sns.pairplot(result,hue='dataset')
     mp.show()
 
 def show_loss_progress(loss_discriminator,loss_generator):
