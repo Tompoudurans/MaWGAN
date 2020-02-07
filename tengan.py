@@ -91,7 +91,7 @@ class dataGAN():
 
     def train_discriminator(self, x_train, batch_size, using_generator):
 
-        clip_threshold = 0.01
+        clip_threshold = 0.1
         valid = np.ones((batch_size,1))
         fake = -np.ones((batch_size,1))
 
@@ -142,3 +142,8 @@ class dataGAN():
                 self.g_losses.append(g)
 
             self.epoch += 1
+
+    def save_model(self):
+        self.model.save('Wgan_model.h5')
+        self.discriminator.save('Wgan_discriminator.h5')
+        self.generator.save('Wgan_generator.h5')
