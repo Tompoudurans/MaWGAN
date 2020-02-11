@@ -13,12 +13,16 @@ def run(mode):
         database = datasets.load_wine()
     else:
         return
-    wt=input('with target? (t)')
+    wt=input('range of data? (lower_value) or with target? (t) ')
     if wt == 't':
         datab = []
         for i in range(len(database.target)):
             datab.append(np.append(database.data[i],database.target[i]))
         datab = np.array(datab)
+    elif wt.isdigit():
+        high = input('higher_value ')
+        datab = database.data[slice(int(wt),int(high))]
+        print(database.target[slice(int(wt),int(high))])
     else:
         datab = database.data
     batch = int(input('batch? '))
@@ -28,14 +32,17 @@ def run(mode):
     mygan = dataGAN(opti,z,no_field,batch)
     mygan.discriminator.summary()
     mygan.model.summary()
-    filepath = input("load filepath: (or n?)")
+    filepath = input("load filepath: (or n?) ")
     if filepath != 'n':
-        mygan.load_weights(filepath)
+        try:
+            mygan.load_weights(filepath)
+        except OSError:# as 'Unable to open file':
+            print('Error:404 file not found, starting from scrach')
     else:
         filepath = input('savepath? ')
     epochs = int(input('epochs? '))
     if epochs < 50000 and mode == 'm':
-        print('epochs to small switch to normal')
+        print('epochs to small switch to normal ')
         mode = 'n'
     if epochs > 0:
         step = int(ceil(epochs*0.01))
@@ -64,7 +71,7 @@ def run(mode):
             if mode == 's':
                 return mygan
             else:
-                print('error try to save..')
+                print('error has occured try to save..')
                 mygan.save_model(filepath)
                 return
         if mode == 's':
@@ -97,7 +104,7 @@ def run(mode):
     if mode == 's':
         return mygan
 
-mode = input('mode?(s)pyder/(n)ormal/(m)arathon)')
+mode = input('mode?(s)pyder/(n)ormal/(m)arathon) ')
 if mode == 's':
     gan = run(mode)
 else:

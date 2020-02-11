@@ -29,9 +29,7 @@ class dataGAN():
         a =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
         b =tkl.Dense(self.net_dim,activation = 'tanh')(a)
         c =tkl.Dense(self.net_dim,activation = 'tanh')(b)
-        d =tkl.Dense(self.net_dim,activation = 'tanh')(c)
-        e =tkl.Dense(self.net_dim,activation = 'tanh')(d)
-        f =tkl.Dense(self.data_dim,activation = 'linear')(e)#,kernel_regularizer=reg.l2(0.1)))
+        f =tkl.Dense(self.data_dim,activation = 'linear')(c)#,kernel_regularizer=reg.l2(0.1)))
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=f)
 
     #create the dicrinator network
@@ -40,9 +38,7 @@ class dataGAN():
         a =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
         b =tkl.Dense(self.net_dim,activation = tf.nn.relu)(a)
         c =tkl.Dense(self.net_dim,activation = tf.nn.relu)(b)
-        d =tkl.Dense(self.net_dim,activation = tf.nn.relu)(c)
-        e =tkl.Dense(self.net_dim,activation = tf.nn.relu)(d)
-        f =tkl.Dense(1,activation = 'sigmoid')(e)
+        f =tkl.Dense(1,activation = 'sigmoid')(c)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=f)
 
     def set_trainable(self, m, val):
