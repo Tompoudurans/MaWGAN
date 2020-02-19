@@ -12,12 +12,13 @@ import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser,z_dim,data_dim,net_dim):
+    def __init__(self,optimiser,z_dim,data_dim,net_dim,clipt):
         self.net_dim = net_dim
         self.data_dim =data_dim
         self.d_losses = []
         self.g_losses = []
         self.epoch = 0
+        self.clip = clipt
         self.optimiser = optimiser
         self.z_dim = z_dim
         self.make_discriminator()
@@ -91,7 +92,7 @@ class dataGAN():
 
     def train_discriminator(self, x_train, batch_size, using_generator):
 
-        clip_threshold = 0.1
+        clip_threshold = self.clip
         valid = np.ones((batch_size,1))
         fake = -np.ones((batch_size,1))
 

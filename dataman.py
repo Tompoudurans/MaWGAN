@@ -8,7 +8,6 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import random as rd
-import torch as tc
 import matplotlib.pyplot as mp
 
 def simplesplit(x,y,fac=10):
@@ -57,7 +56,7 @@ def testmodel(mod,actual):
 def acctest(mod,actual):
     count = 0
     for i in range(len(actual)):
-        p=tc.argmax(mod[i])
+        p=np.argmax(mod[i])
         q=actual[i]
         if p == q:
             count = count + 1
