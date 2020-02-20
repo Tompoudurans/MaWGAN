@@ -11,6 +11,9 @@ import tensorflow as tf
 import numpy as np
 import random as rd
 
+rd.seed(27)
+
+
 class dataGAN():
     def __init__(self,optimiser,z_dim,data_dim,net_dim,clipt):
         self.net_dim = net_dim
