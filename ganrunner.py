@@ -5,7 +5,7 @@ import numpy as np
 batch = 150
 iris = datasets.load_iris()
 no_field = len(iris.data[1])
-mygan = dataGAN('RMSprop',batch,no_field,batch,0.15)
+mygan = dataGAN('RMSprop',batch,no_field,batch,0.2)
 mygan.discriminator.summary()
 mygan.model.summary()
 try:
@@ -14,7 +14,7 @@ try:
     mygan.model.load_weights('Wgan_model.h5')
 except:
     print('no file found strating from scrach')
-mygan.train(iris.data,batch,50000,500)
+mygan.train(iris.data,batch,20000,500)
 noise = np.random.normal(0, 1, (150, 150))
 mygan.save_model()
 generated_data = mygan.generator.predict(noise)

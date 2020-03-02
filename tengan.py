@@ -30,6 +30,9 @@ class dataGAN():
 
 
     def wasserstein(self, y_true, y_pred):
+        #muti = y_true * y_pred
+        #s = K.sum(muti)
+        #return (muti/s)
         return -K.mean(y_true * y_pred)
 
     #create the genartaeer network
@@ -47,7 +50,7 @@ class dataGAN():
         a =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
         b =tkl.Dense(self.net_dim,activation = tf.nn.relu)(a)
         c =tkl.Dense(self.net_dim,activation = tf.nn.relu)(b)
-        d =tkl.Dense(1,activation = None)(b)
+        d =tkl.Dense(1,activation = None)(c)
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=d)
 
     def gradient_penalty_loss(self, y_true, y_pred, interpolated_samples):
@@ -144,7 +147,6 @@ class dataGAN():
                 print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [G loss: %.3f]" % (epoch, d[0], d[1], d[2], g))
                 self.d_losses.append(d)
                 self.g_losses.append(g)
-
             self.epoch += 1
 
     def save_model(self):
