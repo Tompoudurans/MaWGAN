@@ -56,10 +56,6 @@ def make_model():
     model.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
     return model
 
-def simplefit(train,tar,mod,ep=3):
-    mod.fit(train, tar, epochs=ep,callbacks=[tensorboard])
-    return mod
-
 def testmod(test,actual,model):
     res=model.predict(test)
     model.evaluate(test,actual)
@@ -71,9 +67,23 @@ def testmod(test,actual,model):
         else:
             print(i,')',p,q,'x')
 
-def complexfit(mod,batch):
-    for i in range(10):
-        #mod.train_on_batch(batch[0][i],batch[1][i])
-        mod.fit(batch[0][i], batch[1][i], epochs=3)
-        print(mod.test_on_batch(batch[2][i],batch[3][i]))
+
+def simplefit(train,tar,mod,ep=3):
+    mod.fit(train, tar, epochs=ep,callbacks=[tensorboard])
     return mod
+
+def stepfit(train,tar,mod,ep=3):
+    for i in range(len(ep)):
+        out = mod.train_on_batch(train,tar)
+        print(out)
+    return mod
+
+
+sets = simplesplit(idat,itar)
+print('seperating done')
+mods = make_model()
+print('model done')
+truemod = simplefit(sets[0],sets[1],mods,50)
+print('fiting done')
+truemod.summary()
+testmod(sets[2],sets[3],mods)
