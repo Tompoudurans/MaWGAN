@@ -35,6 +35,9 @@ class dataGAN():
         return (s/self.z_dim)
         #return -K.mean(y_true * y_pred)
 
+    def wasserstein_discriminator(self, fake, real):
+        return K.mean(fake)-K.mean(real)
+
     #create the genartaeer network
     def make_generator(self):
         gen_input = tkl.Input(shape=(self.z_dim,),name='gen_input')
