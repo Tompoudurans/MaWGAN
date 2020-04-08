@@ -3,14 +3,14 @@ import copy
 import numpy as np
 from six.moves import zip
 
-from keras import backend as K
-from keras.utils.generic_utils import serialize_keras_object
-from keras.utils.generic_utils import deserialize_keras_object
+from tensorflow.keras import backend as K
+#from tensorflow.keras.utils.generic_utils import serialize_keras_object
+#from tensorflow.keras.utils.generic_utils import deserialize_keras_object
 from keras.legacy import interfaces
 
 
 
-class CSGD(Optimizer):
+class CSGD():
     """Stochastic gradient descent optimizer.
     Includes support for momentum,
     learning rate decay, and Nesterov momentum.

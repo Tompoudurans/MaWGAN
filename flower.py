@@ -9,7 +9,7 @@ from time import time
 import numpy as np
 import tensorflow as tf
 from sklearn import datasets
-from grad_dec import CSGD
+#from gard_dec import CSGD
 
 iris = datasets.load_iris()
 idat=iris.data
@@ -54,7 +54,7 @@ def make_model():
     model.add(tf.keras.layers.Dense(33,activation = tf.nn.relu))#,kernel_regularizer=reg.l2(0.1)))
     model.add(tf.keras.layers.Dense(33,activation = tf.nn.relu))#,kernel_regularizer=reg.l2(0.1)))
     model.add(tf.keras.layers.Dense(3,activation = tf.nn.softmax))#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
-    model.compile(optimizer=CSGD,loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
+    model.compile(optimizer='SGD',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
     return model
 
 def testmod(test,actual,model):
@@ -84,7 +84,7 @@ sets = simplesplit(idat,itar)
 print('seperating done')
 mods = make_model()
 print('model done')
-truemod = stepfit(sets[0],sets[1],mods,50)
+truemod = stepfit(sets[0],sets[1],mods,500)
 print('fiting done')
 truemod.summary()
 testmod(sets[2],sets[3],mods)
