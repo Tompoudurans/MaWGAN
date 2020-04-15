@@ -3,7 +3,7 @@ from tengan import dataGAN
 from dataman import dagpolt,show_loss_progress
 from math import ceil
 import numpy as np
-import flower
+#import flower
 
 def run(mode):
     set = input("set? 'w'/'i' ")
@@ -60,7 +60,7 @@ def run(mode):
                         mygan.train(datab,batch,epochs,1000)
                         break
                     if epochs == 0:
-                        noise = np.random.normal(0, 1, (batch, z))
+                        noise = np.random.normal(0, 1, (batch))
                         generated_data = mygan.generator.predict(noise)
                         print(generated_data)
                         dagpolt(generated_data,datab)
@@ -69,43 +69,27 @@ def run(mode):
                 mygan.train(datab,batch,epochs,step)
         except:
             if mode == 's':
-                return mygan
+                return mygan,datab
             else:
                 print('error has occured try to save..')
                 mygan.save_model(filepath)
                 return
         if mode == 's':
-            return mygan
+            return mygan,datab
         else:
             mygan.save_model(filepath)
         show_loss_progress(mygan.d_losses,mygan.g_losses)
     samples = input('samples? ')
     for s in range(int(samples)):
-        noise = np.random.normal(0, 1, (batch, z))
+        noise = np.random.normal(0, 1, (z))
         generated_data = mygan.generator.predict(noise)
         print(generated_data)
         dagpolt(generated_data,datab)
-    if wt == 't':
-        test_for_con = input('test y/n')
-        if test_for_con == 'y':
-            image,actual = [],[]
-            for ge in range(len(generated_data)):
-                im,ac=np.split(generated_data[ge],[4])
-                image.append(im)
-                actual.append(int(round(ac[0])))
-            sets = flower.xref(database.data,database.target)
-            print('seperating done')
-            mods = flower.make_model()
-            print('model done')
-            truemod = flower.complexfit(mods,sets)
-            print('fiting done')
-            truemod.summary()
-            flower.testmod(np.array(image),actual,truemod)
     if mode == 's':
         return mygan
 
 mode = input('mode?(s)pyder/(n)ormal/(m)arathon) ')
 if mode == 's':
-    gan = run(mode)
+    gan,datab = run(mode)
 else:
     run(mode)
