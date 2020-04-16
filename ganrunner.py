@@ -1,6 +1,7 @@
 from sklearn import datasets
 from tengan import dataGAN
 from dataman import dagpolt,show_loss_progress
+from fid import calculate_fid
 import numpy as np
 batch = 150
 iris = datasets.load_iris()
@@ -14,10 +15,11 @@ try:
     mygan.model.load_weights('Wgan_model.h5')
 except:
     print('no file found strating from scrach')
-mygan.train(iris.data,batch,5000,100)
+mygan.train(iris.data,batch,500,100)
 noise = np.random.normal(0, 1, (150, 150))
 mygan.save_model()
 generated_data = mygan.generator.predict(noise)
 print(generated_data)
+calculate_fid(generated_data,iris.data)
 dagpolt(generated_data,iris.data)
 show_loss_progress(mygan.d_losses,mygan.g_losses)
