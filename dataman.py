@@ -8,7 +8,6 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import random as rd
-#mport torch as tc
 import matplotlib.pyplot as mp
 
 def simplesplit(x,y,fac=10):
@@ -53,16 +52,6 @@ def testmodel(mod,actual):
         else:
             print(i,')',p,q,'x')
     print(count,'/',len(actual))
-
-#def acctest(mod,actual):
-#    count = 0
-#    for i in range(len(actual)):
-#        p=tc.argmax(mod[i])
-#        q=actual[i]
-#        if p == q:
-#            count = count + 1
-#    l = len(actual)
-#    return str(count) + '/'+ str(l)
 
 def plotting(tenso,other):
     tenso = tenso.transpose(1,0)

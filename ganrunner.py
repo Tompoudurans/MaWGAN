@@ -3,6 +3,7 @@ from tengan import dataGAN
 from dataman import dagpolt,show_loss_progress
 from math import ceil
 import numpy as np
+from fid import calculate_fid
 #import flower
 
 def run(mode):
@@ -85,6 +86,7 @@ def run(mode):
         generated_data = mygan.generator.predict(noise)
         print(generated_data)
         dagpolt(generated_data,datab)
+        calculate_fid(generated_data,datab)
     if mode == 's':
         return mygan
 
