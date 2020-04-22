@@ -61,7 +61,7 @@ def run(mode):
                         mygan.train(datab,batch,epochs,1000)
                         break
                     if epochs == 0:
-                        noise = np.random.normal(0, 1, (batch))
+                        noise = np.random.normal(0, 1, (z,batch))
                         generated_data = mygan.generator.predict(noise)
                         print(generated_data)
                         dagpolt(generated_data,datab)
@@ -82,7 +82,7 @@ def run(mode):
         show_loss_progress(mygan.d_losses,mygan.g_losses)
     samples = input('samples? ')
     for s in range(int(samples)):
-        noise = np.random.normal(0, 1, (z))
+        noise = np.random.normal(0, 1, (z,batch))
         generated_data = mygan.generator.predict(noise)
         print(generated_data)
         dagpolt(generated_data,datab)
