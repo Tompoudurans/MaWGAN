@@ -4,7 +4,7 @@ from dataman import dagpolt,show_loss_progress
 from math import ceil
 import numpy as np
 from fid import calculate_fid
-#import flower
+import flower
 
 def run(mode):
     set = input("set? 'w'/'i' ")

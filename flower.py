@@ -9,16 +9,17 @@ from time import time
 import numpy as np
 import tensorflow as tf
 from sklearn import datasets
+#import pytest
 #from gard_dec import CSGD
 
 iris = datasets.load_iris()
 idat=iris.data
 itar=iris.target
 
-
 def simplesplit(x,y):
     size=len(x)
     z = np.split(rd.sample(range(size),size),[int(size*(1-10/100))])
+    print(z)
     return [x[z[0]],y[z[0]],x[z[1]],y[z[1]]]
 
 def xref(bas,h):
@@ -79,12 +80,15 @@ def stepfit(train,tar,mod,ep=3):
         print(out)
     return mod
 
+if __name__ != '__main__':
+    print('hello')
 
-sets = simplesplit(idat,itar)
-print('seperating done')
-mods = make_model()
-print('model done')
-truemod = stepfit(sets[0],sets[1],mods,500)
-print('fiting done')
-truemod.summary()
-testmod(sets[2],sets[3],mods)
+def run(idat,itar):
+    sets = simplesplit(idat,itar)
+    print('seperating done')
+    mods = make_model()
+    print('model done')
+    truemod = simplefit(sets[0],sets[1],mods,500)
+    print('fiting done')
+    truemod.summary()
+    testmod(sets[2],sets[3],mods)
