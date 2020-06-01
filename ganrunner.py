@@ -4,9 +4,11 @@ from dataman import dagpolt,show_loss_progress
 from fid import calculate_fid
 import numpy as np
 batch = 150
+epoch = int(input("epoch?"))
+clip = float(input("clip?"))
 iris = datasets.load_iris()
 no_field = len(iris.data[1])
-mygan = dataGAN('RMSprop',batch,no_field,batch,0.2)
+mygan = dataGAN('RMSprop',batch,no_field,batch,clip)
 mygan.discriminator.summary()
 mygan.model.summary()
 try:
@@ -15,7 +17,7 @@ try:
     mygan.model.load_weights('Wgan_model.h5')
 except:
     print('no file found strating from scrach')
-mygan.train(iris.data,batch,50,10)
+mygan.train(iris.data,batch,epoch,10)
 mygan.save_model()
 #print(generated_data)
 for i in range(3):
