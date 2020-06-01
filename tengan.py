@@ -61,21 +61,23 @@ class dataGAN():
         self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=final_layer)
 
     def set_trainable(self, m, val):
+        """
+        freeze and unfrezes weights
+        """
         m.trainable = val
         for l in m.layers:
             l.trainable = val
 
     def build_adversarial(self):
-
-        ### COMPILE DISCRIMINATOR
+        """complie the discriminator and
+        then compile a GAN model that is used that is used for tainning the generator
+        it conciste of the generator directly outputed into a frozen discriminator. """
 
         self.discriminator.compile(
         optimizer=self.optimiser
         , loss = 'binary_crossentropy'
         ,  metrics = ['accuracy']
         )
-
-        ### COMPILE THE FULL GAN
 
         self.set_trainable(self.discriminator, False)#temp freeze the dis wight so it does not efect the dis network
         #-------------------------------------------------
@@ -85,19 +87,10 @@ class dataGAN():
         self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
         self.set_trainable(self.discriminator, True)
 
-    def train_discriminator(self, x_train, batch_size, using_generator):
-
+    def train_discriminator(self, x_train, true_imgs, using_generator):
+        """this train discriminator once """
         valid = np.ones((batch_size,1))
         fake = np.zeros((batch_size,1))
-
-        if using_generator:
-            true_imgs = next(x_train)[0]
-            if true_imgs.shape[0] != batch_size:
-                true_imgs = next(x_train)[0]
-        else:
-            idx = np.random.randint(0, x_train.shape[0], batch_size)
-            true_imgs = x_train[idx]
-
     #---------------------------------------------
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
     #-----------------------------------------------
@@ -122,7 +115,7 @@ class dataGAN():
 #-----------
         for epoch in range(epochs):
 #------------
-            d = self.train_discriminator(x_train, batch_size, using_generator)
+            d = self.train_discriminator(x_train, batch_size)
             g = self.train_generator(batch_size)
 
             if epoch % print_every_n_batches == 0:
