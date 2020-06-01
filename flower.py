@@ -80,7 +80,7 @@ def stepfit(train,tar,mod,ep=3):
         print(out)
     return mod
 
-if __name__ != '__main__':
+if __name__ == '__main__':
     print('hello')
 
 def run(idat,itar):

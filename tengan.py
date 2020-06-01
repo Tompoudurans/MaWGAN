@@ -11,35 +11,54 @@ import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser,z_dim,data_dim,net_dim):
+    def __init__(self,optimiser,z_dim,data_dim,net_dim,number_of_layers):
+        """
+        This bulid the gan model so it can be trained, the differrent varible are
+        net_dim is number of nuerons per layer,
+        data_dim is the number of flied in the database,
+        z_dim is the length of noise vector that is used to gentrate data
+        and optimiser is the optimiser used for the whole gan.
+        """
         self.net_dim = net_dim
-        self.data_dim =data_dim
+        self.data_dim = data_dim
         self.d_losses = []
         self.g_losses = []
         self.epoch = 0
         self.optimiser = optimiser
         self.z_dim = z_dim
-        self.make_discriminator()
-        self.make_generator()
+        self.make_discriminator(number_of_layers)
+        self.make_generator(number_of_layers)
         self.build_adversarial()
 
     #create the genartaeer network
-    def make_generator(self):
+    def make_generator(self,no_of_layer):
+        """
+        makes a generator network with 'no_of_layer' of layers and 'net_dim' of nodes per layer
+        it takes in a vector of 'z_dim' lenght and output a vector of data that is 'data_dim' long
+        """
         gen_input = tkl.Input(shape=(self.z_dim,),name='gen_input')
-        a =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
-        b =tkl.Dense(self.net_dim,activation = 'tanh')(a)
-        c =tkl.Dense(self.net_dim,activation = 'tanh')(b)
-        f =tkl.Dense(self.data_dim,activation = 'linear')(c)#,kernel_regularizer=reg.l2(0.1)))
-        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=f)
+        gen_layer =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
+        no_of_layer -= 2
+        while no_of_layer > 1:
+            gen_layer =tkl.Dense(self.net_dim,activation = 'tanh')(gen_layer)
+            no_of_layer -= 1
+        final_layer =tkl.Dense(self.data_dim,activation = 'linear')(gen_layer)#,kernel_regularizer=reg.l2(0.1)))
+        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=final_layer)
 
     #create the dicrinator network
-    def make_discriminator(self):
+    def make_discriminator(self,no_of_layer):
+        """
+        makes a discriminator network with 'no_of_layer' of layers and 'net_dim' of nodes per layer
+        it takes in a vector of data that is 'data_dim' long and output a probality of the data being real or fake
+        """
         dis_input = tkl.Input(shape=(self.data_dim,),name='dis_input')
-        a =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
-        b =tkl.Dense(self.net_dim,activation = tf.nn.relu)(a)
-        c =tkl.Dense(self.net_dim,activation = tf.nn.relu)(b)
-        f =tkl.Dense(1,activation = 'sigmoid')(c)
-        self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=f)
+        dis_layer =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
+        no_of_layer -= 2
+        while no_of_layer > 1:
+            dis_layer =tkl.Dense(self.net_dim,activation = 'tanh')(dis_layer)
+            no_of_layer -= 1
+        final_layer =tkl.Dense(1,activation = 'sigmoid')(dis_layer)
+        self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=final_layer)
 
     def set_trainable(self, m, val):
         m.trainable = val

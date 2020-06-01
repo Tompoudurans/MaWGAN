@@ -13,25 +13,16 @@ def run(mode):
     elif set == 'w':
         database = datasets.load_wine()
     else:
-        return
-    wt=input('range of data? (lower_value) or with target? (t) ')
-    if wt == 't':
-        datab = []
-        for i in range(len(database.target)):
-            datab.append(np.append(database.data[i],database.target[i]))
-        datab = np.array(datab)
-    elif wt.isdigit():
-        high = input('higher_value ')
-        datab = database.data[slice(int(wt),int(high))]
-        print(database.target[slice(int(wt),int(high))])
-    else:
-        datab = database.data
+        return None
+    datab = database.data
     batch = int(input('batch? '))
     z = batch
     no_field = len(datab[1])
     opti = input('opti? ')
-    mygan = dataGAN(opti,z,no_field,batch)
+    number_of_layers = int(input('layers?'))
+    mygan = dataGAN(opti,z,no_field,batch,number_of_layers)
     mygan.discriminator.summary()
+    mygan.generator.summary()
     mygan.model.summary()
     filepath = input("load filepath: (or n?) ")
     if filepath != 'n':
