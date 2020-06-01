@@ -19,7 +19,7 @@ def run(mode):
     z = batch
     no_field = len(datab[1])
     opti = input('opti? ')
-    number_of_layers = int(input('layers?'))
+    number_of_layers = int(input('layers? '))
     mygan = dataGAN(opti,z,no_field,batch,number_of_layers)
     mygan.discriminator.summary()
     mygan.generator.summary()
@@ -38,34 +38,26 @@ def run(mode):
         mode = 'n'
     if epochs > 0:
         step = int(ceil(epochs*0.01))
-        try:
-            if mode == 'm':
-                while epochs > 0 :
-                    mygan.train(datab,batch,50000,1000)
-                    mygan.save_model(filepath)
-                    np.savetxt(filepath + str(epochs) +'_d_losses.txt' ,mygan.g_losses)
-                    np.savetxt(filepath + str(epochs) +'_g_losses.txt' ,mygan.g_losses)
-                    mygan.d_losses,mygan.g_losses = [],[]
-                    epochs = epochs - 50000
-                    if epochs < 50000 and epochs > 0:
-                        print('almost done')
-                        mygan.train(datab,batch,epochs,1000)
-                        break
-                    if epochs == 0:
-                        noise = np.random.normal(0, 1, (z,batch))
-                        generated_data = mygan.generator.predict(noise)
-                        print(generated_data)
-                        dagpolt(generated_data,datab)
-                        epochs = int(input('contenue?, enter n* of epochs'))
-            else:
-                mygan.train(datab,batch,epochs,step)
-        except:
-            if mode == 's':
-                return mygan,datab
-            else:
-                print('error has occured try to save..')
+        if mode == 'm':
+            while epochs > 0 :
+                mygan.train(datab,batch,50000,1000)
                 mygan.save_model(filepath)
-                return
+                np.savetxt(filepath + str(epochs) +'_d_losses.txt' ,mygan.g_losses)
+                np.savetxt(filepath + str(epochs) +'_g_losses.txt' ,mygan.g_losses)
+                mygan.d_losses,mygan.g_losses = [],[]
+                epochs = epochs - 50000
+                if epochs < 50000 and epochs > 0:
+                    print('almost done')
+                    mygan.train(datab,batch,epochs,1000)
+                    break
+                if epochs == 0:
+                    noise = np.random.normal(0, 1, (z,batch))
+                    generated_data = mygan.generator.predict(noise)
+                    print(generated_data)
+                    dagpolt(generated_data,datab)
+                    epochs = int(input('contenue?, enter n* of epochs'))
+        else:
+            mygan.train(datab,batch,epochs,step)
         if mode == 's':
             return mygan,datab
         else:

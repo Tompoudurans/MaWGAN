@@ -87,7 +87,7 @@ class dataGAN():
         self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
         self.set_trainable(self.discriminator, True)
 
-    def train_discriminator(self, x_train, true_imgs, using_generator):
+    def train_discriminator(self, true_imgs, batch_size):
         """this train discriminator once """
         valid = np.ones((batch_size,1))
         fake = np.zeros((batch_size,1))
