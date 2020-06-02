@@ -103,6 +103,7 @@ class dataGAN():
         return [d_loss, d_loss_real, d_loss_fake, d_acc, d_acc_real, d_acc_fake]
 
     def train_generator(self, batch_size):
+        """this train generator once """
         valid = np.ones((batch_size,1))
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
         return self.model.train_on_batch(noise, valid)

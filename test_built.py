@@ -15,7 +15,7 @@ testgan = dataGAN('adam', noise_vector, data, nodes, layers)
 
 def test_discriminator_layers():
     assert len(testgan.discriminator.layers) == layers
-    
+
 def test_gentrator_layers():
     assert len(testgan.generator.layers) == layers
 
@@ -24,16 +24,21 @@ def test_discriminator_input():
 
 def test_gentrator_input():
     assert testgan.generator.input_shape == (None, noise_vector)
-    
+
 def test_discriminator_output():
     assert testgan.discriminator.output_shape == (None, 1)
 
 def test_gentrator_output():
     assert testgan.generator.output_shape == (None, data)
-    
+
 def test_discriminator_hidden():
     assert testgan.discriminator.layers[1].output_shape == (None, nodes)
 
 def test_gentrator_hidden():
     assert testgan.generator.layers[1].output_shape == (None, nodes)
-    
+
+def test_model_input():
+    assert testgan.model.input_shape == (None, noise_vector)
+
+def test_model_output():
+    assert testgan.model.output_shape == (None, 1)
