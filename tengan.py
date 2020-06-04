@@ -28,7 +28,7 @@ class dataGAN():
         self.d_losses = []
         self.g_losses = []
         self.epoch = 0
-        self.clip = weight_clip
+        self.clip = weight_cliping
         self.optimiser = optimiser
         self.z_dim = z_dim
         self.make_critc(number_of_layers)
@@ -107,7 +107,7 @@ class dataGAN():
         self.model.compile(optimizer=self.optimiser, loss=self.wasserstein)
         self.set_trainable(self.critic, True)
 
-    def train_critc(self, x_train, batch_size):
+    def train_critic(self, x_train, batch_size):
         """
         This trains the critc once by creating a set of fake_data and
         traning them aganist the real_data, then the wieght are cliped
@@ -119,7 +119,7 @@ class dataGAN():
         idx = np.random.randint(0, x_train.shape[0], batch_size)
         true_imgs = x_train[idx]
         #create noise vector z
-        noise = np.random.normal(0, 1, (batch_size, self.z_dim))-
+        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
         gen_imgs = self.generator.predict(noise)
         d_loss_real =   self.critic.train_on_batch(true_imgs, valid)
         d_loss_fake =   self.critic.train_on_batch(gen_imgs, fake)
@@ -133,10 +133,10 @@ class dataGAN():
         return [d_loss, d_loss_real, d_loss_fake]
 
     def train_generator(self, batch_size):
-                """
+        """
         This trains the generator once by creating a set of fake data and
-         uses the critic score to train on
-         """
+        uses the critic score to train on
+        """
         valid = np.ones((batch_size,1))
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
         return self.model.train_on_batch(noise, valid)
@@ -151,7 +151,7 @@ class dataGAN():
         """
         for epoch in range(epochs):
             for n in range(critic_round):
-                d = self.train_critc(x_train, batch_size)
+                d = self.train_critic(x_train, batch_size)
             g = self.train_generator(batch_size)
 
             if epoch % print_every_n_batches == 0:
