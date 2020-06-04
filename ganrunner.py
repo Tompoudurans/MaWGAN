@@ -6,9 +6,10 @@ import numpy as np
 batch = 150
 epoch = int(input("epoch?"))
 clip = float(input("clip?"))
+number_of_layers = int(input("layers?"))
 iris = datasets.load_iris()
 no_field = len(iris.data[1])
-mygan = dataGAN('RMSprop',batch,no_field,batch,clip)
+mygan = dataGAN('RMSprop',batch,no_field,batch,clip,number_of_layers)
 mygan.discriminator.summary()
 mygan.model.summary()
 try:
