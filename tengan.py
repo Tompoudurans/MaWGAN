@@ -30,7 +30,6 @@ class dataGAN():
         self.make_generator(number_of_layers)
         self.build_adversarial()
 
-    #create the generator network
     def make_generator(self,number_of_layers):
         """
         This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
@@ -45,7 +44,6 @@ class dataGAN():
         final_layer =tkl.Dense(self.data_dim,activation = 'linear')(gen_layer)
         self.generator = tf.keras.models.Model(inputs=gen_input,outputs=final_layer)
 
-    #create the discriminator network
     def make_discriminator(self,number_of_layers):
         """
         This makes a discriminator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
@@ -78,7 +76,6 @@ class dataGAN():
         self.discriminator.compile(optimizer=self.optimiser,
                                    loss = 'binary_crossentropy',
                                    metrics = ['accuracy'])
-
         #temporarily freezes the discriminator weight so it does not affect the discriminator network
         self.set_trainable(self.discriminator, False)
         #creating the GAN model
@@ -92,8 +89,8 @@ class dataGAN():
     def train_discriminator(self, real_data, batch_size):
         """
         This trains the discriminator once by creating a set of fake_data and
-         traning them aganist the real_data
-         """
+        traning them aganist the real_data
+        """
         # create the labels
         valid = np.ones((batch_size,1))
         fake = np.zeros((batch_size,1))
@@ -106,14 +103,13 @@ class dataGAN():
         d_loss_fake, d_acc_fake =   self.discriminator.train_on_batch(fake_data, fake)
         d_loss =  0.5 * (d_loss_real + d_loss_fake)
         d_acc = 0.5 * (d_acc_real + d_acc_fake)
-
         return [d_loss, d_loss_real, d_loss_fake, d_acc, d_acc_real, d_acc_fake]
 
     def train_generator(self, batch_size):
         """
         This trains the generator once by creating a set of fake data and
-         uses the dicrimator score to train on
-         """
+        uses the dicrimator score to train on
+        """
         valid = np.ones((batch_size,1))
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
         return self.model.train_on_batch(noise, valid)
@@ -123,17 +119,15 @@ class dataGAN():
               x_train,
               batch_size,
               epochs,
-              every_n_batches = 50):
+              every_n_batches=50):
         """
         This trains the GAN by alternating between training the discriminator and training the generator once
         in each epoch on the dataset x_train which has a length of batch_size.
         It will print and record the loss of the generator and discriminator every_n_batches.
         """
         for epoch in range(epochs):
-
             d = self.train_discriminator(x_train, batch_size)
             g = self.train_generator(batch_size)
-
             if epoch % every_n_batches == 0:
                 print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
                 self.d_losses.append(d)
