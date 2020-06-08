@@ -11,16 +11,16 @@ import numpy as np
 import random as rd
 
 class dataGAN():
-    def __init__(self,optimiser,z_dim,data_dim,net_dim,number_of_layers):
+    def __init__(self,optimiser,noise_dim,data_dim,net_dim,number_of_layers):
         """
         This builds the GAN model so it can be trained. The different variables are:
         'optimiser' which is the optimiser used for the whole GAN
-        z_dim which is the length of the noise vector that is used to generate data,
+        noise_dim which is the length of the noise vector that is used to generate data,
         data_dim which is the number of fields in the database,
         net_dim which is the number of neurons per layer.
         """
         self.optimiser = optimiser
-        self.z_dim = z_dim
+        self.noise_dim = noise_dim
         self.data_dim = data_dim
         self.net_dim = net_dim
         self.d_losses = []
@@ -33,9 +33,9 @@ class dataGAN():
     def make_generator(self,number_of_layers):
         """
         This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
-        It takes in a vector of 'z_dim' length and outputs a vector of data that is 'data_dim' long.
+        It takes in a vector of 'noise_dim' length and outputs a vector of data that is 'data_dim' long.
         """
-        gen_input = tkl.Input(shape=(self.z_dim,),name='gen_input')
+        gen_input = tkl.Input(shape=(self.noise_dim,),name='gen_input')
         gen_layer =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
         number_of_layers -= 2
         while number_of_layers > 1:
@@ -79,7 +79,7 @@ class dataGAN():
         #temporarily freezes the discriminator weight so it does not affect the discriminator network
         self.set_trainable(self.discriminator, False)
         #creating the GAN model
-        model_input = tkl.Input(shape=(self.z_dim,), name='model_input')
+        model_input = tkl.Input(shape=(self.noise_dim,), name='model_input')
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
         self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
@@ -95,7 +95,7 @@ class dataGAN():
         valid = np.ones((batch_size,1))
         fake = np.zeros((batch_size,1))
         #create noise vector z
-        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
+        noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
         fake_data = self.generator.predict(noise)
         #calculate value function for real
         d_loss_real, d_acc_real =   self.discriminator.train_on_batch(real_data, valid)
@@ -111,7 +111,7 @@ class dataGAN():
         uses the dicrimator score to train on
         """
         valid = np.ones((batch_size,1))
-        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
+        noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
         return self.model.train_on_batch(noise, valid)
 
 
