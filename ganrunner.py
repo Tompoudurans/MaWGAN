@@ -4,14 +4,14 @@ from dataman import dagpolt,show_loss_progress
 from math import ceil
 import numpy as np
 from fid import calculate_fid
-import flower
+from data.prepocessing import import_penguin
 
 def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
     """
-    In marathon mode the gan is train for 50000 and subtracted from the number of epochs left
-    then the gan model and the loss tracting is saved,
-    the current loss traking is removed from ram and a new set of traing starts again
-    at epoch 0 the result of the trainning is displayed and from there you can continue training if you wish.
+    In marathon mode the GAN is trained for 50000 epochs and subtracted from the number of epochs left.
+    Then the GAN model and the loss tracking is saved,
+    the current loss tracking is removed from ram and a new set of training starts again
+    at epoch 0. The result of the training is displayed and from there you can continue training if you wish.
     """
     while epochs > 0 :
         mygan.train(database,batch,50000,1000)
@@ -30,27 +30,30 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
             print(generated_data)
             dagpolt(generated_data,database)
             calculate_fid(generated_data,database)
-            epochs = int(input('contenue?, enter n* of epochs'))
+            epochs = int(input('continue?, enter n* of epochs'))
 
 def run(mode):
     """
-    goes throught and store all the variables of dataGANclass
-    then creates the gan load wieght if needed and train the GAN
-    the option are fully expained on the README file
+    This goes through and stores all the variables of dataGANclass
+    then creates the GAN load weight if needed and trains the GAN.
+    The options are fully explained on the README file.
     """
     #select dataset
-    set = input("set? 'w'/'i' ")
+    set = input("set? 'w'/'i/'p' ")
     if set == 'i':
         database = datasets.load_iris()
+        database = database.data
     elif set == 'w':
         database = datasets.load_wine()
+        database = database.data
+    elif set == 'p':
+        database = import_penguin('data/penguins_size.csv')
+        database = database.to_numpy()
     else:
         return None
     #estract data
-    database = database.data
-    batch = int(input('batch? '))
-    #to not over complicate things, the noise_dim same as the batch size
-    noise_dim = batch
+    batch = int(input('batch size? '))
+    noise_dim = int(input('noise size? '))
     no_field = len(database[1])
     opti = input('opti? ')
     number_of_layers = int(input('layers? '))
@@ -66,13 +69,13 @@ def run(mode):
         try:
             mygan.load_weights(filepath)
         except OSError:# as 'Unable to open file':
-            print('Error:404 file not found, starting from scrach')
+            print('Error:404 file not found, starting from scratch')
     else:
         filepath = input('savepath? ')
     epochs = int(input('epochs? '))
     #marathon mode is not suitable when running less that 50000 epochs
     if epochs < 50000 and mode == 'm':
-        print('epochs to small switch to normal ')
+        print('epochs too small, switch to normal ')
         mode = 'n'
     if epochs > 0:
         step = int(ceil(epochs*0.01))
