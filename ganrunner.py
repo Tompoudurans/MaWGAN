@@ -38,7 +38,7 @@ def run(mode):
     then creates the GAN load weight if needed and trains the GAN.
     The options are fully explained on the README file.
     """
-    #select dataset
+    #select datasettrained = abs(trained_fake - dataset)trained = abs(trained_fake - dataset)
     set = input("set? 'w'/'i/'p' ")
     if set == 'i':
         database = datasets.load_iris()
@@ -48,7 +48,6 @@ def run(mode):
         database = database.data
     elif set == 'p':
         database = import_penguin('data/penguins_size.csv')
-        database = database.to_numpy()
     else:
         return None
     #estract data
@@ -92,7 +91,7 @@ def run(mode):
         show_loss_progress(mygan.d_losses,mygan.g_losses)
     samples = input('samples? ')
     for s in range(int(samples)):
-        noise = np.random.normal(0, 1, (noise_dim,batch))
+        noise = np.random.normal(0, 1, (batch,noise_dim))
         generated_data = mygan.generator.predict(noise)
         print(generated_data)
         dagpolt(generated_data,database)
