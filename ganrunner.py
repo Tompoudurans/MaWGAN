@@ -47,7 +47,7 @@ def run(mode):
         database = datasets.load_wine()
         database = database.data
     elif set == 'p':
-        database = import_penguin('data/penguins_size.csv')
+        database = import_penguin('data/penguins_size.csv',False)
     else:
         return None
     #estract data
