@@ -35,12 +35,17 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
 
 def run(mode):
     """
-    This goes through and stores all the variables of dataGANclass
-    then creates the GAN load weight if needed and trains the GAN.
+    This goes through and stores all the variables of GAN class
+    then creates the GAN
     The options are fully explained on the README file.
     """
-    #select datasettrained = abs(trained_fake - dataset)trained = abs(trained_fake - dataset)
-    sets = input("set? 'w'/'i'/'p' ")
+    #select dataset
+    filepath = input("load filepath: (or n?) ")
+    if filepath != 'n':
+        opti,noise_dim,no_field,batch,number_of_layers,clip_threshold = load_model(filepath)
+    else:
+        filepath = input('savepath? ')
+        opti,noise_dim,no_field,batch,number_of_layers,clip_threshold = setup(filepath)
     if sets == 'i':
         database = datasets.load_iris()
         database = database.data
@@ -51,14 +56,6 @@ def run(mode):
         database,mean,std = import_penguin('data/penguins_size.csv',False)
     else:
         return None
-    #estract data
-    batch = int(input('batch size? '))
-    noise_dim = int(input('noise size? '))
-    no_field = len(database[1])
-    opti = input('opti? ')
-    number_of_layers = int(input('layers? '))
-    #create the GAN from the dataGAN
-    use_model = input("model?: (w)gan /(g)an ")
     if use_model == 'g':
         mygan = dataGAN(opti,noise_dim,no_field,batch,number_of_layers)
         mygan.discriminator.summary()
@@ -71,15 +68,8 @@ def run(mode):
     #print the stucture of the gan
     mygan.generator.summary()
     mygan.model.summary()
-    #loads weights
-    filepath = input("load filepath: (or n?) ")
     if filepath != 'n':
-        try:
-            mygan.load_weights(filepath)
-        except OSError:# as 'Unable to open file':
-            print('Error:404 file not found, starting from scratch')
-    else:
-        filepath = input('savepath? ')
+        mygan.load_weights(filepath)
     epochs = int(input('epochs? '))
     #marathon mode is not suitable when running less that 50000 epochs
     if epochs < 50000 and mode == 'm':
@@ -109,6 +99,32 @@ def run(mode):
         calculate_fid(generated_data.value,database.value)
     if mode == 's':
         return mygan
+
+def load_model(filepath):
+    try:
+        open(filepath + "parameters.h5","r")
+    except OSError:# as 'Unable to open file':
+        print('Error:404 file not found, starting from scratch')
+        filepath = 'n'
+    return parameters,filepath
+
+def setup(filepath):
+    sets = input("set? 'w'/'i'/'p' ")
+    batch = int(input('batch size? '))
+    noise_dim = int(input('noise size? '))
+    no_field = len(database[1])
+    opti = input('opti? ')
+    number_of_layers = int(input('layers? '))
+    #create the GAN from the dataGAN
+    use_model = input("model?: (w)gan /(g)an ")
+    if use_model == 'w':
+        clip_threshold = float(input('clip threshold? '))
+    else:
+        clip_threshold = None
+    parameters = [opti,noise_dim,no_field,batch,number_of_layers,clip_threshold]
+    save_pra = open(filepath + "parameters.h5","a")
+    save_pra.write(parameters)
+    return opti,noise_dim,no_field,batch,number_of_layers,clip_threshold
 
 mode = input('mode?(s)pyder/(n)ormal/(m)arathon) ')
 if mode == 's':

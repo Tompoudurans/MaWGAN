@@ -157,10 +157,10 @@ class wGAN():
                 self.g_losses.append(g)
             self.epoch += 1
 
-    def save_model(self):
+    def save_model(self,f):
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.save('Wgan_model.h5')
-        self.critic.save('Wgan_critic.h5')
-        self.generator.save('Wgan_generator.h5')
+        self.model.save(f + 'model.h5')
+        self.critic.save(f + 'critic.h5')
+        self.generator.save(f + 'generator.h5')
