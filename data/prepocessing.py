@@ -11,3 +11,6 @@ def import_penguin(file,use_categorical):
         penguin = penguin.drop(columns=['sex','species','island'])
     penguin = penguin.to_numpy('float')
     return penguin
+
+def normalize(dataset,mean,max):
+    pass

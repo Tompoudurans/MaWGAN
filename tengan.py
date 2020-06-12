@@ -8,7 +8,7 @@ from tensorflow.keras.models import Model
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
 import numpy as np
-import random as rd
+#import random as rd
 
 class dataGAN():
     def __init__(self,optimiser,noise_dim,data_dim,net_dim,number_of_layers):
@@ -67,7 +67,7 @@ class dataGAN():
             l.trainable = val
 
     def build_adversarial(self):
-        """
+        """self.shifts = shifts
         This compiles the discriminator and
         then compiles a GAN model that is used for training the generator
         it consists of the generator directly outputed into a frozen discriminator
@@ -86,6 +86,13 @@ class dataGAN():
         #Unfreezes the weights
         self.set_trainable(self.discriminator, True)
 
+    def create_fake(self,batch_size):
+        noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
+        fake_data = self.generator.predict(noise)
+        data = self.shifts + fake_data
+        return data
+
+
     def train_discriminator(self, real_data, batch_size):
         """
         This trains the discriminator once by creating a set of fake_data and
@@ -94,11 +101,13 @@ class dataGAN():
         # create the labels
         valid = np.ones((batch_size,1))
         fake = np.zeros((batch_size,1))
+        #sample batch_size from the whole data set
+        idx = np.random.randint(0, real_data.shape[0], batch_size)
+        true_data = real_data[idx]
         #create noise vector z
-        noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
-        fake_data = self.generator.predict(noise)
+        fake_data = self.create_fake(batch_size)
         #calculate value function for real
-        d_loss_real, d_acc_real =   self.discriminator.train_on_batch(real_data, valid)
+        d_loss_real, d_acc_real =   self.discriminator.train_on_batch(true_data, valid)
         #calculate value function for fake
         d_loss_fake, d_acc_fake =   self.discriminator.train_on_batch(fake_data, fake)
         d_loss =  0.5 * (d_loss_real + d_loss_fake)

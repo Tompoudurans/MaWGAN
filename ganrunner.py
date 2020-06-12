@@ -1,10 +1,10 @@
 from sklearn import datasets
 from tengan import dataGAN
-from dataman import dagpolt,show_loss_progress
+from data.dataman import dagpolt
 from math import ceil
 import numpy as np
 from fid import calculate_fid
-from data.prepocessing import import_penguin
+from data.prepocessing import import_penguin,unnormalize
 
 def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
     """
@@ -39,6 +39,7 @@ def run(mode):
     The options are fully explained on the README file.
     """
     #select datasettrained = abs(trained_fake - dataset)trained = abs(trained_fake - dataset)
+    shifts = [None]
     set = input("set? 'w'/'i/'p' ")
     if set == 'i':
         database = datasets.load_iris()
@@ -48,6 +49,7 @@ def run(mode):
         database = database.data
     elif set == 'p':
         database = import_penguin('data/penguins_size.csv',False)
+        shifts = np.array(shifts)
     else:
         return None
     #estract data
@@ -91,8 +93,7 @@ def run(mode):
         show_loss_progress(mygan.d_losses,mygan.g_losses)
     samples = input('samples? ')
     for s in range(int(samples)):
-        noise = np.random.normal(0, 1, (batch,noise_dim))
-        generated_data = mygan.generator.predict(noise)
+        generated_data = mygan.create_fake(batch)
         print(generated_data)
         dagpolt(generated_data,database)
         calculate_fid(generated_data,database)
