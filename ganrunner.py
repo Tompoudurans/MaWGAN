@@ -1,6 +1,6 @@
 from sklearn import datasets
 from tengan import dataGAN
-from data.dataman import dagpolt
+from data.dataman import dagpolt,show_loss_progress
 from math import ceil
 import numpy as np
 from fid import calculate_fid
@@ -39,17 +39,15 @@ def run(mode):
     The options are fully explained on the README file.
     """
     #select datasettrained = abs(trained_fake - dataset)trained = abs(trained_fake - dataset)
-    shifts = [None]
-    set = input("set? 'w'/'i/'p' ")
-    if set == 'i':
+    sets = input("set? 'w'/'i/'p' ")
+    if sets == 'i':
         database = datasets.load_iris()
         database = database.data
-    elif set == 'w':
+    elif sets == 'w':
         database = datasets.load_wine()
         database = database.data
-    elif set == 'p':
-        database = import_penguin('data/penguins_size.csv',False)
-        shifts = np.array(shifts)
+    elif sets == 'p':
+        database,mean,std = import_penguin('data/penguins_size.csv',False)
     else:
         return None
     #estract data
@@ -94,6 +92,9 @@ def run(mode):
     samples = input('samples? ')
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
+        if sets == 'p':
+            generated_data = unnormalize(generated_data,mean,std)
+            database = unnormalize(database,mean,std)
         print(generated_data)
         dagpolt(generated_data,database)
         calculate_fid(generated_data,database)

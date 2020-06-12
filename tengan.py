@@ -89,8 +89,7 @@ class dataGAN():
     def create_fake(self,batch_size):
         noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
         fake_data = self.generator.predict(noise)
-        data = self.shifts + fake_data
-        return data
+        return fake_data
 
 
     def train_discriminator(self, real_data, batch_size):
