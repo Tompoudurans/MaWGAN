@@ -22,7 +22,7 @@ def test_discriminator_training():
     testgan.train_discriminator(dataset, batch_size)
     trained=testgan.discriminator.predict(dataset)
     assert untrained < trained
-    
+
 def test_gan_training():
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake=testgan.generator.predict(noise)
@@ -33,4 +33,6 @@ def test_gan_training():
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
     assert any(untrained > trained)
-    
+
+def test_fid():
+    pass

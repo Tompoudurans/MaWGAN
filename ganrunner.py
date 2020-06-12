@@ -1,5 +1,6 @@
 from sklearn import datasets
 from tengan import dataGAN
+from wgan import wGAN
 from data.dataman import dagpolt,show_loss_progress
 from math import ceil
 import numpy as np
@@ -39,7 +40,7 @@ def run(mode):
     The options are fully explained on the README file.
     """
     #select datasettrained = abs(trained_fake - dataset)trained = abs(trained_fake - dataset)
-    sets = input("set? 'w'/'i/'p' ")
+    sets = input("set? 'w'/'i'/'p' ")
     if sets == 'i':
         database = datasets.load_iris()
         database = database.data
@@ -57,9 +58,17 @@ def run(mode):
     opti = input('opti? ')
     number_of_layers = int(input('layers? '))
     #create the GAN from the dataGAN
-    mygan = dataGAN(opti,noise_dim,no_field,batch,number_of_layers)
+    use_model = input("model?: (w)gan /(g)an ")
+    if use_model == 'g':
+        mygan = dataGAN(opti,noise_dim,no_field,batch,number_of_layers)
+        mygan.discriminator.summary()
+    elif use_model == 'w':
+        clip_threshold = float(input('clip threshold? '))
+        mygan = wGAN(opti,noise_dim,no_field,batch,number_of_layers,clip_threshold)
+        mygan.critic.summary()
+    else:
+        return None
     #print the stucture of the gan
-    mygan.discriminator.summary()
     mygan.generator.summary()
     mygan.model.summary()
     #loads weights
@@ -97,7 +106,7 @@ def run(mode):
             database = unnormalize(database,mean,std)
         print(generated_data)
         dagpolt(generated_data,database)
-        calculate_fid(generated_data,database)
+        calculate_fid(generated_data.value,database.value)
     if mode == 's':
         return mygan
 
