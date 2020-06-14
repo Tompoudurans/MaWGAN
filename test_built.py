@@ -14,6 +14,7 @@ nodes = 20
 data = 3
 noise_vector = 10
 
+#creates the gan acroding to the spectces above
 testgan = dataGAN('adam', noise_vector, data, nodes, layers)
 
 def test_discriminator_layers():
@@ -45,3 +46,5 @@ def test_model_input():
 
 def test_model_output():
     assert testgan.model.output_shape == (None, 1)
+
+#note shape of data is stored in this format (batch_size,data)
