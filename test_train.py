@@ -16,7 +16,7 @@ batch_size = 2
 noise_vector = 10
 dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
 
-#numpy.random.seed(seed=10)
+numpy.random.seed(seed=10)
 
 testgan = dataGAN('adam', noise_vector, data, nodes, layers)
 
@@ -34,12 +34,12 @@ def test_discriminator_training():
     assert all(untrained < trained)
 
 def test_gan_training():
-        """
-        test the training algorithm of the GAN as the generator can not be trained directly
-        this done by taking untrained sample, training the GAN 10 times and take new sample
-        then compare the untrained sample and trained sample
-        the trained sample should provide be better result
-        """
+    """
+    test the training algorithm of the GAN as the generator can not be trained directly
+    this done by taking untrained sample, training the GAN 10 times and take new sample
+    then compare the untrained sample and trained sample
+    the trained sample should provide be better result
+    """
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake=testgan.generator.predict(noise)
     for i in range(10):
