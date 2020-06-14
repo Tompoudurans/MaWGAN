@@ -106,7 +106,7 @@ def run(mode):
             database = unnormalize(database,mean,std)
         print(generated_data)
         dagpolt(generated_data,database)
-        calculate_fid(generated_data.value,database.value)
+        calculate_fid(generated_data,database)
     if mode == 's':
         return mygan
 

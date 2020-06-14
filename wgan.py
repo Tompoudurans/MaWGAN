@@ -157,10 +157,23 @@ class wGAN():
                 self.g_losses.append(g)
             self.epoch += 1
 
-    def save_model(self):
+    def save_model(self,f):
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.save('Wgan_model.h5')
-        self.critic.save('Wgan_critic.h5')
-        self.generator.save('Wgan_generator.h5')
+        self.model.save(f + '_model.h5')
+        self.critic.save(f + 'Wgan_critic.h5')
+        self.generator.save(f + 'Wgan_generator.h5')
+
+    def load_weights(self,f):
+        """
+        This load the weights of the three models that are used in the GAN on the 'filepath'.
+        """
+        self.model.load_weights(f + '_model.h5')
+        self.critic.load_weights(f + 'Wgan_critic.h5')
+        self.generator.load_weights(f + 'Wgan_generator.h5')
+
+    def create_fake(self,batch_size):
+        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
+        fake_data = self.generator.predict(noise)
+        return fake_data

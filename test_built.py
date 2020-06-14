@@ -4,6 +4,9 @@
 Created on Mon Jun  1 15:31:20 2020
 
 @author: c1751832
+
+this checks the the gan is bulid well and has the correct
+number of layers, input and output shape
 """
 from tengan import dataGAN
 layers = 5

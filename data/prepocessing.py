@@ -24,4 +24,4 @@ def unnormalize(dataset,mean,std):
     df = pandas.DataFrame(dataset)
     mid = df*std
     original = mid + mean
-    return original
+    return original.to_numpy('float')
