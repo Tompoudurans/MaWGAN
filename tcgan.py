@@ -17,6 +17,7 @@ iris = datasets.load_iris()
 
 lossfun = nn.MSELoss()
 
+
 def adjust(y):
     z = []
     for i in range(len(y)):
@@ -97,7 +98,7 @@ def gan(cycle):
     #transforms.Normalize(0,1)(data)
     g,optg = genet(fields*size)
     d,optd = disnet(fields)
-    discyc = 100
+    discyc = 1
     t=0
     errorrec = []
     errorgen = []
@@ -138,10 +139,6 @@ def gan(cycle):
     print('generator')
     mp.plot(errorgen)
     mp.show()
-    print('petals')
-    for f in range(fields):
-        mp.plot(avdat[f])
-        mp.show()
     ploting(fake_data)
     return [d,g,optd,optg],fake_data
 
@@ -150,7 +147,7 @@ def ptest(net,x):
     plain = tc.tensor(plain)
     out = net(plain).reshape(150,4)
     print(out*10)
-    
+
 def ploting(tenso):
     tenso = tenso.detach()
     tenso = tenso.transpose(1,0)
@@ -175,4 +172,8 @@ def dectectcon(now,pre,con):
         con = 0
     print(dif,con)
     return con
-    
+
+if __name__ == '__main__':
+    cycle = int(input('cycle'))
+    gan(cycle)
+# it runs crossentropy is not there, i don't think it produses the right data 
