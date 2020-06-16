@@ -99,14 +99,15 @@ def run(mode):
             mygan.save_model(filepath)
         show_loss_progress(mygan.d_losses,mygan.g_losses)
     samples = input('samples? ')
+    original_data = database
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
         if sets == 'p':
             generated_data = unnormalize(generated_data,mean,std)
-            database = unnormalize(database,mean,std)
+            original_data = unnormalize(database,mean,std)
         print(generated_data)
-        dagpolt(generated_data,database)
-        calculate_fid(generated_data,database)
+        dagpolt(generated_data,original_data)
+        calculate_fid(generated_data,original_data)
     if mode == 's':
         return mygan
 
