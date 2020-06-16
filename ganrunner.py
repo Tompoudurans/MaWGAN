@@ -34,21 +34,22 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
             epochs = int(input('continue?, enter n* of epochs'))
 
 def save_parameters(parameters,filepath):
-        save_pra = open(filepath + "parameters.h5","a")
-        string_param = str(parameters)
-        full_string = ''.join(string_param)
-        save_pra.write(full_string)
-        save_pra.close()
+        """
+        save the parateters for the gan
+        """
+        fname = filepath + "_parameters.h5"
+        parameter_array = np.array(parameters)
+        np.save(fname, parameter_array)
 
 def load_parameters(filepath):
     try:
-        parameters = open(filepath + "_parameters.h5","r")
+        parameter_array = np.load(filepath + "_parameters.h5")
     except OSError:# as 'Unable to open file':
-        print('Error:404 file not found, starting from scratch')
+        print("Error:404 file not found, starting from scratch")
         countinue_load_weight = True
     else:
         countinue_load_weight = False
-    return parameters,countinue_load_weight
+    return parameter_array,countinue_load_weight
 
 def unpack(p):
     return p[1],p[2],p[3],p[4],p[5],p[6]
