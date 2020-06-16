@@ -33,6 +33,88 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
             calculate_fid(generated_data,database)
             epochs = int(input('continue?, enter n* of epochs'))
 
+def save_parameters(parameters,filepath):
+        save_pra = open(filepath + "parameters.h5","a")
+        string_param = str(parameters)
+        full_string = ''.join(string_param)
+        save_pra.write(full_string)
+        save_pra.close()
+
+def load_parameters(filepath):
+    try:
+        parameters = open(filepath + "_parameters.h5","r")
+    except OSError:# as 'Unable to open file':
+        print('Error:404 file not found, starting from scratch')
+        countinue_load_weight = True
+    else:
+        countinue_load_weight = False
+    return parameters,countinue_load_weight
+
+def unpack(p):
+    return p[1],p[2],p[3],p[4],p[5],p[6]
+
+def setup():
+    sets = input("set? 'w'/'i'/'p' ")
+    batch = int(input('batch size? '))
+    noise_dim = int(input('noise size? '))
+    opti = input('opti? ')
+    number_of_layers = int(input('layers? '))
+    #create the GAN from the dataGAN
+    use_model = input("model?: (w)gan /(g)an ")
+    if use_model == 'w':
+        clip_threshold = float(input('clip threshold? '))
+    else:
+        clip_threshold = None
+    return [sets,use_model,opti,noise_dim,batch,number_of_layers,clip_threshold]
+
+def load_data(sets):
+    if sets == 'i':
+        database = datasets.load_iris()
+    elif sets == 'w':
+        database = datasets.load_wine()
+    elif sets == 'p':
+        database,mean,std = import_penguin('data/penguins_size.csv',False)
+    else:
+        return None
+    if sets == 'i' or sets == 'w':
+        database = database.data
+        mean = 0
+        std = 1
+    return database,mean,std
+
+def load_gan_weight(filepath,mygan):
+    try:
+        mygan.load_weights(filepath)
+    except OSError:# as 'Unable to open file':
+        print('Error:404 file not found, starting from scratch')
+    finally:
+        return mygan
+
+def create_model(parameters,no_field):
+    use_model,opti,noise_dim,batch,number_of_layers,clip_threshold = unpack(parameters)
+    if use_model == 'g':
+        mygan = dataGAN(opti,noise_dim,no_field,batch,number_of_layers)
+        mygan.discriminator.summary()
+    elif use_model == 'w':
+        mygan = wGAN(opti,noise_dim,no_field,batch,number_of_layers,clip_threshold)
+        mygan.critic.summary()
+    #print the stucture of the gan
+    mygan.generator.summary()
+    mygan.model.summary()
+    return mygan,batch,noise_dim
+
+def show_samples(mygan,mean,std,database):
+    samples = input('samples? ')
+    for s in range(int(samples)):
+        generated_data = mygan.create_fake(batch)
+        if sets == 'p':
+            generated_data = unnormalize(generated_data,mean,std)
+            if s == 0:
+                database = unnormalize(database,mean,std)
+        print(generated_data)
+        dagpolt(generated_data,database)
+        calculate_fid(generated_data.value,database.value)
+
 def run(mode):
     """
     This goes through and stores all the variables of GAN class
@@ -42,34 +124,17 @@ def run(mode):
     #select dataset
     filepath = input("load filepath: (or n?) ")
     if filepath != 'n':
-        opti,noise_dim,no_field,batch,number_of_layers,clip_threshold = load_model(filepath)
+        parameters,countinue_load_weight = load_parameters(filepath)
     else:
         filepath = input('savepath? ')
-        opti,noise_dim,no_field,batch,number_of_layers,clip_threshold = setup(filepath)
-    if sets == 'i':
-        database = datasets.load_iris()
-        database = database.data
-    elif sets == 'w':
-        database = datasets.load_wine()
-        database = database.data
-    elif sets == 'p':
-        database,mean,std = import_penguin('data/penguins_size.csv',False)
-    else:
-        return None
-    if use_model == 'g':
-        mygan = dataGAN(opti,noise_dim,no_field,batch,number_of_layers)
-        mygan.discriminator.summary()
-    elif use_model == 'w':
-        clip_threshold = float(input('clip threshold? '))
-        mygan = wGAN(opti,noise_dim,no_field,batch,number_of_layers,clip_threshold)
-        mygan.critic.summary()
-    else:
-        return None
-    #print the stucture of the gan
-    mygan.generator.summary()
-    mygan.model.summary()
-    if filepath != 'n':
-        mygan.load_weights(filepath)
+        parameters = setup()
+        save_parameters(parameters,filepath)
+        countinue_load_weight = False
+    database,mean,std = load_data(parameters[0])
+    no_field = len(database[1])
+    mygan,batch,noise_dim = create_model(parameters,no_field)
+    if countinue_load_weight:
+        mygan = load_gan_weight(filepath,mygan)
     epochs = int(input('epochs? '))
     #marathon mode is not suitable when running less that 50000 epochs
     if epochs < 50000 and mode == 'm':
@@ -88,45 +153,12 @@ def run(mode):
         else:
             mygan.save_model(filepath)
         show_loss_progress(mygan.d_losses,mygan.g_losses)
-    samples = input('samples? ')
-    for s in range(int(samples)):
-        generated_data = mygan.create_fake(batch)
-        if sets == 'p':
-            generated_data = unnormalize(generated_data,mean,std)
-            database = unnormalize(database,mean,std)
-        print(generated_data)
-        dagpolt(generated_data,database)
-        calculate_fid(generated_data.value,database.value)
+        show_samples(mygan,mean,std,database)
     if mode == 's':
         return mygan
 
-def load_model(filepath):
-    try:
-        open(filepath + "parameters.h5","r")
-    except OSError:# as 'Unable to open file':
-        print('Error:404 file not found, starting from scratch')
-        filepath = 'n'
-    return parameters,filepath
-
-def setup(filepath):
-    sets = input("set? 'w'/'i'/'p' ")
-    batch = int(input('batch size? '))
-    noise_dim = int(input('noise size? '))
-    no_field = len(database[1])
-    opti = input('opti? ')
-    number_of_layers = int(input('layers? '))
-    #create the GAN from the dataGAN
-    use_model = input("model?: (w)gan /(g)an ")
-    if use_model == 'w':
-        clip_threshold = float(input('clip threshold? '))
-    else:
-        clip_threshold = None
-    parameters = [opti,noise_dim,no_field,batch,number_of_layers,clip_threshold]
-    save_pra = open(filepath + "parameters.h5","a")
-    save_pra.write(parameters)
-    return opti,noise_dim,no_field,batch,number_of_layers,clip_threshold
-
 mode = input('mode?(s)pyder/(n)ormal/(m)arathon) ')
+
 if mode == 's':
     gan,database = run(mode)
 else:
