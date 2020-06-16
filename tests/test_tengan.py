@@ -6,8 +6,6 @@ Created on Mon Jun  1 15:31:20 2020
 @author: c1751832
 """
 from tengan import dataGAN
-from data.prepocessing import unnormalize
-from fid import calculate_fid
 import numpy
 layers = 5
 nodes = 20
@@ -15,8 +13,6 @@ data = 3
 batch_size = 2
 noise_vector = 10
 dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
-
-numpy.random.seed(seed=10)
 
 testgan = dataGAN('adam', noise_vector, data, nodes, layers)
 
@@ -62,18 +58,35 @@ def test_load():
     """
     testgan.load_weights('test_')
 
-def test_fid():
-    """
-    testing fid distance it value should be greater than 0
-    """
-    data = testgan.create_fake(batch_size)
-    f = calculate_fid(data,dataset)
-    assert f > 0
+#this next few test checks the the gan is bulid well and has the correct
+#number of layers, input and output shape
 
-#def test_norm():
-    #"""
-    #testing  unnormalize funtion it should give the orginal data
-    #"""
-#    n = unnormalize(dataset,6,2)
-#    exp = numpy.array([[8.2, 8.4, 8.6],[10.2,10.4,10.6]])
-#    assert all(n == exp)
+def test_discriminator_layers():
+    assert len(testgan.discriminator.layers) == layers
+
+def test_gentrator_layers():
+    assert len(testgan.generator.layers) == layers
+
+def test_discriminator_input():
+    assert testgan.discriminator.input_shape == (None, data)
+
+def test_gentrator_input():
+    assert testgan.generator.input_shape == (None, noise_vector)
+
+def test_discriminator_output():
+    assert testgan.discriminator.output_shape == (None, 1)
+
+def test_gentrator_output():
+    assert testgan.generator.output_shape == (None, data)
+
+def test_discriminator_hidden():
+    assert testgan.discriminator.layers[1].output_shape == (None, nodes)
+
+def test_gentrator_hidden():
+    assert testgan.generator.layers[1].output_shape == (None, nodes)
+
+def test_model_input():
+    assert testgan.model.input_shape == (None, noise_vector)
+
+def test_model_output():
+    assert testgan.model.output_shape == (None, 1)
