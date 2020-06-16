@@ -1,11 +1,11 @@
 from sklearn import datasets
-from tengan import dataGAN
-from wgan import wGAN
-from data.dataman import dagpolt,show_loss_progress
+from src.main.tengan import dataGAN
+from src.main.wgan import wGAN
+from src.tools.dataman import dagpolt,show_loss_progress
 from math import ceil
 import numpy as np
-from fid import calculate_fid
-from data.prepocessing import import_penguin,unnormalize
+from src.tools.fid import calculate_fid
+from src.tools.prepocessing import import_penguin,unnormalize
 
 def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
     """
