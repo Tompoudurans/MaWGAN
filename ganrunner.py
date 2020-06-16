@@ -35,13 +35,16 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
 
 def save_parameters(parameters,filepath):
         """
-        save the parateters for the gan
+        save the paratmeters for the gan
         """
         fname = filepath + "_parameters.h5"
         parameter_array = np.array(parameters)
         np.save(fname, parameter_array)
 
 def load_parameters(filepath):
+    """
+    load the paratmeters for the gan
+    """
     try:
         parameter_array = np.load(filepath + "_parameters.h5")
     except OSError:# as 'Unable to open file':
@@ -52,9 +55,15 @@ def load_parameters(filepath):
     return parameter_array,countinue_load_weight
 
 def unpack(p):
+    """
+    unpack the parameters
+    """
     return p[1],p[2],p[3],p[4],p[5],p[6]
 
 def setup():
+    """
+    create new parameters
+    """
     sets = input("set? 'w'/'i'/'p' ")
     batch = int(input('batch size? '))
     noise_dim = int(input('noise size? '))
@@ -69,6 +78,9 @@ def setup():
     return [sets,use_model,opti,noise_dim,batch,number_of_layers,clip_threshold]
 
 def load_data(sets):
+    """
+    load a dataset chose are (i)ris (w)ine or (p)enguin
+    """
     if sets == 'i':
         database = datasets.load_iris()
     elif sets == 'w':
@@ -84,6 +96,9 @@ def load_data(sets):
     return database,mean,std
 
 def load_gan_weight(filepath,mygan):
+    """
+    load weight from prevous trained gan
+    """
     try:
         mygan.load_weights(filepath)
     except OSError:# as 'Unable to open file':
@@ -92,6 +107,9 @@ def load_gan_weight(filepath,mygan):
         return mygan
 
 def create_model(parameters,no_field):
+    """
+    bulid the gan using the parameters
+    """
     use_model,opti,noise_dim,batch,number_of_layers,clip_threshold = unpack(parameters)
     if use_model == 'g':
         mygan = dataGAN(opti,noise_dim,no_field,batch,number_of_layers)
@@ -105,6 +123,9 @@ def create_model(parameters,no_field):
     return mygan,batch,noise_dim
 
 def show_samples(mygan,mean,std,database):
+    """
+    creates a number of samples
+    """
     samples = input('samples? ')
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
@@ -159,7 +180,6 @@ def run(mode):
         return mygan
 
 mode = input('mode?(s)pyder/(n)ormal/(m)arathon) ')
-
 if mode == 's':
     gan,database = run(mode)
 else:
