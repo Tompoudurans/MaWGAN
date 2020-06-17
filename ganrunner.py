@@ -7,6 +7,15 @@ import numpy as np
 from fid import calculate_fid
 from data.prepocessing import import_penguin,unnormalize
 
+# shall i make this bit in a new python file?
+import click
+@click.command()
+@click.option('--mode', default='n', help='mode?(s)pyder/(n)ormal/(m)arathon)')
+@click.option('--filepath', default='#')
+@click.option('--epochs', prompt='epochs? ')
+#------------------------------------------------------
+
+
 def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
     """
     In marathon mode the GAN is trained for 50000 epochs and substracted from the number of epochs left.
@@ -34,12 +43,12 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
             epochs = int(input('continue?, enter n* of epochs'))
 
 def save_parameters(parameters,filepath):
-        """
-        Saves the parameters for the GAN
-        """
-        fname = filepath + "_parameters.h5"
-        parameter_array = np.array(parameters)
-        np.save(fname, parameter_array)
+    """
+    Saves the parameters for the GAN
+    """
+    fname = filepath + "_parameters.h5"
+    parameter_array = np.array(parameters)
+    np.save(fname, parameter_array)
 
 def load_parameters(filepath):
     """
@@ -50,6 +59,7 @@ def load_parameters(filepath):
     except OSError:# as 'Unable to open file':
         print("Error:404 file not found, starting from scratch")
         countinue_load_weight = True
+        parameter_array = None
     else:
         countinue_load_weight = False
     return parameter_array,countinue_load_weight
@@ -137,27 +147,26 @@ def show_samples(mygan,mean,std,database):
         dagpolt(generated_data,database)
         calculate_fid(generated_data.value,database.value)
 
-def run(mode):
+def run(mode,filepath,epochs):
     """
     This goes through all the variables from GAN class and stores them,
     then creates the GAN.
     The options are fully explained on the README file.
     """
     #select dataset
-    filepath = input("load filepath: (or n?) ")
-    if filepath != 'n':
+    if filepath != '#':
         parameters,countinue_load_weight = load_parameters(filepath)
     else:
         filepath = input('savepath? ')
+        countinue_load_weight = False
+    if not countinue_load_weight:
         parameters = setup()
         save_parameters(parameters,filepath)
-        countinue_load_weight = False
     database,mean,std = load_data(parameters[0])
     no_field = len(database[1])
     mygan,batch,noise_dim = create_model(parameters,no_field)
     if countinue_load_weight:
         mygan = load_gan_weight(filepath,mygan)
-    epochs = int(input('epochs? '))
     #marathon mode is not suitable when running less that 50000 epochs
     if epochs < 50000 and mode == 'm':
         print('epochs too small, switch to normal ')
@@ -179,8 +188,11 @@ def run(mode):
     if mode == 's':
         return mygan
 
-mode = input('mode?(s)pyder/(n)ormal/(m)arathon) ')
-if mode == 's':
-    gan,database = run(mode)
-else:
-    run(mode)
+def main(mode,filepath,epochs):
+    if mode == 's':
+        gan,database = run(mode,filepath,epochs)
+    else:
+        run(mode,filepath,epochs)
+
+if __name__ == '__main__':
+    main()
