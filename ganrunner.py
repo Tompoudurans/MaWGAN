@@ -9,7 +9,7 @@ from data.prepocessing import import_penguin,unnormalize
 
 def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
     """
-    In marathon mode the GAN is trained for 50000 epochs and subtracted from the number of epochs left.
+    In marathon mode the GAN is trained for 50000 epochs and substracted from the number of epochs left.
     Then the GAN model and the loss tracking is saved,
     the current loss tracking is removed from ram and a new set of training starts again
     at epoch 0. The result of the training is displayed and from there you can continue training if you wish.
@@ -35,7 +35,7 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
 
 def save_parameters(parameters,filepath):
         """
-        save the paratmeters for the gan
+        Saves the parameters for the GAN
         """
         fname = filepath + "_parameters.h5"
         parameter_array = np.array(parameters)
@@ -43,7 +43,7 @@ def save_parameters(parameters,filepath):
 
 def load_parameters(filepath):
     """
-    load the paratmeters for the gan
+    Loads the parameters for the GAN
     """
     try:
         parameter_array = np.load(filepath + "_parameters.h5")
@@ -56,13 +56,13 @@ def load_parameters(filepath):
 
 def unpack(p):
     """
-    unpack the parameters
+    Unpacks the parameters
     """
     return p[1],p[2],p[3],p[4],p[5],p[6]
 
 def setup():
     """
-    create new parameters
+    Creates new parameters
     """
     sets = input("set? 'w'/'i'/'p' ")
     batch = int(input('batch size? '))
@@ -79,7 +79,7 @@ def setup():
 
 def load_data(sets):
     """
-    load a dataset chose are (i)ris (w)ine or (p)enguin
+    Loads a dataset, choices are (i)ris (w)ine or (p)enguin
     """
     if sets == 'i':
         database = datasets.load_iris()
@@ -97,7 +97,7 @@ def load_data(sets):
 
 def load_gan_weight(filepath,mygan):
     """
-    load weight from prevous trained gan
+    Loads weight from previous trained GAN
     """
     try:
         mygan.load_weights(filepath)
@@ -108,7 +108,7 @@ def load_gan_weight(filepath,mygan):
 
 def create_model(parameters,no_field):
     """
-    bulid the gan using the parameters
+    Builds the GAN using the parameters
     """
     use_model,opti,noise_dim,batch,number_of_layers,clip_threshold = unpack(parameters)
     if use_model == 'g':
@@ -124,7 +124,7 @@ def create_model(parameters,no_field):
 
 def show_samples(mygan,mean,std,database):
     """
-    creates a number of samples
+    Creates a number of samples
     """
     samples = input('samples? ')
     for s in range(int(samples)):
@@ -139,8 +139,8 @@ def show_samples(mygan,mean,std,database):
 
 def run(mode):
     """
-    This goes through and stores all the variables of GAN class
-    then creates the GAN
+    This goes through all the variables from GAN class and stores them,
+    then creates the GAN.
     The options are fully explained on the README file.
     """
     #select dataset
@@ -167,10 +167,10 @@ def run(mode):
         if mode == 'm':
             marathon_mode(mygan,database,batch,noise_dim,filepath,epochs)
         else:
-            # train the gan acorrding to the number of epochs
+            # train the gan according to the number of epochs
             mygan.train(database,batch,epochs,step)
         if mode == 's':
-            # in spyder mode the gan model return so it can be expermented on
+            # in spyder mode the gan model is returned so it can be experimented on
             return mygan,database
         else:
             mygan.save_model(filepath)
