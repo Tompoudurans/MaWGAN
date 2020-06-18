@@ -33,50 +33,33 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
             calculate_fid(generated_data,database)
             epochs = int(input('continue?, enter n* of epochs'))
 
-def save_parameters(parameters,filepath):
-    """
-    Saves the parameters for the GAN
-    """
-    fname = filepath + "_parameters.npy"
-    parameter_array = np.array(parameters)
-    np.save(fname, parameter_array)
-
-def load_parameters(filepath):
-    """
-    Loads the parameters for the GAN
-    """
-    try:
-        parameter_array = np.load(filepath + "_parameters.npy",allow_pickle=True)
-    except OSError:# as 'Unable to open file':
-        print("Error:404 file not found, starting from scratch")
-        countinue_load_weight = False
-        parameter_array = None
-    else:
-        countinue_load_weight = True
-    return parameter_array,countinue_load_weight
 
 def unpack(p):
     """
     Unpacks the parameters
     """
-    return p[1],p[2],p[3],p[4],p[5],p[6]
+    return p[1],p[2],p[3],p[4],p[5]
 
-def setup():
+def setup(parameters_list):
     """
     Creates new parameters
     """
-    sets = input("set? 'w'/'i'/'p' ")
-    batch = int(input('batch size? '))
-    noise_dim = int(input('noise size? '))
-    opti = input('opti? ')
-    number_of_layers = int(input('layers? '))
-    #create the GAN from the dataGAN
-    use_model = input("model?: (w)gan /(g)an ")
-    if use_model == 'w':
+    parameters = []
+    questions = ["set? 'w'/'i'/'p' ","model?: (w)gan /(g)an ","opti? ","noise size? ", "batch size? ", "layers?"]
+    for q in range(len(questions)):
+        if parameters_list[q] != None:
+            param = parameters_list[q]
+        else:
+            param = input(questions[q])
+        if q < 5:
+            parameters.append(param)
+        else:
+            parameters.append(int(param))
+    if parameters[1] == 'w':
         clip_threshold = float(input('clip threshold? '))
     else:
         clip_threshold = None
-    return [sets,use_model,opti,noise_dim,batch,number_of_layers,clip_threshold]
+    return parameters
 
 def load_data(sets):
     """
@@ -111,12 +94,12 @@ def create_model(parameters,no_field):
     """
     Builds the GAN using the parameters
     """
-    use_model,opti,noise_dim,batch,number_of_layers,clip_threshold = unpack(parameters)
+    use_model,opti,noise_dim,batch,number_of_layers = unpack(parameters)
     if use_model == 'g':
         mygan = dataGAN(opti,noise_dim,no_field,batch,number_of_layers)
         mygan.discriminator.summary()
     elif use_model == 'w':
-        mygan = wGAN(opti,noise_dim,no_field,batch,number_of_layers,clip_threshold)
+        mygan = wGAN(opti,noise_dim,no_field,batch,number_of_layers,parameters[6])
         mygan.critic.summary()
     #print the stucture of the gan
     mygan.generator.summary()
@@ -138,25 +121,47 @@ def show_samples(mygan,mean,std,database):
         dagpolt(generated_data,database)
         calculate_fid(generated_data.value,database.value)
 
-def run(mode,filepath,epochs):
+def save_parameters(parameters,filepath):
+    """
+    Saves the parameters for the GAN
+    """
+    fname = filepath + "_parameters.npy"
+    parameter_array = np.array(parameters)
+    np.save(fname, parameter_array)
+
+def load_parameters(filepath):
+    """
+    Loads the parameters for the GAN
+    """
+    try:
+        parameter_array = np.load(filepath + "_parameters.npy",allow_pickle=True)
+    except OSError:# as 'Unable to open file':
+        print("Error:404 file not found, starting from scratch")
+        successfully_loaded = False
+        parameter_array = None
+    else:
+        successfully_loaded = True
+    return parameter_array,successfully_loaded
+
+def parameters_handeling(filepath,parameters_list):
+    parameters,successfully_loaded = load_parameters(filepath)
+    if not successfully_loaded:
+        parameters = setup(parameters_list)
+        print(parameters)
+        save_parameters(parameters,filepath)
+    return parameters,successfully_loaded
+
+def run(mode,filepath,epochs,parameters,successfully_loaded):
     """
     This goes through all the variables from GAN class and stores them,
     then creates the GAN.
     The options are fully explained on the README file.
     """
     #select dataset
-    if filepath != '#':
-        parameters,countinue_load_weight = load_parameters(filepath)
-    else:
-        filepath = input('savepath? ')
-        countinue_load_weight = False
-    if not countinue_load_weight:
-        parameters = setup()
-        save_parameters(parameters,filepath)
     database,mean,std = load_data(parameters[0])
     no_field = len(database[1])
     mygan,batch,noise_dim = create_model(parameters,no_field)
-    if countinue_load_weight:
+    if successfully_loaded:
         mygan = load_gan_weight(filepath,mygan)
     #marathon mode is not suitable when running less that 50000 epochs
     if epochs < 50000 and mode == 'm':
