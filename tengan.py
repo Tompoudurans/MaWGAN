@@ -157,6 +157,6 @@ class dataGAN:
         """
         This loads the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.load_weights(filepath + "model.h5")
-        self.discriminator.load_weights(filepath + "discriminator.h5")
-        self.generator.load_weights(filepath + "generator.h5")
+        self.model.load_weights(filepath + "_model.h5")
+        self.discriminator.load_weights(filepath + "_discriminator.h5")
+        self.generator.load_weights(filepath + "_generator.h5")

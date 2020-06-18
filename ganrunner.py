@@ -38,7 +38,7 @@ def unpack(p):
     """
     Unpacks the parameters
     """
-    return p[1],p[2],p[3],p[4],p[5]
+    return p[1],p[2],int(p[3]),int(p[4]),int(p[5])
 
 def setup(parameters_list):
     """
@@ -106,7 +106,7 @@ def create_model(parameters,no_field):
     mygan.model.summary()
     return mygan,batch,noise_dim
 
-def show_samples(mygan,mean,std,database):
+def show_samples(mygan,mean,std,database,batch,sets):
     """
     Creates a number of samples
     """
@@ -119,7 +119,7 @@ def show_samples(mygan,mean,std,database):
                 database = unnormalize(database,mean,std)
         print(generated_data)
         dagpolt(generated_data,database)
-        calculate_fid(generated_data.value,database.value)
+        calculate_fid(generated_data,database)
 
 def save_parameters(parameters,filepath):
     """
@@ -180,6 +180,6 @@ def run(mode,filepath,epochs,parameters,successfully_loaded):
         else:
             mygan.save_model(filepath)
         show_loss_progress(mygan.d_losses,mygan.g_losses)
-        show_samples(mygan,mean,std,database)
+        show_samples(mygan,mean,std,database,batch,parameters[0])
     if mode == 's':
         return mygan
