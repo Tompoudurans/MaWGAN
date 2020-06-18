@@ -7,15 +7,6 @@ import numpy as np
 from fid import calculate_fid
 from data.prepocessing import import_penguin,unnormalize
 
-# shall i make this bit in a new python file?
-import click
-@click.command()
-@click.option('--mode', default='n', help='mode?(s)pyder/(n)ormal/(m)arathon)')
-@click.option('--filepath', default='#')
-@click.option('--epochs', prompt='epochs? ')
-#------------------------------------------------------
-
-
 def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
     """
     In marathon mode the GAN is trained for 50000 epochs and substracted from the number of epochs left.
@@ -46,7 +37,7 @@ def save_parameters(parameters,filepath):
     """
     Saves the parameters for the GAN
     """
-    fname = filepath + "_parameters.h5"
+    fname = filepath + "_parameters.npy"
     parameter_array = np.array(parameters)
     np.save(fname, parameter_array)
 
@@ -55,13 +46,13 @@ def load_parameters(filepath):
     Loads the parameters for the GAN
     """
     try:
-        parameter_array = np.load(filepath + "_parameters.h5")
+        parameter_array = np.load(filepath + "_parameters.npy",allow_pickle=True)
     except OSError:# as 'Unable to open file':
         print("Error:404 file not found, starting from scratch")
-        countinue_load_weight = True
+        countinue_load_weight = False
         parameter_array = None
     else:
-        countinue_load_weight = False
+        countinue_load_weight = True
     return parameter_array,countinue_load_weight
 
 def unpack(p):
@@ -187,12 +178,3 @@ def run(mode,filepath,epochs):
         show_samples(mygan,mean,std,database)
     if mode == 's':
         return mygan
-
-def main(mode,filepath,epochs):
-    if mode == 's':
-        gan,database = run(mode,filepath,epochs)
-    else:
-        run(mode,filepath,epochs)
-
-if __name__ == '__main__':
-    main()
