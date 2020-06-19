@@ -57,8 +57,7 @@ def setup(parameters_list):
             parameters.append(int(param))
     if parameters[1] == 'w':
         clip_threshold = float(input('clip threshold? '))
-    else:
-        clip_threshold = None
+        parameters.append(clip_threshold)
     return parameters
 
 def load_data(sets):

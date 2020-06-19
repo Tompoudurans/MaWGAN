@@ -25,7 +25,7 @@ class wGAN():
         self.d_losses = []
         self.g_losses = []
         self.epoch = 0
-        self.clip = weight_cliping
+        self.clip = float(weight_cliping)
         self.optimiser = optimiser
         self.z_dim = z_dim
         self.make_critc(number_of_layers)
@@ -161,6 +161,14 @@ class wGAN():
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.save(f + 'model.h5')
-        self.critic.save(f + 'critic.h5')
-        self.generator.save(f + 'generator.h5')
+        self.model.save(f + '_model.h5')
+        self.critic.save(f + '_critic.h5')
+        self.generator.save(f + '_generator.h5')
+
+    def load_weights(self, filepath):
+        """
+        This loads the weights of the three models that are used in the GAN on the 'filepath'.
+        """
+        self.model.load_weights(filepath + "_model.h5")
+        self.critic.load_weights(filepath + "_critic.h5")
+        self.generator.load_weights(filepath + "_generator.h5")
