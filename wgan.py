@@ -157,6 +157,11 @@ class wGAN():
                 self.g_losses.append(g)
             self.epoch += 1
 
+    def create_fake(self, batch_size):
+        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
+        fake_data = self.generator.predict(noise)
+        return fake_data
+
     def save_model(self,f):
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
