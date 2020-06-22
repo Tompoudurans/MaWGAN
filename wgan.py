@@ -20,6 +20,7 @@ class wGAN():
         data_dim which is the number of fields in the database,
         net_dim which is the number of neurons per layer.
         """
+        self.set_core()
         self.net_dim = net_dim
         self.data_dim =data_dim
         self.d_losses = []
@@ -32,6 +33,9 @@ class wGAN():
         self.make_generator(number_of_layers)
         self.build_adversarial()
 
+    def set_core(self):
+            tf.config.threading.set_inter_op_parallelism_threads(2) #Set number of threads used for parallelism between independent operations.
+            tf.config.threading.set_intra_op_parallelism_threads(2) #Set number of threads used within an individual op for parallelism.
 
     def wasserstein(self, y_true, y_pred):
         """
