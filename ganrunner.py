@@ -6,6 +6,7 @@ from math import ceil
 import numpy as np
 from fid import calculate_fid
 from data.prepocessing import import_penguin,unnormalize
+from core import set_core
 
 def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
     """
@@ -32,7 +33,6 @@ def marathon_mode(mygan,database,batch,noise_dim,filepath,epochs):
             dagpolt(generated_data,database)
             calculate_fid(generated_data,database)
             epochs = int(input('continue?, enter n* of epochs'))
-
 
 def unpack(p):
     """
@@ -157,6 +157,7 @@ def run(mode,filepath,epochs,parameters,successfully_loaded):
     The options are fully explained on the README file.
     """
     #select dataset
+    set_core()
     database,mean,std = load_data(parameters[0])
     no_field = len(database[1])
     mygan,batch,noise_dim = create_model(parameters,no_field)
