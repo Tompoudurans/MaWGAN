@@ -9,11 +9,8 @@ def import_penguin(file,use_categorical):
         penguin = penguin.replace({'Dream':0,'Torgersen':1,'Biscoe':2})
     else:
         penguin = penguin.drop(columns=['sex','species','island'])
-    mean = penguin.mean()
-    std = penguin.std()
-    penguin = normalize(penguin,mean,std)
-    penguin = penguin.to_numpy('float')
-    return penguin,mean.to_numpy('float'),std.to_numpy('float')
+    penguin,mean,std = get_norm(penguin)
+    return penguin,mean,std
 
 def normalize(dataset,mean,std):
     mid = dataset - mean
@@ -24,4 +21,10 @@ def unnormalize(dataset,mean,std):
     df = pandas.DataFrame(dataset)
     mid = df*std
     original = mid + mean
-    return original.to_numpy('float')
+    return original
+
+def get_norm(data):
+    mean = data.mean()
+    std = data.std()
+    data = normalize(data,mean,std)
+    return data.to_numpy('float'),mean.to_numpy('float'),std.to_numpy('float')

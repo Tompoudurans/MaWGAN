@@ -25,7 +25,7 @@ class wGAN():
         self.d_losses = []
         self.g_losses = []
         self.epoch = 0
-        self.clip = weight_cliping
+        self.clip = float(weight_cliping)
         self.optimiser = optimiser
         self.z_dim = z_dim
         self.make_critc(number_of_layers)
@@ -157,23 +157,23 @@ class wGAN():
                 self.g_losses.append(g)
             self.epoch += 1
 
+    def create_fake(self, batch_size):
+        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
+        fake_data = self.generator.predict(noise)
+        return fake_data
+
     def save_model(self,f):
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
         self.model.save(f + '_model.h5')
-        self.critic.save(f + 'Wgan_critic.h5')
-        self.generator.save(f + 'Wgan_generator.h5')
+        self.critic.save(f + '_critic.h5')
+        self.generator.save(f + '_generator.h5')
 
-    def load_weights(self,f):
+    def load_weights(self, filepath):
         """
-        This load the weights of the three models that are used in the GAN on the 'filepath'.
+        This loads the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.load_weights(f + '_model.h5')
-        self.critic.load_weights(f + 'Wgan_critic.h5')
-        self.generator.load_weights(f + 'Wgan_generator.h5')
-
-    def create_fake(self,batch_size):
-        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        fake_data = self.generator.predict(noise)
-        return fake_data
+        self.model.load_weights(filepath + "_model.h5")
+        self.critic.load_weights(filepath + "_critic.h5")
+        self.generator.load_weights(filepath + "_generator.h5")

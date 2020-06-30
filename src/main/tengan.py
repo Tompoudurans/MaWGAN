@@ -8,10 +8,12 @@ from tensorflow.keras.models import Model
 import tensorflow.keras.layers as tkl
 import tensorflow as tf
 import numpy as np
-#import random as rd
 
-class dataGAN():
-    def __init__(self,optimiser,noise_dim,data_dim,net_dim,number_of_layers):
+# import random as rd
+
+
+class dataGAN:
+    def __init__(self, optimiser, noise_dim, data_dim, net_dim, number_of_layers):
         """
         This builds the GAN model so it can be trained. The different variables are:
         'optimiser' which is the optimiser used for the whole GAN
@@ -30,33 +32,35 @@ class dataGAN():
         self.make_generator(number_of_layers)
         self.build_adversarial()
 
-    def make_generator(self,number_of_layers):
+    def make_generator(self, number_of_layers):
         """
         This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of 'noise_dim' length and outputs a vector of data that is 'data_dim' long.
         """
-        gen_input = tkl.Input(shape=(self.noise_dim,),name='gen_input')
-        gen_layer =tkl.Dense(self.net_dim,activation = 'tanh')(gen_input)
+        gen_input = tkl.Input(shape=(self.noise_dim,), name="gen_input")
+        gen_layer = tkl.Dense(self.net_dim, activation="tanh")(gen_input)
         number_of_layers -= 2
         while number_of_layers > 1:
-            gen_layer =tkl.Dense(self.net_dim,activation = 'tanh')(gen_layer)
+            gen_layer = tkl.Dense(self.net_dim, activation="tanh")(gen_layer)
             number_of_layers -= 1
-        final_layer =tkl.Dense(self.data_dim,activation = 'linear')(gen_layer)
-        self.generator = tf.keras.models.Model(inputs=gen_input,outputs=final_layer)
+        final_layer = tkl.Dense(self.data_dim, activation="linear")(gen_layer)
+        self.generator = tf.keras.models.Model(inputs=gen_input, outputs=final_layer)
 
-    def make_discriminator(self,number_of_layers):
+    def make_discriminator(self, number_of_layers):
         """
         This makes a discriminator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
         """
-        dis_input = tkl.Input(shape=(self.data_dim,),name='dis_input')
-        dis_layer =tkl.Dense(self.net_dim,activation = tf.nn.relu)(dis_input)
+        dis_input = tkl.Input(shape=(self.data_dim,), name="dis_input")
+        dis_layer = tkl.Dense(self.net_dim, activation=tf.nn.relu)(dis_input)
         number_of_layers -= 2
         while number_of_layers > 1:
-            dis_layer =tkl.Dense(self.net_dim,activation = 'tanh')(dis_layer)
+            dis_layer = tkl.Dense(self.net_dim, activation="tanh")(dis_layer)
             number_of_layers -= 1
-        final_layer =tkl.Dense(1,activation = 'sigmoid')(dis_layer)
-        self.discriminator = tf.keras.models.Model(inputs=dis_input,outputs=final_layer)
+        final_layer = tkl.Dense(1, activation="sigmoid")(dis_layer)
+        self.discriminator = tf.keras.models.Model(
+            inputs=dis_input, outputs=final_layer
+        )
 
     def set_trainable(self, m, val):
         """
@@ -73,24 +77,25 @@ class dataGAN():
         it consists of the generator directly outputed into a frozen discriminator
         """
 
-        self.discriminator.compile(optimizer=self.optimiser,
-                                   loss = 'binary_crossentropy',
-                                   metrics = ['accuracy'])
-        #temporarily freezes the discriminator weight so it does not affect the discriminator network
+        self.discriminator.compile(
+            optimizer=self.optimiser, loss="binary_crossentropy", metrics=["accuracy"]
+        )
+        # temporarily freezes the discriminator weight so it does not affect the discriminator network
         self.set_trainable(self.discriminator, False)
-        #creating the GAN model
-        model_input = tkl.Input(shape=(self.noise_dim,), name='model_input')
+        # creating the GAN model
+        model_input = tkl.Input(shape=(self.noise_dim,), name="model_input")
         model_output = self.discriminator(self.generator(model_input))
         self.model = Model(model_input, model_output)
-        self.model.compile(optimizer=self.optimiser , loss='binary_crossentropy', metrics=['accuracy'])
-        #Unfreezes the weights
+        self.model.compile(
+            optimizer=self.optimiser, loss="binary_crossentropy", metrics=["accuracy"]
+        )
+        # Unfreezes the weights
         self.set_trainable(self.discriminator, True)
 
-    def create_fake(self,batch_size):
+    def create_fake(self, batch_size):
         noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
         fake_data = self.generator.predict(noise)
         return fake_data
-
 
     def train_discriminator(self, real_data, batch_size):
         """
@@ -98,18 +103,18 @@ class dataGAN():
         traning them aganist the real_data
         """
         # create the labels
-        valid = np.ones((batch_size,1))
-        fake = np.zeros((batch_size,1))
-        #sample batch_size from the whole data set
+        valid = np.ones((batch_size, 1))
+        fake = np.zeros((batch_size, 1))
+        # sample batch_size from the whole data set
         idx = np.random.randint(0, real_data.shape[0], batch_size)
         true_data = real_data[idx]
-        #create noise vector z
+        # create noise vector z
         fake_data = self.create_fake(batch_size)
-        #calculate value function for real
-        d_loss_real, d_acc_real =   self.discriminator.train_on_batch(true_data, valid)
-        #calculate value function for fake
-        d_loss_fake, d_acc_fake =   self.discriminator.train_on_batch(fake_data, fake)
-        d_loss =  0.5 * (d_loss_real + d_loss_fake)
+        # calculate value function for real
+        d_loss_real, d_acc_real = self.discriminator.train_on_batch(true_data, valid)
+        # calculate value function for fake
+        d_loss_fake, d_acc_fake = self.discriminator.train_on_batch(fake_data, fake)
+        d_loss = 0.5 * (d_loss_real + d_loss_fake)
         d_acc = 0.5 * (d_acc_real + d_acc_fake)
         return [d_loss, d_loss_real, d_loss_fake, d_acc, d_acc_real, d_acc_fake]
 
@@ -118,16 +123,11 @@ class dataGAN():
         This trains the generator once by creating a set of fake data and
         uses the dicrimator score to train on
         """
-        valid = np.ones((batch_size,1))
+        valid = np.ones((batch_size, 1))
         noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
         return self.model.train_on_batch(noise, valid)
 
-
-    def train(self,
-              x_train,
-              batch_size,
-              epochs,
-              every_n_batches=50):
+    def train(self, x_train, batch_size, epochs, every_n_batches=50):
         """
         This trains the GAN by alternating between training the discriminator and training the generator once
         in each epoch on the dataset x_train which has a length of batch_size.
@@ -137,23 +137,26 @@ class dataGAN():
             d = self.train_discriminator(x_train, batch_size)
             g = self.train_generator(batch_size)
             if epoch % every_n_batches == 0:
-                print ("%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]" % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1]))
+                print(
+                    "%d [D loss: (%.3f)(R %.3f, F %.3f)] [D acc: (%.3f)(%.3f, %.3f)] [G loss: %.3f] [G acc: %.3f]"
+                    % (epoch, d[0], d[1], d[2], d[3], d[4], d[5], g[0], g[1])
+                )
                 self.d_losses.append(d)
                 self.g_losses.append(g)
             self.epoch += 1
 
-    def save_model(self,filepath):
+    def save_model(self, filepath):
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.save(filepath + 'model.h5')
-        self.discriminator.save(filepath + 'discriminator.h5')
-        self.generator.save(filepath + 'generator.h5')
+        self.model.save(filepath + "model.h5")
+        self.discriminator.save(filepath + "discriminator.h5")
+        self.generator.save(filepath + "generator.h5")
 
     def load_weights(self, filepath):
         """
         This loads the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.load_weights(filepath + 'model.h5')
-        self.discriminator.load_weights(filepath + 'discriminator.h5')
-        self.generator.load_weights(filepath + 'generator.h5')
+        self.model.load_weights(filepath + "_model.h5")
+        self.discriminator.load_weights(filepath + "_discriminator.h5")
+        self.generator.load_weights(filepath + "_generator.h5")
