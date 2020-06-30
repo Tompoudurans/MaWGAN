@@ -20,6 +20,8 @@ import click
 @click.option("--batch", default=None)
 @click.option("--layers", default=None)
 @click.option("--clip", default=None)
+
+
 def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, clip):
     """
     creates and trained gan from specified parameters it will also can load a model if it exist
@@ -183,7 +185,7 @@ def load_parameters(filepath):
 
 def parameters_handeling(filepath, parameters_list):
     """
-    load prameters if they exist otherwise saves new ones them
+    Load parameters if they exist, otherwise saves new ones
     """
     parameters, successfully_loaded = load_parameters(filepath)
     if not successfully_loaded:
@@ -195,8 +197,9 @@ def parameters_handeling(filepath, parameters_list):
 
 def run(mode, filepath, epochs, parameters, successfully_loaded):
     """
-    creates and train a gan from the parameters provided
-    The options are fully explained on the README file.
+    Creates and trains a GAN from the parameters provided.
+    It will load the weights of the GAN if they exist.
+    An option will be given to create samples.
     """
     # select dataset
     database, mean, std = load_data(parameters[0])
@@ -213,10 +216,10 @@ def run(mode, filepath, epochs, parameters, successfully_loaded):
         if mode == "m":
             marathon_mode(mygan, database, batch, noise_dim, filepath, epochs)
         else:
-            # train the gan according to the number of epochs
+            # train the GAN according to the number of epochs
             mygan.train(database, batch, epochs, step)
         if mode == "s":
-            # in spyder mode the gan model is returned so it can be experimented on
+            # in spyder mode the GAN model is returned so it can be experimented on
             return mygan, database
         else:
             mygan.save_model(filepath)
