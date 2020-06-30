@@ -1,11 +1,12 @@
-from sklearn import datasets
 from src.main.tengan import dataGAN
 from src.main.wgan import wGAN
 from src.tools.dataman import dagpolt,show_loss_progress
-from math import ceil
-import numpy as np
 from src.tools.fid import calculate_fid
 from src.tools.prepocessing import import_penguin,unnormalize
+from src.tools.core import set_core
+from sklearn import datasets
+from math import ceil
+import numpy as np
 import click
 
 
@@ -20,13 +21,16 @@ import click
 @click.option("--batch", default=None)
 @click.option("--layers", default=None)
 @click.option("--clip", default=None)
+@click.option("--core", default=0,type=int)
 
 
-def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, clip):
+def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, clip, core):
     """
     creates and trained gan from specified parameters it will also can load a model if it exist
     """
     click.echo("loading...")
+    if core != 0:
+        set_core(core)
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)
