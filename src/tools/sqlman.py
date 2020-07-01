@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from prepocessing import get_norm
+from src.tools.prepocessing import get_norm
 import pandas as pd
 
 def load_sql(file,table):

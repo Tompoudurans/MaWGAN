@@ -4,6 +4,7 @@ from src.tools.dataman import dagpolt,show_loss_progress
 from src.tools.fid import calculate_fid
 from src.tools.prepocessing import import_penguin,unnormalize
 from src.tools.core import set_core
+from src.tools.sqlman import load_sql
 from sklearn import datasets
 from math import ceil
 import numpy as np
@@ -12,21 +13,24 @@ import click
 
 @click.command()
 @click.option("--mode", default="n", help="mode?(s)pyder/(n)ormal/(m)arathon)")
-@click.option("--filepath", prompt="filepath? ")
-@click.option("--epochs", prompt="epochs? ")
-@click.option("--dataset", default=None)
-@click.option("--model", default=None)
-@click.option("--opti", default=None)
-@click.option("--noise", default=None)
-@click.option("--batch", default=None)
-@click.option("--layers", default=None)
-@click.option("--clip", default=None)
-@click.option("--core", default=0,type=int)
+@click.option("--filepath", prompt="filepath? ", help=" enter the file name and location of the database and model")
+@click.option("--epochs", prompt="epochs? ", help="choose how long that you want to train")
+@click.option("--dataset", default=None, help="chose the dataset/table that the GAN will to train on this can't be a single letter")
+@click.option("--model", default=None, help="chose which model that you what to use")
+@click.option("--opti", default=None, help="chose the optimiser that you want to use")
+@click.option("--noise", default=None, help="chose the length of the noise vector")
+@click.option("--batch", default=None, help="chose how many fake data you want to make in one go")
+@click.option("--layers", default=None, help="chose the number of layers of each network")
+@click.option("--clip", default=None, help="if using wgan chose the cliping threshold")
+@click.option("--core", default=0,type=int, help="select number of core that you like to run")
+@click.option("--sample", default=1,type=int, help="chose the number of generate data that you want: (samples*batch)")
 
 
-def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, clip, core):
+def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, clip, core, sample):
     """
-    creates and trained gan from specified parameters it will also can load a model if it exist
+    This code creates, loads and train a GAN from specified parameters
+    This code is a copy of david foster book 'deep generative models' which
+    has been modified to work with a numeric database
     """
     click.echo("loading...")
     if core != 0:
@@ -34,7 +38,9 @@ def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, cli
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)
-    run(mode, filepath, epochs, parameters, successfully_loaded)
+    database, mean, std, normalised = load_data(parameters[0], filepath)
+    thegan = run(mode, filepath, epochs, parameters, successfully_loaded, database)
+    show_samples(thegan, mean, std, database, int(parameters[4]), normalised, sample)
 
 
 def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
@@ -77,45 +83,45 @@ def setup(parameters_list):
     """
     parameters = []
     questions = [
-        "set? 'w'/'i'/'p' ",
+        "dataset (table) ",
         "model?: (w)gan /(g)an ",
         "opti? ",
         "noise size? ",
         "batch size? ",
-        "layers?",
+        "layers? "
     ]
     for q in range(len(questions)):
         if parameters_list[q] != None:
             param = parameters_list[q]
         else:
             param = input(questions[q])
-        if q < 5:
-            parameters.append(param)
-        else:
-            parameters.append(int(param))
+        parameters.append(param)
     if parameters[1] == "w":
         clip_threshold = float(input("clip threshold? "))
         parameters.append(clip_threshold)
     return parameters
 
 
-def load_data(sets):
+def load_data(sets,filename):
     """
     Loads a dataset, choices are (i)ris (w)ine or (p)enguin
     """
+    normalised = False
     if sets == "i":
         database = datasets.load_iris()
     elif sets == "w":
         database = datasets.load_wine()
     elif sets == "p":
         database, mean, std = import_penguin("data/penguins_size.csv", False)
+        normalised = True
     else:
-        return None
+        database, mean, std = load_sql(filename,sets)
+        normalised = True
     if sets == "i" or sets == "w":
         database = database.data
         mean = 0
         std = 1
-    return database, mean, std
+    return database, mean, std, normalised
 
 
 def load_gan_weight(filepath, mygan):
@@ -147,20 +153,19 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, sets):
+def show_samples(mygan, mean, std, database, batch, normalised, samples):
     """
     Creates a number of samples
     """
-    samples = input("samples? ")
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        if sets == "p":
+        if normalised:
             generated_data = unnormalize(generated_data, mean, std)
             if s == 0:
                 database = unnormalize(database, mean, std)
         print(generated_data)
-        dagpolt(generated_data, database)
         calculate_fid(generated_data, database)
+        dagpolt(generated_data, database)
 
 
 def save_parameters(parameters, filepath):
@@ -199,14 +204,13 @@ def parameters_handeling(filepath, parameters_list):
     return parameters, successfully_loaded
 
 
-def run(mode, filepath, epochs, parameters, successfully_loaded):
+def run(mode, filepath, epochs, parameters, successfully_loaded, database):
     """
     Creates and trains a GAN from the parameters provided.
     It will load the weights of the GAN if they exist.
     An option will be given to create samples.
     """
     # select dataset
-    database, mean, std = load_data(parameters[0])
     no_field = len(database[1])
     mygan, batch, noise_dim = create_model(parameters, no_field)
     if successfully_loaded:
@@ -228,8 +232,6 @@ def run(mode, filepath, epochs, parameters, successfully_loaded):
         else:
             mygan.save_model(filepath)
         show_loss_progress(mygan.d_losses, mygan.g_losses)
-        show_samples(mygan, mean, std, database, batch, parameters[0])
-    if mode == "s":
         return mygan
 
 
