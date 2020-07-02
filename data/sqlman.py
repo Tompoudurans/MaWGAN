@@ -8,7 +8,8 @@ def load_sql(file,table):
     database = pd.read_sql(table, connection)
     # write a line to handel categorical
     database = database.dropna()
-    database = database,mean,std = get_norm(database)
+    database,mean,std = get_norm(database)
+    return database,mean,std
 
 
 def save_sql(df):
