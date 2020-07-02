@@ -1,7 +1,7 @@
 __pycache__
 .ipynb_checkpoints
-Untitled.ipynb
 results
 *.h5
 *.npy
 *.csv
+*.png

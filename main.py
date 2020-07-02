@@ -5,6 +5,7 @@ from src.tools.fid import calculate_fid
 from src.tools.prepocessing import import_penguin,unnormalize
 from src.tools.core import set_core
 from src.tools.sqlman import load_sql
+from pandas import DataFrame
 from sklearn import datasets
 from math import ceil
 import numpy as np
@@ -38,9 +39,9 @@ def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, cli
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)
-    database, mean, std, normalised = load_data(parameters[0], filepath)
+    database, mean, std, normalised, col = load_data(parameters[0], filepath)
     thegan = run(mode, filepath, epochs, parameters, successfully_loaded, database)
-    fake = show_samples(thegan, mean, std, database, int(parameters[4]), normalised, sample)
+    fake = show_samples(thegan, mean, std, database, int(parameters[4]), normalised, sample, col,filepath)
     save_data(fake,filepath)
 
 
@@ -66,7 +67,7 @@ def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
             noise = np.random.normal(0, 1, (noise_dim, batch))
             generated_data = mygan.generator.predict(noise)
             print(generated_data)
-            dagpolt(generated_data, database)
+            dagpolt(generated_data, database, filepath)
             calculate_fid(generated_data, database)
             epochs = int(input("continue?, enter n* of epochs"))
 
@@ -107,22 +108,22 @@ def load_data(sets,filename):
     """
     Loads a dataset, choices are (i)ris (w)ine or (p)enguin
     """
-    normalised = False
+    normalised = True
     if sets == "i":
         database = datasets.load_iris()
     elif sets == "w":
         database = datasets.load_wine()
     elif sets == "p":
-        database, mean, std = import_penguin("data/penguins_size.csv", False)
-        normalised = True
+        database, mean, std, col = import_penguin("data/penguins_size.csv", False)
     else:
-        database, mean, std = load_sql(filename,sets)
-        normalised = True
+        database, mean, std, col = load_sql(filename,sets)
     if sets == "i" or sets == "w":
+        col = database.feature_names
         database = database.data
         mean = 0
         std = 1
-    return database, mean, std, normalised
+        normalised = False
+    return database, mean, std, normalised, col
 
 
 def load_gan_weight(filepath, mygan):
@@ -132,7 +133,7 @@ def load_gan_weight(filepath, mygan):
     try:
         mygan.load_weights(filepath)
     except OSError:  # as 'Unable to open file':
-        print("Error:404 file not found, starting from scratch")
+        print("file not found, starting from scratch")
     finally:
         return mygan
 
@@ -154,7 +155,7 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, normalised, samples):
+def show_samples(mygan, mean, std, database, batch, normalised, samples, col, filepath):
     """
     Creates a number of samples
     """
@@ -164,9 +165,15 @@ def show_samples(mygan, mean, std, database, batch, normalised, samples):
             generated_data = unnormalize(generated_data, mean, std)
             if s == 0:
                 database = unnormalize(database, mean, std)
+        else:
+            generated_data = DataFrame(generated_data)
+            if s == 0:
+                database = DataFrame(database)
         print(generated_data)
+        generated_data.columns = col
+        database.columns = col
         calculate_fid(generated_data, database)
-        dagpolt(generated_data, database)
+        dagpolt(generated_data, database, filepath)
     return generated_data
 
 
@@ -186,7 +193,7 @@ def load_parameters(filepath):
     try:
         parameter_array = np.load(filepath + "_parameters.npy", allow_pickle=True)
     except OSError:  # as 'Unable to open file':
-        print("Error:404 file not found, starting from scratch")
+        print("file not found, starting from scratch")
         successfully_loaded = False
         parameter_array = None
     else:
@@ -233,7 +240,7 @@ def run(mode, filepath, epochs, parameters, successfully_loaded, database):
             return mygan, database
         else:
             mygan.save_model(filepath)
-        show_loss_progress(mygan.d_losses, mygan.g_losses)
+        show_loss_progress(mygan.d_losses, mygan.g_losses,filepath)
         return mygan
 
 

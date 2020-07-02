@@ -64,22 +64,20 @@ def plotting(tenso,other):
                 mp.scatter(other[x],other[y])
                 mp.show()
 
-def dagpolt(x,y):
+def dagpolt(x,y,filepath):
     fake = pd.DataFrame(x)
     real = pd.DataFrame(y)
     fake['dataset'] = ['fake']*len(x)
     real['dataset'] = ['real']*len(y)
     result = pd.concat([real, fake])
     sns.pairplot(result,hue='dataset')
-    mp.show()
+    mp.savefig(filepath + '_compare.png')
 
-def show_loss_progress(loss_discriminator,loss_generator):
-        print('discriminator')
+def show_loss_progress(loss_discriminator,loss_generator,filepath):
         mp.plot(loss_discriminator)
-        mp.show()
-        print('generator')
+        mp.savefig(filepath  + '_loss_progress_discriminator.png')
         mp.plot(loss_generator)
-        mp.show()
+        mp.savefig(filepath + '_loss_progress_generator.png')
 
 def save_data(df,file):
     try:
