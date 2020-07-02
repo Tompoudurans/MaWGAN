@@ -1,5 +1,5 @@
-from src.main.tengan import dataGAN
-from src.main.wgan import wGAN
+from src.gans.tengan import dataGAN
+from src.gans.wgan import wGAN
 from src.tools.dataman import dagpolt,show_loss_progress
 from src.tools.fid import calculate_fid
 from src.tools.prepocessing import import_penguin,unnormalize
