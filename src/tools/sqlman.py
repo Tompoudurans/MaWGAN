@@ -9,7 +9,7 @@ def load_sql(file,table):
     engine = sa.create_engine('sqlite:///' + file) #creates an empty database
     connection = engine.connect()
     database = pd.read_sql(table, connection)
-    # write a line to handel categorical
+    database = idexes = factorizing(database)
     database = database.dropna()
     database = database,mean,std = get_norm(database)
 
@@ -22,3 +22,12 @@ def save_sql(df):
     df=df.drop(columns=['dataset'])
     df.to_sql('users', con=engine, if_exists='append')
     engine.execute("SELECT * FROM users").fetchall()
+
+def factorizing(data):
+    indexs = []
+    for name in data.columns:
+        if 'O' == data[name].dtype:
+            new = pd.factorize(data[name])
+            data[name] = new[0]
+            indexs.append(new[1])
+    return data,indexs
