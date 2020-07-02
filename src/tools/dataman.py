@@ -10,61 +10,18 @@ import numpy as np
 import random as rd
 import matplotlib.pyplot as mp
 
-def simplesplit(x,y,fac=10):
+def simplesplit(x,fac=10):
+    """
+    Randomly splits the dataset into 2 parts
+    """
     size=len(x)
     z = np.split(rd.sample(range(size),size),[int(size*(1-fac/100))])
-    return [x[z[0]],y[z[0]],x[z[1]],y[z[1]]]
-
-def xref(bas,h):
-    datrain = []
-    datest = []
-    htrain = []
-    htest = []
-    size = len(bas)
-    samp = rd.sample(range(size),size)
-    x = np.split(samp,np.arange(int(size*0.10),size,int(size*0.10)))
-    for i in range(10):
-        train = []
-        test = []
-        for j in range(10):
-            if i == j:
-                test = x[i]
-            else:
-                train = np.concatenate((train,x[j]),axis=None)
-        xtr = []
-        for k in range(len(train)):
-            xtr.append(int(train[k]))# for some resson i need to turn the idex to interger again
-        datrain.append(bas[xtr])
-        datest.append(bas[test])
-        htrain.append(h[xtr])
-        htest.append(h[test])
-        print(i)
-    return [datrain,htrain,datest,htest]
-
-def testmodel(mod,actual):
-    count = 0
-    for i in range(len(actual)):
-        p=np.argmax(mod[i])
-        q=actual[i]
-        if p == q:
-            print(i,')',p,q,'v')
-            count = count + 1
-        else:
-            print(i,')',p,q,'x')
-    print(count,'/',len(actual))
-
-def plotting(tenso,other):
-    tenso = tenso.transpose(1,0)
-    other = other.transpose(1,0)
-    for x in range(len(tenso)):
-        for y in range(len(tenso)):
-            if x < y:
-                print(x,y)
-                mp.scatter(tenso[x],tenso[y])
-                mp.scatter(other[x],other[y])
-                mp.show()
+    return x[z[0]],x[z[1]]
 
 def dagpolt(x,y):
+    """
+    Plots original data vs the synthetic data
+    """
     fake = pd.DataFrame(x)
     real = pd.DataFrame(y)
     fake['dataset'] = ['fake']*len(x)
@@ -74,6 +31,9 @@ def dagpolt(x,y):
     mp.show()
 
 def show_loss_progress(loss_discriminator,loss_generator):
+    """
+    This plots and saves the progress of the Loss function over time
+    """
         print('discriminator')
         mp.plot(loss_discriminator)
         mp.show()
@@ -82,9 +42,12 @@ def show_loss_progress(loss_discriminator,loss_generator):
         mp.show()
 
 def save_data(df,file):
+    """
+    Saves the synthetic data onto a csv. file
+    """
     try:
         df=df.drop(columns=['dataset'])
     except KeyError:
         print('failed')
     finally:
-        df.to_csv(file + '_sythetic.csv')
+        df.to_csv(file + '_synthetic.csv')

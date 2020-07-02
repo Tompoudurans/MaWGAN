@@ -15,22 +15,22 @@ import click
 @click.option("--mode", default="n", help="mode?(s)pyder/(n)ormal/(m)arathon)")
 @click.option("--filepath", prompt="filepath? ", help=" enter the file name and location of the database and model")
 @click.option("--epochs", prompt="epochs? ", help="choose how long that you want to train")
-@click.option("--dataset", default=None, help="chose the dataset/table that the GAN will to train on this can't be a single letter")
-@click.option("--model", default=None, help="chose which model that you what to use")
-@click.option("--opti", default=None, help="chose the optimiser that you want to use")
-@click.option("--noise", default=None, help="chose the length of the noise vector")
-@click.option("--batch", default=None, help="chose how many fake data you want to make in one go")
-@click.option("--layers", default=None, help="chose the number of layers of each network")
-@click.option("--clip", default=None, help="if using wgan chose the cliping threshold")
-@click.option("--core", default=0,type=int, help="select number of core that you like to run")
-@click.option("--sample", default=1,type=int, help="chose the number of generate data that you want: (samples*batch)")
+@click.option("--dataset", default=None, help="choose the dataset/table that the GAN will train on - this can't be a single letter")
+@click.option("--model", default=None, help="choose which model you what to use")
+@click.option("--opti", default=None, help="choose the optimiser you want to use")
+@click.option("--noise", default=None, help="choose the length of the noise vector")
+@click.option("--batch", default=None, help="choose how many fake data you want to make in one go")
+@click.option("--layers", default=None, help="choose the number of layers of each network")
+@click.option("--clip", default=None, help="if using WGAN choose the clipping threshold")
+@click.option("--core", default=0,type=int, help="select the number of cores that you would like to run")
+@click.option("--sample", default=1,type=int, help="choose the number of generated data you want: (samples*batch)")
 
 
 def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, clip, core, sample):
     """
-    This code creates, loads and train a GAN from specified parameters
-    This code is a copy of david foster book 'deep generative models' which
-    has been modified to work with a numeric database
+    This code creates and trains a GAN.
+    Core elements of this code are sourced directly from the David Foster book 'Deep generative models' and have been modified to work with a numeric database such as the iris datasets taken from the library 'sklearn'.
+    Soon this GAN should work on the DCWW dataset.
     """
     click.echo("loading...")
     if core != 0:
@@ -228,11 +228,7 @@ def run(mode, filepath, epochs, parameters, successfully_loaded, database):
         else:
             # train the GAN according to the number of epochs
             mygan.train(database, batch, epochs, step)
-        if mode == "s":
-            # in spyder mode the GAN model is returned so it can be experimented on
-            return mygan, database
-        else:
-            mygan.save_model(filepath)
+        mygan.save_model(filepath)
         show_loss_progress(mygan.d_losses, mygan.g_losses)
         return mygan
 
