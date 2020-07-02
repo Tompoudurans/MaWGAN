@@ -5,3 +5,4 @@ results
 *.h5
 *.npy
 *.csv
+*.png
