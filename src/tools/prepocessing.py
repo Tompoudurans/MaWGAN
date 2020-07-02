@@ -9,8 +9,9 @@ def import_penguin(file,use_categorical):
         penguin = penguin.replace({'Dream':0,'Torgersen':1,'Biscoe':2})
     else:
         penguin = penguin.drop(columns=['sex','species','island'])
+    col = penguin.columns    
     penguin,mean,std = get_norm(penguin)
-    return penguin,mean,std
+    return penguin,mean,std,col
 
 def normalize(dataset,mean,std):
     mid = dataset - mean

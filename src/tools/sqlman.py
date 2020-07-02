@@ -8,7 +8,9 @@ def load_sql(file,table):
     database = pd.read_sql(table, connection)
     # write a line to handel categorical
     database = database.dropna()
-    database = database,mean,std = get_norm(database)
+    col = database.columns
+    database,mean,std,col = get_norm(database)
+    return database
 
 
 def save_sql(df):
@@ -16,3 +18,4 @@ def save_sql(df):
     df=df.drop(columns=['dataset'])
     df.to_sql('users', con=engine, if_exists='append')
     engine.execute("SELECT * FROM users").fetchall()
+ 
