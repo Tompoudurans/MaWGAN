@@ -80,3 +80,11 @@ def show_loss_progress(loss_discriminator,loss_generator):
         print('generator')
         mp.plot(loss_generator)
         mp.show()
+
+def save_data(df,file):
+    try:
+        df=df.drop(columns=['dataset'])
+    except KeyError:
+        print('failed')
+    finally:
+        df.to_csv(file + '_sythetic.csv')

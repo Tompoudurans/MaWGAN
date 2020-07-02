@@ -1,6 +1,6 @@
 from src.gans.tengan import dataGAN
 from src.gans.wgan import wGAN
-from src.tools.dataman import dagpolt,show_loss_progress
+from src.tools.dataman import dagpolt,show_loss_progress,save_data
 from src.tools.fid import calculate_fid
 from src.tools.prepocessing import import_penguin,unnormalize
 from src.tools.core import set_core
@@ -40,7 +40,8 @@ def main(dataset, mode, filepath, epochs, model, opti, noise, batch, layers, cli
     epochs = int(epochs)
     database, mean, std, normalised = load_data(parameters[0], filepath)
     thegan = run(mode, filepath, epochs, parameters, successfully_loaded, database)
-    show_samples(thegan, mean, std, database, int(parameters[4]), normalised, sample)
+    fake = show_samples(thegan, mean, std, database, int(parameters[4]), normalised, sample)
+    save_data(fake,filepath)
 
 
 def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
@@ -166,6 +167,7 @@ def show_samples(mygan, mean, std, database, batch, normalised, samples):
         print(generated_data)
         calculate_fid(generated_data, database)
         dagpolt(generated_data, database)
+    return generated_data
 
 
 def save_parameters(parameters, filepath):
