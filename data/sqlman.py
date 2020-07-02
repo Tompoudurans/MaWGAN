@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from prepocessing import get_norm
+from src.tools.prepocessing import get_norm
 import pandas as pd
 
 def load_sql(file,table):
@@ -11,21 +11,8 @@ def load_sql(file,table):
     database = database,mean,std = get_norm(database)
 
 
-def unusable_save_sql():
-    readings = [
-        Reading(flight='hab1', ts='2015-01-01 09:00:00', temp=24.9, pressure=1020, humidity=40),
-        Reading(flight='hab1', ts='2015-01-01 09:01:00', temp=25.1, pressure=1019, humidity=41),
-        Reading(flight='hab1', ts='2015-01-01 09:02:00', temp=25.5, pressure=1012, humidity=42),
-    ]
-
-    sql = """
-    INSERT INTO readings
-        (flight, ts, temp, pressure, humidity)
-    VALUES
-        (?, ?, ?, ?, ?)
-    """
-    #We can now loop over our readings list and execute our SQL statement once for each entry.
-    for reading in readings:
-        values = (reading.flight, reading.ts, reading.temp, reading.pressure, reading.humidity)
-        connection.execute(sql, values)
-    pd.read_sql('readings', connection)
+def save_sql(df):
+    engine = sa.create_engine('sqlite:///',echo=False)
+    df=df.drop(columns=['dataset'])
+    df.to_sql('users', con=engine, if_exists='append')
+    engine.execute("SELECT * FROM users").fetchall()
