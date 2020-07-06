@@ -58,35 +58,18 @@ def test_load():
     """
     testgan.load_weights('test_')
 
-#this next few test checks the the gan is bulid well and has the correct
-#number of layers, input and output shape
-
-def test_discriminator_layers():
+def test_build():
+    """
+    this test checks the the gan is bulid well and has the correct
+    number of layers, input and output shape
+    """
     assert len(testgan.discriminator.layers) == layers
-
-def test_gentrator_layers():
     assert len(testgan.generator.layers) == layers
-
-def test_discriminator_input():
     assert testgan.discriminator.input_shape == (None, data)
-
-def test_gentrator_input():
     assert testgan.generator.input_shape == (None, noise_vector)
-
-def test_discriminator_output():
     assert testgan.discriminator.output_shape == (None, 1)
-
-def test_gentrator_output():
     assert testgan.generator.output_shape == (None, data)
-
-def test_discriminator_hidden():
     assert testgan.discriminator.layers[1].output_shape == (None, nodes)
-
-def test_gentrator_hidden():
     assert testgan.generator.layers[1].output_shape == (None, nodes)
-
-def test_model_input():
     assert testgan.model.input_shape == (None, noise_vector)
-
-def test_model_output():
     assert testgan.model.output_shape == (None, 1)
