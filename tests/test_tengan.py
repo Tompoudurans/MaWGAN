@@ -5,7 +5,7 @@ Created on Mon Jun  1 15:31:20 2020
 
 @author: c1751832
 """
-from tengan import dataGAN
+from src.gans.tengan import dataGAN
 import numpy
 layers = 5
 nodes = 20
@@ -24,6 +24,7 @@ def test_discriminator_training():
     then compare the untrained sample and trained sample
     the trained sample should provide be better result
     """
+    numpy.random.seed(11)
     untrained=testgan.discriminator.predict(dataset)
     testgan.train_discriminator(dataset, batch_size)
     trained=testgan.discriminator.predict(dataset)
@@ -36,6 +37,7 @@ def test_gan_training():
     then compare the untrained sample and trained sample
     the trained sample should provide be better result
     """
+    numpy.random.seed(10)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake=testgan.generator.predict(noise)
     for i in range(10):
@@ -50,13 +52,13 @@ def test_save():
     """
     testing the save function
     """
-    testgan.save_model('test_')
+    testgan.save_model('test')
 
 def test_load():
     """
     testing the load function
     """
-    testgan.load_weights('test_')
+    testgan.load_weights('test')
 
 def test_build():
     """
