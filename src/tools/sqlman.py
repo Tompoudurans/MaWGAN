@@ -7,7 +7,7 @@ def load_sql(file, table):
     """
     Loads an SQL table and pre-procsses the table, ready to be trained
     """
-    engine = sa.create_engine("sqlite:///" + file ".db")
+    engine = sa.create_engine("sqlite:///" + file + ".db")
     connection = engine.connect()
     database = pd.read_sql(table, connection)
     database, idexes = factorizing(database)
@@ -21,9 +21,11 @@ def save_sql(df,file):
     Saves the generated data to a SQL table called generated_data
     """
     engine = sa.create_engine("sqlite:///" + file + ".db")
-    df = df.drop(columns=["dataset"])
+    try:
+        df = df.drop(columns=["dataset"])
+    except KeyError:
+        pass
     df.to_sql("generated_data", con=engine, if_exists="append")
-    #engine.execute("SELECT * FROM generated_data"").fetchall()
 
 
 def factorizing(data):
