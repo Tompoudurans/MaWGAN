@@ -30,7 +30,7 @@ def save_sql(df,file):
 
 def factorizing(data):
     """
-    trasform categorical data into numrical, saves maping on a list.
+    Transforms categorical data into numerical, saves maping on a list.
     """
     indexs = []
     for name in data.columns:

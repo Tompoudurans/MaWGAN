@@ -4,7 +4,7 @@ from scipy.linalg import sqrtm
 
 def calculate_fid(act1, act2):
     """
-	calculate frechet inception distance:
+	Calculates the Frechet inception distance:
 	d^2 = ||mu_1 – mu_2||^2 + Tr(C_1 + C_2 – 2*sqrt(C_1*C_2))
 	"""
     # calculate mean and covariance statistics

@@ -22,7 +22,7 @@ testgan = dataGAN('adam', noise_vector, data, nodes, layers)
 
 def test_fid():
     """
-    testing fid distance it value should be greater than 0
+    Tests the fid distance, the fid value should be greater than 0.
     """
     testgan.load_weights('tests/testing')
     dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
@@ -32,7 +32,7 @@ def test_fid():
 
 def test_norm():
     """
-    testing  unnormalize funtion it should give the orginal data
+    Tests the 'unnormalize' function, this function should output the orginal data
     """
     dataset=numpy.array([2.1,2.2,2.3])
     n = unnormalize(dataset,6,2)
@@ -43,7 +43,7 @@ def test_norm():
 
 def test_dagplot():
     """
-    test the ploting function
+    Tests the plotting function by just running the code - still needs a assert line
     """
     x=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
     y=testgan.create_fake(batch_size)
@@ -51,7 +51,8 @@ def test_dagplot():
 
 def test_factorizing():
     """
-    test the handiling cartogical data
+    Tests the handling of the categorical data, this function should transform
+    all categorical data in to numbers and provide an index
     """
     data = pandas.DataFrame({'num':[1.0,1.2,1.3],'cat':['A','B','A']})
     newdata,indexs = factorizing(data)
@@ -63,7 +64,7 @@ def test_factorizing():
 
 def test_sql_load_and_save():
     """
-    test
+    Tests the import and export from SQL to python
     """
     df = pandas.DataFrame({1:[1.0,1.2,1.3],2:[2.1,2.2,2.3]})
     save_sql(df,"test")
@@ -73,6 +74,9 @@ def test_sql_load_and_save():
     assert all(dataset == df)
 
 def test_simplesplit():
+    """
+    Tests splits the database into training data and testing data 
+    """
     data=numpy.array([[1.0,1.2],[1.3,1.4],[1.5,2.1],[2.2,2.3],[2.3,2.4]])
     split=simplesplit(data,40)
     assert len(split[0]) == 3
