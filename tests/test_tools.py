@@ -6,22 +6,38 @@ Created on Mon Jun  1 15:31:20 2020
 @author: c1751832
 
 """
+import numpy
+from src.gans.tengan import dataGAN
+from src.tools.prepocessing import unnormalize
+from src.tools.fid import calculate_fid
+from src.tools.dataman import dagplot
 
-from data.prepocessing import unnormalize
-from fid import calculate_fid
 
 def test_fid():
     """
-    testing fid distance it value should be greater than 0
+    Tests the fid distance, the fid value should be greater than 0.
     """
-    data = testgan.create_fake(batch_size)
+    dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
+    data=numpy.array([[2.1,2.2,2.3],[1.1,1.2,1.3]])
     f = calculate_fid(data,dataset)
     assert f > 0
 
-def broken_test_norm():
+
+def test_norm():
     """
-    #testing  unnormalize funtion it should give the orginal data
-    #"""
+    Tests the 'unnormalize' function, this function should output the orginal data
+    """
+    dataset=numpy.array([2.1,2.2,2.3])
     n = unnormalize(dataset,6,2)
-    exp = numpy.array([[8.2, 8.4, 8.6],[10.2,10.4,10.6]])
-    assert all(n == exp)
+    n = numpy.array(n)
+    exp = numpy.array([10.2,10.4,10.6])
+    for i in range(len(n)):
+        assert n[i] == exp[i]
+
+def test_dagplot():
+    """
+    Tests the plotting function by just running the code - still needs a assert line
+    """
+    x=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
+    y=numpy.array([[2.1,2.2,2.3],[1.1,1.2,1.3]])
+    dagplot(x, y,'test')

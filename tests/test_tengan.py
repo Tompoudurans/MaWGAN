@@ -5,7 +5,7 @@ Created on Mon Jun  1 15:31:20 2020
 
 @author: c1751832
 """
-from tengan import dataGAN
+from src.gans.tengan import dataGAN
 import numpy
 layers = 5
 nodes = 20
@@ -50,13 +50,13 @@ def test_save():
     """
     testing the save function
     """
-    testgan.save_model('test_')
+    testgan.save_model('test')
 
 def test_load():
     """
     testing the load function
     """
-    testgan.load_weights('test_')
+    testgan.load_weights('test')
 
 #this next few test checks the the gan is bulid well and has the correct
 #number of layers, input and output shape
