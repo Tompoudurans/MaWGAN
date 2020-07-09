@@ -19,7 +19,7 @@ def simplesplit(x, fac=10):
     return x[z[0]], x[z[1]]
 
 
-def dagplot(x, y):
+def dagplot(x, y,filepath):
     """
     plots original data vs the synthetic data then saves as a pdf
     """

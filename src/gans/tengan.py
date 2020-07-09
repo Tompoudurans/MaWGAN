@@ -149,9 +149,9 @@ class dataGAN:
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.save(filepath + "model.h5")
-        self.discriminator.save(filepath + "discriminator.h5")
-        self.generator.save(filepath + "generator.h5")
+        self.model.save(filepath + "_model.h5")
+        self.discriminator.save(filepath + "_discriminator.h5")
+        self.generator.save(filepath + "_generator.h5")
 
     def load_weights(self, filepath):
         """
