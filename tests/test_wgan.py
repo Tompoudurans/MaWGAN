@@ -12,22 +12,23 @@ nodes = 20
 data = 3
 batch_size = 2
 noise_vector = 10
+clip = 0.1
 dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
 
-testgan = ganrunner.dataGAN('adam', noise_vector, data, nodes, layers)
+testgan = ganrunner.wGAN('adam', noise_vector, data, nodes, layers, clip)
 
-def test_discriminator_training():
+def test_critic_training():
     """
-    Tests the training algorithm of the discriminator.
+    Tests the training algorithm of the critic.
     This is done by taking an untrained sample,
-    training the discriminator, then taking a new sample
+    training the critic, then taking a new sample
     and comparing the untrained sample and trained sample.
     The trained sample should provide a better result.
     """
-    numpy.random.seed(11)
-    untrained=testgan.discriminator.predict(dataset)
-    testgan.train_discriminator(dataset, batch_size)
-    trained=testgan.discriminator.predict(dataset)
+    numpy.random.seed(21)
+    untrained=testgan.critic.predict(dataset)
+    testgan.train_critic(dataset, batch_size)
+    trained=testgan.critic.predict(dataset)
     assert all(untrained < trained)
 
 def test_gan_training():
@@ -37,11 +38,11 @@ def test_gan_training():
     and comparing the untrained sample and trained sample.
     The trained sample should provide a better result
     """
-    numpy.random.seed(8)
+    numpy.random.seed(10)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake=testgan.generator.predict(noise)
     for i in range(10):
-        testgan.train_discriminator(dataset, batch_size)
+        testgan.train_critic(dataset, batch_size)
         testgan.train_generator(batch_size)
     trained_fake=testgan.generator.predict(noise)
     untrained = abs(untrained_fake - dataset)[0]
@@ -65,13 +66,13 @@ def test_build():
     This test checks that the GAN is well built and has the correct
     number of layers, input and output shape
     """
-    assert len(testgan.discriminator.layers) == layers
+    assert len(testgan.critic.layers) == layers
     assert len(testgan.generator.layers) == layers
-    assert testgan.discriminator.input_shape == (None, data)
+    assert testgan.critic.input_shape == (None, data)
     assert testgan.generator.input_shape == (None, noise_vector)
-    assert testgan.discriminator.output_shape == (None, 1)
+    assert testgan.critic.output_shape == (None, 1)
     assert testgan.generator.output_shape == (None, data)
-    assert testgan.discriminator.layers[1].output_shape == (None, nodes)
+    assert testgan.critic.layers[1].output_shape == (None, nodes)
     assert testgan.generator.layers[1].output_shape == (None, nodes)
     assert testgan.model.input_shape == (None, noise_vector)
     assert testgan.model.output_shape == (None, 1)
