@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from src.tools.prepocessing import get_norm
+from .prepocessing import get_norm
 import pandas as pd
 
 
