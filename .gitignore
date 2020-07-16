@@ -1,8 +1,9 @@
 __pycache__
-.ipynb_checkpoints
-Untitled.ipynb
+*.pdf
 results
 *.h5
 *.npy
 *.csv
 *.png
+*.db
+src/ganrunner.egg-info
