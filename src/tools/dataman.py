@@ -19,9 +19,9 @@ def simplesplit(x, fac=10):
     return x[z[0]], x[z[1]]
 
 
-def dagplot(x, y,filepath):
+def dagplot(x, y,filepath,extention='.pdf'):
     """
-    plots original data vs the synthetic data then saves as a pdf
+    plots original data vs the synthetic data then saves
     """
     fake = pd.DataFrame(x)
     real = pd.DataFrame(y)
@@ -29,16 +29,16 @@ def dagplot(x, y,filepath):
     real['dataset'] = ['real']*len(y)
     result = pd.concat([real, fake])
     sns.pairplot(result,hue='dataset')
-    mp.savefig(filepath + '_compare.pdf')
+    mp.savefig(filepath + '_compare'+ extention)
 
-def show_loss_progress(loss_discriminator,loss_generator,filepath):
+def show_loss_progress(loss_discriminator,loss_generator,filepath,extention='.pdf'):
     """
     This plots and saves the progress of the Loss function over time
     """
     mp.plot(loss_discriminator)
-    mp.savefig(filepath  + '_loss_progress_discriminator.png')
+    mp.savefig(filepath  + '_loss_progress_discriminator' + extention)
     mp.plot(loss_generator)
-    mp.savefig(filepath + '_loss_progress_generator.png')
+    mp.savefig(filepath + '_loss_progress_generator' + extention)
 
 def save_data(df,file):
     """
