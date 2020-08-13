@@ -31,20 +31,20 @@ import click
 @click.option("--opti", default=None, help="chose the optimiser that you want to use")
 @click.option("--noise", default=None, help="chose the length of the noise vector")
 @click.option(
-    "--batch", default=None, help="chose how many fake data you want to make in one go"
+    "--batch", default=None, help="choose how many fake data you want to make in one go"
 )
 @click.option(
-    "--layers", default=None, help="chose the number of layers of each network"
+    "--layers", default=None, help="choose the number of layers of each network"
 )
 @click.option("--clip", default=None, help="if using wgan chose the cliping threshold")
 @click.option(
-    "--core", default=0, type=int, help="select number of core that you like to run"
+    "--core", default=0, type=int, help="select number of cores to be used"
 )
 @click.option(
     "--sample",
     default=1,
     type=int,
-    help="chose the number of generate data that you want: (samples*batch)",
+    help="choose the size generated data (samples*batch)",
 )
 def main(
     dataset,
