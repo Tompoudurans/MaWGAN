@@ -5,7 +5,7 @@ Created on Mon Jun  1 15:31:20 2020
 
 @author: c1751832
 """
-from tengan import dataGAN
+from src.gans.tengan import dataGAN
 import numpy
 layers = 5
 nodes = 20
@@ -18,12 +18,13 @@ testgan = dataGAN('adam', noise_vector, data, nodes, layers)
 
 def test_discriminator_training():
     """
-    test the training algorithm of the discriminator
-    this done by taking untrained sample,
-    training the discriminator and take new sample
-    then compare the untrained sample and trained sample
-    the trained sample should provide be better result
+    Tests the training algorithm of the discriminator.
+    This is done by taking an untrained sample,
+    training the discriminator, then taking a new sample
+    and comparing the untrained sample and trained sample.
+    The trained sample should provide a better result.
     """
+    numpy.random.seed(11)
     untrained=testgan.discriminator.predict(dataset)
     testgan.train_discriminator(dataset, batch_size)
     trained=testgan.discriminator.predict(dataset)
@@ -31,11 +32,12 @@ def test_discriminator_training():
 
 def test_gan_training():
     """
-    test the training algorithm of the GAN as the generator can not be trained directly
-    this done by taking untrained sample, training the GAN 10 times and take new sample
-    then compare the untrained sample and trained sample
-    the trained sample should provide be better result
+    Tests the training algorithm of the GAN as the generator cannot be trained directly.
+    This is done by taking an untrained sample, training the GAN 10 times, then taking a new sample
+    and comparing the untrained sample and trained sample.
+    The trained sample should provide a better result
     """
+    numpy.random.seed(10)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake=testgan.generator.predict(noise)
     for i in range(10):
@@ -48,45 +50,28 @@ def test_gan_training():
 
 def test_save():
     """
-    testing the save function
+    Tests the 'save' function
     """
-    testgan.save_model('test_')
+    testgan.save_model('test')
 
 def test_load():
     """
-    testing the load function
+    Tests the 'load' function
     """
-    testgan.load_weights('test_')
+    testgan.load_weights('test')
 
-#this next few test checks the the gan is bulid well and has the correct
-#number of layers, input and output shape
-
-def test_discriminator_layers():
+def test_build():
+    """
+    This test checks that the GAN is well built and has the correct
+    number of layers, input and output shape
+    """
     assert len(testgan.discriminator.layers) == layers
-
-def test_gentrator_layers():
     assert len(testgan.generator.layers) == layers
-
-def test_discriminator_input():
     assert testgan.discriminator.input_shape == (None, data)
-
-def test_gentrator_input():
     assert testgan.generator.input_shape == (None, noise_vector)
-
-def test_discriminator_output():
     assert testgan.discriminator.output_shape == (None, 1)
-
-def test_gentrator_output():
     assert testgan.generator.output_shape == (None, data)
-
-def test_discriminator_hidden():
     assert testgan.discriminator.layers[1].output_shape == (None, nodes)
-
-def test_gentrator_hidden():
     assert testgan.generator.layers[1].output_shape == (None, nodes)
-
-def test_model_input():
     assert testgan.model.input_shape == (None, noise_vector)
-
-def test_model_output():
     assert testgan.model.output_shape == (None, 1)

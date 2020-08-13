@@ -2,32 +2,40 @@ import sqlalchemy as sa
 from src.tools.prepocessing import get_norm
 import pandas as pd
 
-def load_sql(file,table):
+
+def load_sql(file, table):
     """
     Loads an SQL table and pre-procsses the table, ready to be trained
     """
-    engine = sa.create_engine('sqlite:///' + file) #creates an empty database
+    engine = sa.create_engine("sqlite:///" + file + ".db")
     connection = engine.connect()
     database = pd.read_sql(table, connection)
-    database = idexes = factorizing(database)
+    database, idexes = factorizing(database)
     database = database.dropna()
-    database = database,mean,std = get_norm(database)
+    database, mean, std = get_norm(database)
+    return database, mean, std ,idexes
 
 
-def save_sql(df):
+def save_sql(df,file):
     """
-    Saves the generated data to a SQL table - although now it doesnt seem to work
+    Saves the generated data to a SQL table called generated_data
     """
-    engine = sa.create_engine('sqlite:///',echo=False)
-    df=df.drop(columns=['dataset'])
-    df.to_sql('users', con=engine, if_exists='append')
-    engine.execute("SELECT * FROM users").fetchall()
+    engine = sa.create_engine("sqlite:///" + file + ".db")
+    try:
+        df = df.drop(columns=["dataset"])
+    except KeyError:
+        pass
+    df.to_sql("generated_data", con=engine, if_exists="append")
+
 
 def factorizing(data):
+    """
+    Transforms categorical data into numerical, saves maping on a list.
+    """
     indexs = []
     for name in data.columns:
-        if 'O' == data[name].dtype:
+        if "O" == data[name].dtype:
             new = pd.factorize(data[name])
             data[name] = new[0]
             indexs.append(new[1])
-    return data,indexs
+    return data, indexs
