@@ -25,11 +25,11 @@ import click
 @click.option(
     "--dataset",
     default=None,
-    help="chose the dataset/table that the GAN will to train on this can't be a single letter",
+    help="choose the dataset/table that the GAN will to train on this can't be a single letter",
 )
-@click.option("--model", default=None, help="chose which model that you what to use")
-@click.option("--opti", default=None, help="chose the optimiser that you want to use")
-@click.option("--noise", default=None, help="chose the length of the noise vector")
+@click.option("--model", default=None, help="choose which model that you what to use")
+@click.option("--opti", default=None, help="choose the optimiser that you want to use")
+@click.option("--noise", default=None, help="choose the length of the noise vector")
 @click.option(
     "--batch", default=None, help="choose how many fake data you want to make in one go"
 )
