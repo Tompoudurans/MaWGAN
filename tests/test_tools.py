@@ -20,7 +20,7 @@ def test_fid():
     """
     Tests the fid distance, the fid value should be greater than 0.
     """
-    testgan.load_weights('tests/testing')
+    testgan.load_weights('tests/test')
     dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
     data = testgan.create_fake(batch_size)
     f = ganrunner.calculate_fid(data,dataset)
@@ -63,8 +63,8 @@ def test_sql_load_and_save():
     Tests the import and export from SQL to python
     """
     df = pandas.DataFrame({1:[1.0,1.2,1.3],2:[2.1,2.2,2.3]})
-    ganrunner.save_sql(df,"test")
-    database, mean, std ,idexes = ganrunner.load_sql("test", "generated_data")
+    ganrunner.save_sql(df,"tests/test")
+    database, mean, std ,idexes = ganrunner.load_sql("tests/test", "generated_data")
     dataset = ganrunner.unnormalize(database,mean,std)
     dataset = dataset.drop(columns=[0])
     assert all(dataset == df)

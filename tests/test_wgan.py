@@ -7,6 +7,7 @@ Created on Mon Jun  1 15:31:20 2020
 """
 import ganrunner
 import numpy
+import os
 layers = 5
 nodes = 20
 data = 3
@@ -53,13 +54,23 @@ def test_save():
     """
     Tests the 'save' function
     """
-    testgan.save_model('test')
+    testgan.save_model('tests/test')
+    assert os.path.isfile('tests/test_generator.h5')
+    assert os.path.isfile('tests/test_critic.h5')
+    assert os.path.isfile('tests/test_model.h5')
 
 def test_load():
     """
-    Tests the 'load' function
+    Tests the 'load' function check the first weight
     """
-    testgan.load_weights('test')
+    test = ganrunner.wGAN('adam', noise_vector, data, nodes, layers, clip)
+    generator_weight = test.generator.get_weights()
+    critic_weight = test.critic.get_weights()
+    model_weight = test.model.get_weights()
+    test.load_weights('tests/test')
+    assert (generator_weight[0] != test.generator.get_weights()[0]).all()
+    assert (critic_weight[0] != test.critic.get_weights()[0]).all()
+    assert (model_weight[0] != test.model.get_weights()[0]).all()
 
 def test_build():
     """
