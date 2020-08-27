@@ -79,7 +79,7 @@ def main(
     database, mean, std, normalised = load_data(parameters[0], filepath)
     thegan = run(mode, filepath, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
-        thegan, mean, std, database, int(parameters[4]), normalised, sample
+        thegan, mean, std, database, int(parameters[4]), normalised, sample, filepath
     )
     save_sql(fake, filepath)
 
@@ -194,7 +194,7 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, normalised, samples):
+def show_samples(mygan, mean, std, database, batch, normalised, samples, filepath):
     """
     Creates a number of samples
     """
@@ -206,7 +206,7 @@ def show_samples(mygan, mean, std, database, batch, normalised, samples):
                 database = unnormalize(database, mean, std)
         print(generated_data)
         calculate_fid(generated_data, database)
-        dagplot(generated_data, database)
+        dagplot(generated_data, database, filepath)
     return generated_data
 
 
@@ -269,7 +269,7 @@ def run(mode, filepath, epochs, parameters, successfully_loaded, database):
             # train the GAN according to the number of epochs
             mygan.train(database, batch, epochs, step)
         mygan.save_model(filepath)
-        show_loss_progress(mygan.d_losses, mygan.g_losses)
+        show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
         return mygan
 
 
