@@ -24,7 +24,7 @@ def test_fid():
     """
     Tests the fid distance, the fid value should be greater than 0.
     """
-    testgan.load_weights('test')
+    testgan.load_weights('tests/testing')
     dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
     data = testgan.create_fake(batch_size)
     f = calculate_fid(data,dataset)
@@ -46,8 +46,8 @@ def test_dagplot():
     Tests the plotting function by just running the code - still needs a assert line
     """
     x=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
-    y=numpy.array([[2.1,2.2,2.3],[1.1,1.2,1.3]])
-    dagplot(x, y,'test')
+    y=testgan.create_fake(batch_size)
+    dagplot(x, y)
 
 def test_factorizing():
     """

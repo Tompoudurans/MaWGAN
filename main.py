@@ -76,10 +76,10 @@ def main(
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)
-    database, mean, std, normalised = load_data(parameters[0], filepath)
+    database, mean, std, normalised, col = load_data(parameters[0], filepath)
     thegan = run(mode, filepath, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
-        thegan, mean, std, database, int(parameters[4]), normalised, sample, filepath
+        thegan, mean, std, database, int(parameters[4]), normalised, sample, filepath, col
     )
     save_sql(fake, filepath)
 
@@ -156,13 +156,13 @@ def load_data(sets, filename):
         database, mean, std = import_penguin("data/penguins_size.csv", False)
         normalised = True
     else:
-        database, mean, std, indexs = load_sql(filename, sets)
+        database, mean, std, indexs, col = load_sql(filename, sets)
         normalised = True
     if sets == "i" or sets == "w":
         database = database.data
         mean = 0
         std = 1
-    return database, mean, std, normalised
+    return database, mean, std, normalised, col
 
 
 def load_gan_weight(filepath, mygan):
@@ -194,7 +194,7 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, normalised, samples, filepath):
+def show_samples(mygan, mean, std, database, batch, normalised, samples, filepath, col):
     """
     Creates a number of samples
     """
@@ -202,7 +202,9 @@ def show_samples(mygan, mean, std, database, batch, normalised, samples, filepat
         generated_data = mygan.create_fake(batch)
         if normalised:
             generated_data = unnormalize(generated_data, mean, std)
+            generated_data.columns = col
             if s == 0:
+                database.columns = col
                 database = unnormalize(database, mean, std)
         print(generated_data)
         calculate_fid(generated_data, database)
