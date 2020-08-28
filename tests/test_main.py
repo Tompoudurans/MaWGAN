@@ -1,7 +1,8 @@
 import subprocess
 import os
-#import main as ganrunner
+import main as ganrunner
 from randomdatagen import generate_random_testing_data
+import numpy
 #import ganrunner
 
 def test_help():
@@ -51,4 +52,13 @@ def test_normal_run():
     assert file_size < os.stat('flight.db').st_size and (file_size > 0)
 
 def test_marathon():
-    pass
+    filepath = 'marathon_test'
+    layers = 3
+    nodes = 7
+    data = 3
+    batch_size = 2
+    noise_vector = 10
+    epochs = 1020
+    dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
+    testgan = ganrunner.dataGAN('adam', noise_vector, data, nodes, layers)
+    ganrunner.marathon_mode(testgan, dataset, batch_size, noise_vector, filepath, epochs)

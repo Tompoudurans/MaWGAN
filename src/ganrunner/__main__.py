@@ -87,15 +87,10 @@ def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
     at epoch 0. The result of the training is displayed and from there you can continue training if you wish.
     """
     while epochs > 0:
-        mygan.train(database, batch, 50000, 1000)
-        mygan.save_model(filepath)
-        np.savetxt(filepath + str(epochs) + "_d_losses.txt", mygan.g_losses)
-        np.savetxt(filepath + str(epochs) + "_g_losses.txt", mygan.g_losses)
-        mygan.d_losses, mygan.g_losses = [], []
-        epochs = epochs - 50000
-        if epochs < 50000 and epochs > 0:
+        if epochs < 50000:
             print("almost done")
             mygan.train(database, batch, epochs, 1000)
+<<<<<<< HEAD:src/ganrunner/__main__.py
             break
         if epochs == 0:
             noise = np.random.normal(0, 1, (noise_dim, batch))
@@ -105,6 +100,15 @@ def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
             tools.calculate_fid(generated_data, database)
             epochs = int(input("continue?, enter n* of epochs"))
 
+=======
+        else:
+            mygan.train(database, batch, 50000, 1000)
+            epochs = epochs - 50000
+            mygan.save_model(filepath)
+            show_loss_progress(mygan.d_losses, mygan.g_losses)#filepath + '_' + str(epochs))
+            mygan.d_losses, mygan.g_losses = [], []
+        return mygan
+>>>>>>> created a test for marathon mode:main.py
 
 def unpack(p):
     """
@@ -223,7 +227,7 @@ def load_parameters(filepath):
     try:
         parameter_array = np.load(filepath + "_parameters.npy", allow_pickle=True)
     except OSError:  # as 'Unable to open file':
-        print("Error:404 file not found, starting from scratch")
+        print("file not found, starting from scratch")
         successfully_loaded = False
         parameter_array = None
     else:
@@ -261,7 +265,7 @@ def run(mode, filepath, epochs, parameters, successfully_loaded, database):
     if epochs > 0:
         step = int(math.ceil(epochs * 0.01))
         if mode == "m":
-            marathon_mode(mygan, database, batch, noise_dim, filepath, epochs)
+            mygan = marathon_mode(mygan, database, batch, noise_dim, filepath, epochs)
         else:
             # train the GAN according to the number of epochs
             mygan.train(database, batch, epochs, step)
