@@ -54,9 +54,9 @@ def test_save():
     Tests the 'save' function
     """
     testgan.save_model('tests/test')
-    assert os.path.isfile('tests/test_generator.h5')
-    assert os.path.isfile('tests/test_discriminator.h5')
-    assert os.path.isfile('tests/test_model.h5')
+    assert os.stat('tests/test_generator.h5').st_size > 0
+    assert os.stat('tests/test_discriminator.h5').st_size > 0
+    assert os.stat('tests/test_model.h5').st_size > 0
 
 def test_load():
     """
