@@ -1,6 +1,6 @@
 from src.gans.tengan import dataGAN
 from src.gans.wgan import wGAN
-from src.tools.dataman import dagplot, show_loss_progress, save_data
+from src.tools.dataman import dagplot, show_loss_progress, save_data, setup_log
 from src.tools.fid import calculate_fid
 from src.tools.prepocessing import import_penguin, unnormalize
 from src.tools.core import set_core
@@ -73,6 +73,7 @@ def main(
     click.echo("loading...")
     if core != 0:
         set_core(core)
+    setup_log(filepath)
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)

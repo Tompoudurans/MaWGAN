@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import random as rd
 import matplotlib.pyplot as mp
+import logging
 
 
 def simplesplit(x, fac=10):
@@ -41,7 +42,12 @@ def show_loss_progress(loss_discriminator, loss_generator, filepath, extention="
     mp.savefig(filepath + "_loss_progress_discriminator" + extention)
     mp.plot(loss_generator)
     mp.savefig(filepath + "_loss_progress_generator" + extention)
+    logging.info(loss_discriminator)
+    logging.info(loss_generator)
 
+def setup_log(filepath):
+    logging.basicConfig(filename=filepath, level=logging.INFO,
+                    format='%(asctime)s:%(levelname)s: \n%(message)s')
 
 def save_data(df, file):
     """
