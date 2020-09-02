@@ -75,7 +75,7 @@ def test_sql_load_and_save():
 
 def test_simplesplit():
     """
-    Tests splits the database into training data and testing data 
+    Tests splits the database into training data and testing data
     """
     data=numpy.array([[1.0,1.2],[1.3,1.4],[1.5,2.1],[2.2,2.3],[2.3,2.4]])
     split=simplesplit(data,40)

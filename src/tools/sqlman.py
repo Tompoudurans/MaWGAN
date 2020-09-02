@@ -13,7 +13,8 @@ def load_sql(file, table):
     database, idexes = factorizing(database)
     database = database.dropna()
     database, mean, std = get_norm(database)
-    return database, mean, std ,idexes
+    col = database.columns
+    return database, mean, std ,idexes, col
 
 
 def save_sql(df,file):
