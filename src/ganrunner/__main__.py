@@ -1,16 +1,10 @@
-from src.gans.tengan import dataGAN
-from src.gans.wgan import wGAN
-from src.tools.dataman import dagplot, show_loss_progress, save_data, setup_log
-from src.tools.fid import calculate_fid
-from src.tools.prepocessing import import_penguin, unnormalize
-from src.tools.core import set_core
-from src.tools.sqlman import load_sql, save_sql
-from sklearn import datasets
-from math import ceil
+import sklearn
+import math
 import numpy as np
+import ganrunner.tools as tools
+import ganrunner.gans as gans
 import click
 
-# TODO: from src.tools.dataman import dagplot to import src.tools.dataman -> dataman.dagplot
 
 @click.command()
 @click.option("--mode", default="n", help="mode?(s)pyder/(n)ormal/(m)arathon)")
@@ -72,7 +66,7 @@ def main(
     """
     click.echo("loading...")
     if core != 0:
-        set_core(core)
+        tools.set_core(core)
     setup_log(filepath)
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
@@ -82,7 +76,7 @@ def main(
     fake = show_samples(
         thegan, mean, std, database, int(parameters[4]), normalised, sample, filepath, col
     )
-    save_sql(fake, filepath)
+    tools.save_sql(fake, filepath)
 
 
 def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
@@ -107,8 +101,8 @@ def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
             noise = np.random.normal(0, 1, (noise_dim, batch))
             generated_data = mygan.generator.predict(noise)
             print(generated_data)
-            dagpolt(generated_data, database)
-            calculate_fid(generated_data, database)
+            tools.dagpolt(generated_data, database)
+            tools.calculate_fid(generated_data, database)
             epochs = int(input("continue?, enter n* of epochs"))
 
 
@@ -150,14 +144,14 @@ def load_data(sets, filename):
     """
     normalised = False
     if sets == "i":
-        database = datasets.load_iris()
+        database = sklearn.datasets.load_iris()
     elif sets == "w":
-        database = datasets.load_wine()
+        database = sklearn.datasets.load_wine()
     elif sets == "p":
-        database, mean, std = import_penguin("data/penguins_size.csv", False)
+        database, mean, std = tools.import_penguin("data/penguins_size.csv", False)
         normalised = True
     else:
-        database, mean, std, indexs, col = load_sql(filename, sets)
+        database, mean, std, indexs, col = tools.load_sql(filename, sets)
         normalised = True
     if sets == "i" or sets == "w":
         database = database.data
@@ -184,10 +178,10 @@ def create_model(parameters, no_field):
     """
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
     if use_model == "g":
-        mygan = dataGAN(opti, noise_dim, no_field, batch, number_of_layers)
+        mygan = gans.dataGAN(opti, noise_dim, no_field, batch, number_of_layers)
         mygan.discriminator.summary()
     elif use_model == "w":
-        mygan = wGAN(opti, noise_dim, no_field, batch, number_of_layers, parameters[6])
+        mygan = gans.wGAN(opti, noise_dim, no_field, batch, number_of_layers, parameters[6])
         mygan.critic.summary()
     # print the stucture of the gan
     mygan.generator.summary()
@@ -202,14 +196,14 @@ def show_samples(mygan, mean, std, database, batch, normalised, samples, filepat
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
         if normalised:
-            generated_data = unnormalize(generated_data, mean, std)
+            generated_data = tools.unnormalize(generated_data, mean, std)
             generated_data.columns = col
             if s == 0:
                 database.columns = col
-                database = unnormalize(database, mean, std)
+                database = tools.unnormalize(database, mean, std)
         print(generated_data)
-        calculate_fid(generated_data, database)
-        dagplot(generated_data, database, filepath)
+        tools.calculate_fid(generated_data, database)
+        tools.dagplot(generated_data, database, filepath)
     return generated_data
 
 
@@ -265,14 +259,14 @@ def run(mode, filepath, epochs, parameters, successfully_loaded, database):
         print("epochs too small, switch to normal ")
         mode = "n"
     if epochs > 0:
-        step = int(ceil(epochs * 0.01))
+        step = int(math.ceil(epochs * 0.01))
         if mode == "m":
             marathon_mode(mygan, database, batch, noise_dim, filepath, epochs)
         else:
             # train the GAN according to the number of epochs
             mygan.train(database, batch, epochs, step)
         mygan.save_model(filepath)
-        show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+        tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
         return mygan
 
 

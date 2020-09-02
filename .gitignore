@@ -1,8 +1,9 @@
 __pycache__
-*.png
+*.pdf
+results
 *.h5
 *.npy
 *.csv
-*.pdf
+*.png
 *.db
-src/ganrunner.egg-info/
+src/ganrunner.egg-info
