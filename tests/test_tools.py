@@ -9,6 +9,7 @@ Created on Mon Jun  1 15:31:20 2020
 import numpy
 import pandas
 import ganrunner
+import os
 layers = 5
 nodes = 20
 data = 3
@@ -43,7 +44,8 @@ def test_dagplot():
     """
     x=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
     y=testgan.create_fake(batch_size)
-    ganrunner.dagplot(x, y)
+    ganrunner.dagplot(x, y, 'test')
+    assert os.path.isfile("test_compare.pdf")
 
 def test_factorizing():
     """
