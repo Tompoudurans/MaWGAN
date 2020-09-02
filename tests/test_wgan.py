@@ -28,7 +28,8 @@ def test_critic_training():
     """
     numpy.random.seed(21)
     untrained=testgan.critic.predict(dataset)
-    testgan.train_critic(dataset, batch_size)
+    for i in range(5):
+        testgan.train_critic(dataset, batch_size)
     trained=testgan.critic.predict(dataset)
     assert all(untrained < trained)
 

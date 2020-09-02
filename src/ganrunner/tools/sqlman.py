@@ -12,8 +12,8 @@ def load_sql(file, table):
     database = pd.read_sql(table, connection)
     database, idexes = factorizing(database)
     database = database.dropna()
-    database, mean, std = get_norm(database)
     col = database.columns
+    database, mean, std = get_norm(database)
     return database, mean, std ,idexes, col
 
 
