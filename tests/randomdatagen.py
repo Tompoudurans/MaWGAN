@@ -5,13 +5,14 @@ from random import uniform, randint
 import sqlalchemy as sa
 import pandas as pd
 
+
 def generate_random_testing_data(size):
     """
     create random testing data 3 numrical
     """
-    engine = sa.create_engine('sqlite:///flight.db')
+    engine = sa.create_engine("sqlite:///flight.db")
     connection = engine.connect()
-    Reading = namedtuple('Reading', 'temp, pressure, humidity')
+    Reading = namedtuple("Reading", "temp, pressure, humidity")
 
     sql = """
     CREATE TABLE readings (
@@ -29,8 +30,10 @@ def generate_random_testing_data(size):
         Reading(
             temp=round(uniform(23, 27), 1),
             pressure=randint(1020, 1050),
-            humidity=randint(30, 50))
-        for i in range(size)]
+            humidity=randint(30, 50),
+        )
+        for i in range(size)
+    ]
 
     sql = """
         INSERT INTO readings
@@ -42,4 +45,4 @@ def generate_random_testing_data(size):
     for reading in readings:
         values = (reading.temp, reading.pressure, reading.humidity)
         connection.execute(sql, values)
-    return pd.read_sql('readings',connection)
+    return pd.read_sql("readings", connection)

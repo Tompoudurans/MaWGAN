@@ -14,10 +14,10 @@ def load_sql(file, table):
     database = database.dropna()
     col = database.columns
     database, mean, std = get_norm(database)
-    return database, mean, std ,idexes, col
+    return database, mean, std, idexes, col
 
 
-def save_sql(df,file):
+def save_sql(df, file):
     """
     Saves the generated data to a SQL table called generated_data
     """
@@ -26,7 +26,7 @@ def save_sql(df,file):
         df = df.drop(columns=["dataset"])
     except KeyError:
         pass
-    df.to_sql("generated_data", con=engine, if_exists="append")
+    df.to_sql("generated_data", con=engine, if_exists="replace")
 
 
 def factorizing(data):

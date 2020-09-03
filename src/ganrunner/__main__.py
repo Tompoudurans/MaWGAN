@@ -67,14 +67,22 @@ def main(
     click.echo("loading...")
     if core != 0:
         tools.set_core(core)
-    setup_log(filepath)
+    tools.setup_log(filepath + "_progress.log")
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)
     database, mean, std, normalised, col = load_data(parameters[0], filepath)
     thegan = run(mode, filepath, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
-        thegan, mean, std, database, int(parameters[4]), normalised, sample, filepath, col
+        thegan,
+        mean,
+        std,
+        database,
+        int(parameters[4]),
+        normalised,
+        sample,
+        filepath,
+        col,
     )
     tools.save_sql(fake, filepath)
 
@@ -90,25 +98,16 @@ def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
         if epochs < 50000:
             print("almost done")
             mygan.train(database, batch, epochs, 1000)
-<<<<<<< HEAD:src/ganrunner/__main__.py
-            break
-        if epochs == 0:
-            noise = np.random.normal(0, 1, (noise_dim, batch))
-            generated_data = mygan.generator.predict(noise)
-            print(generated_data)
-            tools.dagpolt(generated_data, database)
-            tools.calculate_fid(generated_data, database)
-            epochs = int(input("continue?, enter n* of epochs"))
-
-=======
         else:
             mygan.train(database, batch, 50000, 1000)
             epochs = epochs - 50000
             mygan.save_model(filepath)
-            show_loss_progress(mygan.d_losses, mygan.g_losses)#filepath + '_' + str(epochs))
+            show_loss_progress(
+                mygan.d_losses, mygan.g_losses
+            )  # filepath + '_' + str(epochs))
             mygan.d_losses, mygan.g_losses = [], []
         return mygan
->>>>>>> created a test for marathon mode:main.py
+
 
 def unpack(p):
     """
@@ -185,7 +184,9 @@ def create_model(parameters, no_field):
         mygan = gans.dataGAN(opti, noise_dim, no_field, batch, number_of_layers)
         mygan.discriminator.summary()
     elif use_model == "w":
-        mygan = gans.wGAN(opti, noise_dim, no_field, batch, number_of_layers, parameters[6])
+        mygan = gans.wGAN(
+            opti, noise_dim, no_field, batch, number_of_layers, parameters[6]
+        )
         mygan.critic.summary()
     # print the stucture of the gan
     mygan.generator.summary()
@@ -203,8 +204,8 @@ def show_samples(mygan, mean, std, database, batch, normalised, samples, filepat
             generated_data = tools.unnormalize(generated_data, mean, std)
             generated_data.columns = col
             if s == 0:
-                database.columns = col
                 database = tools.unnormalize(database, mean, std)
+                database.columns = col
         print(generated_data)
         tools.calculate_fid(generated_data, database)
         tools.dagplot(generated_data, database, filepath)
