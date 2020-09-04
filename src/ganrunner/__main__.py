@@ -67,7 +67,7 @@ def main(
     click.echo("loading...")
     if core != 0:
         tools.set_core(core)
-    setup_log(filepath)
+    tools.setup_log(filepath)
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)
@@ -199,8 +199,8 @@ def show_samples(mygan, mean, std, database, batch, normalised, samples, filepat
             generated_data = tools.unnormalize(generated_data, mean, std)
             generated_data.columns = col
             if s == 0:
-                database.columns = col
                 database = tools.unnormalize(database, mean, std)
+                database.columns = col
         print(generated_data)
         tools.calculate_fid(generated_data, database)
         tools.dagplot(generated_data, database, filepath)
