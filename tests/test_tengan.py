@@ -41,9 +41,7 @@ def test_gan_training():
     numpy.random.seed(8)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake=testgan.generator.predict(noise)
-    for i in range(10):
-        testgan.train_discriminator(dataset, batch_size)
-        testgan.train_generator(batch_size)
+    testgan.train(dataset, batch_size, 10, 1)
     trained_fake=testgan.generator.predict(noise)
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]

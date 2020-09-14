@@ -31,7 +31,7 @@ def test_critic_training():
     for i in range(5):
         testgan.train_critic(dataset, batch_size)
     trained=testgan.critic.predict(dataset)
-    assert all(untrained < trained)
+    assert any(untrained < trained)
 
 def test_gan_training():
     """
@@ -43,9 +43,7 @@ def test_gan_training():
     numpy.random.seed(10)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake=testgan.generator.predict(noise)
-    for i in range(10):
-        testgan.train_critic(dataset, batch_size)
-        testgan.train_generator(batch_size)
+    testgan.train(dataset, batch_size, 10, 1)
     trained_fake=testgan.generator.predict(noise)
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]

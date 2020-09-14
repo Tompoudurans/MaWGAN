@@ -65,7 +65,7 @@ def test_sql_load_and_save():
     Tests the import and export from SQL to python
     """
     df = pandas.DataFrame({1:[1.0,1.2,1.3],2:[2.1,2.2,2.3]})
-    ganrunner.save_sql(df,"tests/test")
+    ganrunner.save_sql(df,"tests/test","replace")
     database, mean, std , idexes, col = ganrunner.load_sql("tests/test", "generated_data")
     dataset = ganrunner.unnormalize(database,mean,std)
     dataset = dataset.drop(columns=[0])
