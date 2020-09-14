@@ -1,6 +1,6 @@
-name: data exprore testing
+name: ganrunner testing
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:

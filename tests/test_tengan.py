@@ -29,7 +29,8 @@ def test_discriminator_training():
     """
     numpy.random.seed(11)
     untrained = testgan.discriminator.predict(dataset)
-    testgan.train_discriminator(dataset, batch_size)
+    for i in range(5):
+        testgan.train_discriminator(dataset, batch_size)
     trained = testgan.discriminator.predict(dataset)
     assert all(untrained < trained)
 
@@ -44,7 +45,7 @@ def test_gan_training():
     numpy.random.seed(8)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake = testgan.generator.predict(noise)
-    testgan.train(dataset, batch_size, 10, 1)
+    testgan.train(dataset, batch_size, 15, 1)
     trained_fake = testgan.generator.predict(noise)
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
