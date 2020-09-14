@@ -42,10 +42,6 @@ class wGAN:
         muti = y_true * y_pred
         s = K.sum(muti)
         return s / self.z_dim
-        # return -K.mean(y_true * y_pred)
-
-    def wasserstein_critic(self, fake, real):
-        return K.mean(fake) - K.mean(real)
 
     def make_generator(self, number_of_layers):
         """
