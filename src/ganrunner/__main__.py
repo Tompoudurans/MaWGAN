@@ -74,7 +74,15 @@ def main(
     database, mean, std, normalised, col = load_data(parameters[0], filepath)
     thegan = run(mode, filepath, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
-        thegan, mean, std, database, int(parameters[4]), normalised, sample, filepath, col
+        thegan,
+        mean,
+        std,
+        database,
+        int(parameters[4]),
+        normalised,
+        sample,
+        filepath,
+        col,
     )
     tools.save_sql(fake, filepath)
 
@@ -181,7 +189,9 @@ def create_model(parameters, no_field):
         mygan = gans.dataGAN(opti, noise_dim, no_field, batch, number_of_layers)
         mygan.discriminator.summary()
     elif use_model == "w":
-        mygan = gans.wGAN(opti, noise_dim, no_field, batch, number_of_layers, parameters[6])
+        mygan = gans.wGAN(
+            opti, noise_dim, no_field, batch, number_of_layers, parameters[6]
+        )
         mygan.critic.summary()
     # print the stucture of the gan
     mygan.generator.summary()

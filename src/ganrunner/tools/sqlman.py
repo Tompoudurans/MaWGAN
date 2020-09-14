@@ -14,10 +14,10 @@ def load_sql(file, table):
     database = database.dropna()
     col = database.columns
     database, mean, std = get_norm(database)
-    return database, mean, std ,idexes, col
+    return database, mean, std, idexes, col
 
 
-def save_sql(df,file,exists="append"):
+def save_sql(df, file, exists="append"):
     """
     Saves the generated data to a SQL table called generated_data
     """
