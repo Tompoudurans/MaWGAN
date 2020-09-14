@@ -27,7 +27,8 @@ def test_discriminator_training():
     and comparing the untrained sample and trained sample.
     The trained sample should provide a better result.
     """
-    numpy.random.seed(11)
+    numpy.random.seed(8)
+    ganrunner.tengan.tf.random.set_seed(8)
     untrained = testgan.discriminator.predict(dataset)
     for i in range(5):
         testgan.train_discriminator(dataset, batch_size)
@@ -43,9 +44,10 @@ def test_gan_training():
     The trained sample should provide a better result
     """
     numpy.random.seed(8)
+    ganrunner.tengan.tf.random.set_seed(8)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake = testgan.generator.predict(noise)
-    testgan.train(dataset, batch_size, 15, 1)
+    testgan.train(dataset, batch_size, 10, 1)
     trained_fake = testgan.generator.predict(noise)
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
