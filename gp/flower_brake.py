@@ -23,11 +23,10 @@ def simplesplit(x,y):
 
 def make_model():
     model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.Dense(33,activation = tf.nn.relu))#,kernel_regularizer=reg.l2(0.1)))#adds one hiden layer with 99 nerons with relu activation fx\n",
-    model.add(tf.keras.layers.Dense(33,activation = tf.nn.relu))#,kernel_regularizer=reg.l2(0.1)))
-    model.add(tf.keras.layers.Dense(33,activation = tf.nn.relu))#,kernel_regularizer=reg.l2(0.1)))
-    model.add(tf.keras.layers.Dense(3,activation = tf.nn.softmax))#,activity_regularizer=reg.l2(0.1)))#adds ouput layer with 10 nerons with softmax activation fx
-    model.compile(optimizer='adam',loss = 'sparse_categorical_crossentropy',metrics=['accuracy'])
+    model.add(tf.keras.layers.Dense(33,activation = tf.nn.relu))
+    model.add(tf.keras.layers.Dense(33,activation = tf.nn.relu))
+    model.add(tf.keras.layers.Dense(33,activation = tf.nn.relu))
+    model.add(tf.keras.layers.Dense(3,activation = tf.nn.softmax))
     return model
 
 def simplefit(train,tar,mod,ep=3):
