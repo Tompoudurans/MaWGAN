@@ -29,11 +29,18 @@ class wGAN:
         self.g_losses = []
         self.epoch = 0
         self.clip = float(weight_cliping)
-        self.optimiser = optimiser
+        self.optimiser = self.find_opt(optimiser)
         self.z_dim = z_dim
         self.make_critc(number_of_layers)
         self.make_generator(number_of_layers)
-        self.build_adversarial()
+        #self.build_adversarial()
+    
+    def find_opt(self, string):
+        if string == 'RMSprop':
+            optimiser = tf.keras.optimizers.RMSprop()
+        else:
+            raise ValueError('Unknown optimizer')
+        return optimiser
 
     def wasserstein(self, y_true, y_pred):
         """
@@ -46,6 +53,26 @@ class wGAN:
 
     def wasserstein_critic(self, fake, real):
         return K.mean(fake) - K.mean(real)
+
+    def crit_grad(self, fake, real):
+        """
+        caluculates gradaent of the critic
+        """
+        with tf.GradientTape() as tape:
+          loss_value = self.wasserstein_critic(fake, real)#loss(model, inputs, targets, training=True)
+        return loss_value, tape.gradient(loss_value, self.critic.trainable_variables)
+
+    def generator_loss(self,fake):
+        predict = self.critic(fake)
+        return K.mean(predict)
+
+    def gen_grad(self, fake, real):
+        """
+        caluculates gradaent of the critic
+        """
+        with tf.GradientTape() as tape:
+          loss_value = self.generator_loss(fake)#loss(model, inputs, targets, training=True)
+        return loss_value, tape.gradient(loss_value, self.generator.trainable_variables)
 
     def make_generator(self, number_of_layers):
         """
@@ -83,24 +110,6 @@ class wGAN:
         for l in m.layers:
             l.trainable = val
 
-    def build_adversarial(self):
-        """
-        This compiles the critic and
-        then compiles a GAN model that is used for training the generator
-        it consists of the generator directly outputed into a frozen critic
-        """
-        self.critic.compile(optimizer=self.optimiser, loss=self.wasserstein)
-
-        # temporarily freezes the critic weight so it does not affect the critic network
-        self.set_trainable(self.critic, False)
-        # creating the GAN model
-        model_input = tkl.Input(shape=(self.z_dim,), name="model_input")
-        model_output = self.critic(self.generator(model_input))
-        self.model = Model(model_input, model_output)
-        # Unfreezes the weights
-        self.model.compile(optimizer=self.optimiser, loss=self.wasserstein)
-        self.set_trainable(self.critic, True)
-
     def train_critic(self, x_train, batch_size):
         """
         This trains the critc once by creating a set of fake_data and
@@ -108,32 +117,40 @@ class wGAN:
         """
         clip_threshold = self.clip
         # create the labels
-        valid = np.ones((batch_size, 1))
-        fake = -np.ones((batch_size, 1))
         idx = np.random.randint(0, x_train.shape[0], batch_size)
         true_imgs = x_train[idx]
         # create noise vector z
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        gen_imgs = self.generator.predict(noise)
-        d_loss_real = self.critic.train_on_batch(true_imgs, valid)
-        d_loss_fake = self.critic.train_on_batch(gen_imgs, fake)
-        d_loss = 0.5 * (d_loss_real + d_loss_fake)
+        gen_imgs = self.generator(noise)
+        #training-------------------------------------------
+        d_loss_avg = tf.keras.metrics.Mean()
+        true_imgs = tf.constant(true_imgs, dtype='float32')
+        loss_value, grads = self.crit_grad(gen_imgs, true_imgs)
+        print(loss_value, grads)
+        self.optimiser.apply_gradients(zip(grads, self.critic.trainable_variables))
+        # Track progress
+        d_loss_avg.update_state(loss_value)
         # clip the weights
         for l in self.critic.layers:
             weights = l.get_weights()
             weights = [np.clip(w, -clip_threshold, clip_threshold) for w in weights]
             l.set_weights(weights)
-
-        return [d_loss, d_loss_real, d_loss_fake]
+        return [d_loss_avg,0,0]
 
     def train_generator(self, batch_size):
         """
         This trains the generator once by creating a set of fake data and
         uses the critic score to train on
         """
-        valid = np.ones((batch_size, 1))
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        return self.model.train_on_batch(noise, valid)
+        gen_imgs = self.generator(noise)
+        #training-------------------------------------------
+        g_loss_avg = tf.keras.metrics.Mean()
+        loss_value, grads = self.gen_grad(gen_imgs)
+        self.optimiser.apply_gradients(zip(grads, self.generator.trainable_variables))
+        # Track progress
+        g_loss_avg.update_state(loss_value)
+        return g_loss_avg
 
     def train(
         self, x_train, batch_size, epochs, print_every_n_batches=50, critic_round=5
