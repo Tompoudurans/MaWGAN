@@ -1,7 +1,7 @@
 
 from sklearn import datasets
 import numpy as np
-from wgan import wGAN
+from wgangpv2 import wGAN
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as mp
@@ -65,19 +65,11 @@ no_field = 4
 mygan = wGAN('RMSprop',batch,no_field,batch,clip,number_of_layers)
 mygan.critic.summary()
 mygan.generator.summary()
-mygan.model.summary()
-try:
-    mygan.critic.load_weights('bWgan_critic.h5')
-    mygan.generator.load_weights('bWgan_generator.h5')
-    mygan.model.load_weights('bWgan_model.h5')
-except:
-    print('no file found strating from scrach')
 mygan.train(iris,batch,epoch,10)
-mygan.save_model('bwgan')
-#print(generated_data)
+
 real = unnormalize(iris, mean, std)
 noise = np.random.normal(0, 1, (batch, batch))
 generated_data = mygan.generator.predict(noise)
 fake=unnormalize(generated_data, mean, std)
-dagplot(real, fake, 'bwgan_')
+dagplot(real, fake, 'add')
 
