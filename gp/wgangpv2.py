@@ -47,9 +47,9 @@ class wGAN:
     def wasserstein_critic(self, fake, real):
         return K.mean(fake) - K.mean(real)
 
-    def generator_loss(self,fake,ones):
-        #predict = self.critic(fake) - self.critic(true)
-        predict = self.critic(fake)*onse
+    def generator_loss(self,fake,true):
+        predict = self.critic(fake) - self.critic(true)
+        #predict = self.critic.predict(fake)*ones
         #predict = self.critic(fake) + zeros() not that
         return K.mean(predict)
 
@@ -125,10 +125,12 @@ class wGAN:
         This trains the generator once by creating a set of fake data and
         uses the critic score to train on
         """
-        ones = np.ones((batch_size,1), dtype=np.float32)
+        idx = np.random.randint(0, x_train.shape[0], batch_size)
+        true_imgs = x_train[idx]
+        
         # create noise vector z
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        return self.generator.train_on_batch(noise, ones)
+        return self.generator.train_on_batch(noise, true_imgs)
 
     def train(
         self, x_train, batch_size, epochs, print_every_n_batches=50, critic_round=5
