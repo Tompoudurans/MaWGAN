@@ -33,7 +33,10 @@ class wGAN:
         self.z_dim = z_dim
         self.make_critc(number_of_layers)
         self.make_generator(number_of_layers)
+        self.lamabda = 1
+        self.bypass = np.array([[[1,2,3,4]],[[1,2,3,4]]])
         self.build_adversarial()
+
 
     def wasserstein(self, y_true, y_pred):
         """
@@ -45,13 +48,32 @@ class wGAN:
         # return -K.mean(y_true * y_pred)
 
     def wasserstein_critic(self, fake, real):
-        return K.mean(fake) - K.mean(real)
+        wasserstein = K.mean(fake) - K.mean(real) + self.gradient_penalty()
+        return wasserstein
 
     def generator_loss(self,fake,true):
         predict = self.critic(fake) - self.critic(true)
         #predict = self.critic.predict(fake)*ones
         #predict = self.critic(fake) + zeros() not that
         return K.mean(predict)
+
+    def gradient_penalty(self):
+        eta = np.random.rand()
+        interprated_data = self.bypass[0]*eta + self.bypass[1]*(1-eta)
+        zero = np.zeros((self.z_dim, 1), dtype=np.float32)
+        gradients = tf.gradients(zero,self.critic(interprated_data), unconnected_gradients='zero')
+        # compute the euclidean norm by squaring ...
+        gradients_sqr = K.square(gradients)
+        #summing over the rows
+        gradients_sqr_sum = K.sum(gradients_sqr,
+                                  axis=np.arange(1, len(gradients_sqr.shape)))
+        #and sqrt
+        gradient_l2_norm = K.sqrt(gradients_sqr_sum)
+        # compute lambda * (1 - ||grad||)^2 still for each single sample
+        gradient_penalty = self.lamabda * K.square(1 - gradient_l2_norm)
+        return gradient_penalty
+        
+            
 
     def make_generator(self, number_of_layers):
         """
@@ -110,16 +132,19 @@ class wGAN:
         # create noise vector z
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
         gen_imgs = self.generator.predict(noise)
+        self.bypass = [gen_imgs,true_imgs]
         predict_true = self.critic.predict(true_imgs)
         d_loss = self.critic.train_on_batch(gen_imgs,predict_true)
-        # clip the weights
+        #self.clip_weights(clip_threshold)
+        return d_loss
+    
+    def clip_weights(self,clip_threshold):
         for l in self.critic.layers:
             weights = l.get_weights()
             weights = [np.clip(w, -clip_threshold, clip_threshold) for w in weights]
             l.set_weights(weights)
-
-        return d_loss
-
+    
+    
     def train_generator(self, x_train, batch_size):
         """
         This trains the generator once by creating a set of fake data and

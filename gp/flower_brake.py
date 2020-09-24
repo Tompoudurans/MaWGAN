@@ -49,6 +49,7 @@ def simplefit(train,tar,model,ep=3):
       epoch_loss_avg = tf.keras.metrics.Mean()
       epoch_accuracy = tf.keras.metrics.SparseCategoricalAccuracy()
       loss_value, grads = grad(model, train, tar)
+      print('loss=',loss_value,'grad=',grads)
       optimizer.apply_gradients(zip(grads, model.trainable_variables))
       # Track progress
       epoch_loss_avg.update_state(loss_value)  # Add current batch loss
