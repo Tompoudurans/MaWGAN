@@ -14,7 +14,7 @@ import random as rd
 
 class wGANgp:
     def __init__(
-        self, optimiser, z_dim, data_dim, net_dim, number_of_layers, weight_cliping
+        self, optimiser, z_dim, data_dim, net_dim, number_of_layers, lamabda
     ):
         """
         This builds the GAN model so it can be trained. The different variables are:
@@ -28,24 +28,13 @@ class wGANgp:
         self.d_losses = []
         self.g_losses = []
         self.epoch = 0
-        self.clip = float(weight_cliping)
         self.optimiser = optimiser
         self.z_dim = z_dim
         self.make_critc(number_of_layers)
         self.make_generator(number_of_layers)
-        self.lamabda = 1
-        self.bypass = np.array([[[1,2,3,4]],[[1,2,3,4]]])
+        self.lamabda = float(lamabda)
+        self.bypass = np.array([[[2]*self.data_dim],[[1]*self.data_dim]])
         self.build_adversarial()
-
-
-    def wasserstein(self, y_true, y_pred):
-        """
-        calcuate half the wasserstein distance
-        """
-        muti = y_true * y_pred
-        s = K.sum(muti)
-        return s / self.z_dim
-        # return -K.mean(y_true * y_pred)
 
     def wasserstein_critic(self, fake, real):
         wasserstein = K.mean(fake) - K.mean(real) + self.gradient_penalty()
@@ -54,7 +43,6 @@ class wGANgp:
     def generator_loss(self,fake,ones):
         # = self.critic(fake) - self.critic(fake)
         predict = K.mean(- self.critic(fake)) + K.mean(ones) - K.mean(ones)
-        #predict = self.critic(fake) + zeros() not that
         return predict
 
     def gradient_penalty(self):
@@ -72,8 +60,6 @@ class wGANgp:
         # compute lambda * (1 - ||grad||)^2 still for each single sample
         gradient_penalty = self.lamabda * K.square(1 - gradient_l2_norm)
         return gradient_penalty
-        
-            
 
     def make_generator(self, number_of_layers):
         """
@@ -125,8 +111,6 @@ class wGANgp:
         This trains the critc once by creating a set of fake_data and
         traning them aganist the real_data, then the wieght are cliped
         """
-        clip_threshold = self.clip
-        # create the labels
         idx = np.random.randint(0, x_train.shape[0], batch_size)
         true_imgs = x_train[idx]
         # create noise vector z
@@ -135,16 +119,9 @@ class wGANgp:
         self.bypass = [gen_imgs,true_imgs]
         predict_true = self.critic.predict(true_imgs)
         d_loss = self.critic.train_on_batch(gen_imgs,predict_true)
-        #self.clip_weights(clip_threshold)
         return d_loss
-    
-    def clip_weights(self,clip_threshold):
-        for l in self.critic.layers:
-            weights = l.get_weights()
-            weights = [np.clip(w, -clip_threshold, clip_threshold) for w in weights]
-            l.set_weights(weights)
-    
-    
+
+
     def train_generator(self, x_train, batch_size):
         """
         This trains the generator once by creating a set of fake data and
