@@ -53,7 +53,7 @@ class wGAN:
 
     def generator_loss(self,fake,ones):
         # = self.critic(fake) - self.critic(fake)
-        predict = K.mean(self.critic(fake) + ones - ones)
+        predict = K.mean(- self.critic(fake) + ones - ones)
         #predict = self.critic(fake) + zeros() not that
         return predict
 

@@ -55,6 +55,7 @@ def unnormalize(dataset, mean, std):
     original = mid + mean
     return original
 
+file = input('name')
 batch = 170
 vector = 170
 epoch = 300
@@ -71,5 +72,5 @@ real = unnormalize(iris, mean, std)
 noise = np.random.normal(0, 1, (batch, batch))
 generated_data = mygan.generator.predict(noise)
 fake=unnormalize(generated_data, mean, std)
-dagplot(real, fake, 'add')
+dagplot(fake, real, file)
 
