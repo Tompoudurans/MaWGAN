@@ -12,7 +12,7 @@ import numpy as np
 import random as rd
 
 
-class wGAN:
+class wGANgp:
     def __init__(
         self, optimiser, z_dim, data_dim, net_dim, number_of_layers, weight_cliping
     ):
@@ -53,7 +53,7 @@ class wGAN:
 
     def generator_loss(self,fake,ones):
         # = self.critic(fake) - self.critic(fake)
-        predict = K.mean(- self.critic(fake) + ones - ones)
+        predict = K.mean(- self.critic(fake)) + K.mean(ones) - K.mean(ones)
         #predict = self.critic(fake) + zeros() not that
         return predict
 
