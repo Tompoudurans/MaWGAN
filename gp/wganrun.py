@@ -1,7 +1,7 @@
 
-from sklearn import datasets
+#from sklearn import datasets
 import numpy as np
-from wgangpv2 import wGAN
+import ganrunner
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as mp
@@ -31,7 +31,7 @@ def import_penguin(file):
 
 def get_norm(data):
     """
-    Provides the mean and standard deviation for the dataset so it can be normalised. 
+    Provides the mean and standard deviation for the dataset so it can be normalised.
     """
     mean = data.mean()
     std = data.std()
@@ -59,11 +59,11 @@ file = input('name')
 batch = 170
 vector = 170
 epoch = 300
-clip = 0.04
+clip = 1
 number_of_layers = 5
 iris, mean, std = import_penguin('penguins_size.csv')
 no_field = 4
-mygan = wGAN('RMSprop',batch,no_field,batch,clip,number_of_layers)
+mygan = ganrunner.wGANgp('RMSprop',batch,no_field,batch,clip,number_of_layers)
 mygan.critic.summary()
 mygan.generator.summary()
 mygan.train(iris,batch,epoch,10)
@@ -73,4 +73,3 @@ noise = np.random.normal(0, 1, (batch, batch))
 generated_data = mygan.generator.predict(noise)
 fake=unnormalize(generated_data, mean, std)
 dagplot(fake, real, file)
-
