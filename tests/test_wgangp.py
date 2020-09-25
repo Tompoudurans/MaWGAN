@@ -13,10 +13,10 @@ nodes = 20
 data = 3
 batch_size = 2
 noise_vector = 10
-clip = 0.1
+lamabda = 1
 dataset=numpy.array([[1.0,1.2,1.3],[2.1,2.2,2.3]])
 
-testgan = ganrunner.wGAN('RSMprop', noise_vector, data, nodes, layers, clip)
+testgan = ganrunner.wGANgp('adam', noise_vector, data, nodes, layers, lambda)
 
 def test_critic_training():
     """
@@ -58,7 +58,6 @@ def test_save():
     testgan.save_model('tests/test')
     assert os.stat('tests/test_generator.h5').st_size > 0
     assert os.stat('tests/test_critic.h5').st_size > 0
-    assert os.stat('tests/test_model.h5').st_size > 0
 
 def test_load():
     """
@@ -71,7 +70,6 @@ def test_load():
     test.load_weights('tests/test')
     assert (generator_weight[0] != test.generator.get_weights()[0]).all()
     assert (critic_weight[0] != test.critic.get_weights()[0]).all()
-    assert (model_weight[0] != test.model.get_weights()[0]).all()
 
 def test_build():
     """
@@ -86,5 +84,3 @@ def test_build():
     assert testgan.generator.output_shape == (None, data)
     assert testgan.critic.layers[1].output_shape == (None, nodes)
     assert testgan.generator.layers[1].output_shape == (None, nodes)
-    assert testgan.model.input_shape == (None, noise_vector)
-    assert testgan.model.output_shape == (None, 1)

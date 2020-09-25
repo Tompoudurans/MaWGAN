@@ -120,7 +120,7 @@ def setup(parameters_list):
     parameters = []
     questions = [
         "dataset (table) ",
-        "model?: (w)gan /(g)an ",
+        "model?: (wgan) /(gan) / (wgangp) ",
         "opti? ",
         "noise size? ",
         "batch size? ",
@@ -132,8 +132,8 @@ def setup(parameters_list):
         else:
             param = input(questions[q])
         parameters.append(param)
-    if parameters[1] == "w":
-        clip_threshold = float(input("clip threshold? "))
+    if parameters[1] == "wgan" or parameters[1] == "wgangp":
+        clip_threshold = float(input("learning constiction "))
         parameters.append(clip_threshold)
     return parameters
 
@@ -177,12 +177,17 @@ def create_model(parameters, no_field):
     Builds the GAN using the parameters
     """
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
-    if use_model == "g":
+    if use_model == "gan":
         mygan = gans.dataGAN(opti, noise_dim, no_field, batch, number_of_layers)
         mygan.discriminator.summary()
-    elif use_model == "w":
+    elif use_model == "wgan":
         mygan = gans.wGAN(opti, noise_dim, no_field, batch, number_of_layers, parameters[6])
         mygan.critic.summary()
+    elif use_model == "wgangp":
+        mygan = gans.wGANgp(opti, noise_dim, no_field, batch, number_of_layers, parameters[6])
+        mygan.critic.summary()
+    else:
+        raise ValueError("model not found")
     # print the stucture of the gan
     mygan.generator.summary()
     mygan.model.summary()

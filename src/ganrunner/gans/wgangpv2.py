@@ -166,7 +166,6 @@ class wGANgp:
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.save(f + "_model.h5")
         self.critic.save(f + "_critic.h5")
         self.generator.save(f + "_generator.h5")
 
@@ -174,6 +173,5 @@ class wGANgp:
         """
         This loads the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.load_weights(filepath + "_model.h5")
         self.critic.load_weights(filepath + "_critic.h5")
         self.generator.load_weights(filepath + "_generator.h5")
