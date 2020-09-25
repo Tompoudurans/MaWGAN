@@ -51,11 +51,11 @@ class wGAN:
         wasserstein = K.mean(fake) - K.mean(real) + self.gradient_penalty()
         return wasserstein
 
-    def generator_loss(self,fake,true):
-        predict = self.critic(fake) - self.critic(true)
-        #predict = self.critic.predict(fake)*ones
+    def generator_loss(self,fake,ones):
+        # = self.critic(fake) - self.critic(fake)
+        predict = K.mean(self.critic(fake) + ones - ones)
         #predict = self.critic(fake) + zeros() not that
-        return K.mean(predict)
+        return predict
 
     def gradient_penalty(self):
         eta = np.random.rand()
@@ -150,12 +150,12 @@ class wGAN:
         This trains the generator once by creating a set of fake data and
         uses the critic score to train on
         """
-        idx = np.random.randint(0, x_train.shape[0], batch_size)
-        true_imgs = x_train[idx]
-        
+        #idx = np.random.randint(0, x_train.shape[0], batch_size)
+        #true_imgs = x_train[idx]
+        lable = np.ones((batch_size,self.data_dim), dtype=np.float32)
         # create noise vector z
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        return self.generator.train_on_batch(noise, true_imgs)
+        return self.generator.train_on_batch(noise, lable)
 
     def train(
         self, x_train, batch_size, epochs, print_every_n_batches=50, critic_round=5
