@@ -122,7 +122,7 @@ class wGANgp:
         return d_loss
 
 
-    def train_generator(self, x_train, batch_size):
+    def train_generator(self, batch_size):
         """
         This trains the generator once by creating a set of fake data and
         uses the critic score to train on
@@ -146,7 +146,7 @@ class wGANgp:
         for epoch in range(epochs):
             for n in range(critic_round):
                 d = self.train_critic(x_train, batch_size)
-            g = self.train_generator(x_train, batch_size)
+            g = self.train_generator(batch_size)
 
             if epoch % print_every_n_batches == 0:
                 print(

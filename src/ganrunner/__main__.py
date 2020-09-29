@@ -5,9 +5,7 @@ import ganrunner.tools as tools
 import ganrunner.gans as gans
 import click
 
-
 @click.command()
-@click.option("--mode", default="n", help="mode?(s)pyder/(n)ormal/(m)arathon)")
 @click.option(
     "--filepath",
     prompt="filepath? ",
@@ -47,7 +45,6 @@ import click
 )
 def main(
     dataset,
-    mode,
     filepath,
     epochs,
     model,
@@ -71,43 +68,19 @@ def main(
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)
-    database, mean, std, normalised, col = load_data(parameters[0], filepath)
-    thegan = run(mode, filepath, epochs, parameters, successfully_loaded, database)
+    database, mean, std, col, indexs = load_data(parameters[0], filepath)
+    thegan = run(filepath, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
         thegan,
         mean,
         std,
         database,
         int(parameters[4]),
-        normalised,
         sample,
         filepath,
         col,
     )
     tools.save_sql(fake, filepath)
-
-
-def marathon_mode(mygan, database, batch, noise_dim, filepath, epochs):
-    """
-    In marathon mode the GAN is trained for 50000 epochs and substracted from the number of epochs left.
-    Then the GAN model and the loss tracking is saved,
-    the current loss tracking is removed from ram and a new set of training starts again
-    at epoch 0. The result of the training is displayed and from there you can continue training if you wish.
-    """
-    while epochs > 0:
-        if epochs < 50000:
-            print("almost done")
-            mygan.train(database, batch, epochs, 1000)
-        else:
-            mygan.train(database, batch, 50000, 1000)
-            epochs = epochs - 50000
-            mygan.save_model(filepath)
-            show_loss_progress(
-                mygan.d_losses, mygan.g_losses
-            )  # filepath + '_' + str(epochs))
-            mygan.d_losses, mygan.g_losses = [], []
-        return mygan
-
 
 def unpack(p):
     """
@@ -145,22 +118,8 @@ def load_data(sets, filename):
     """
     Loads a dataset, choices are (i)ris (w)ine or (p)enguin
     """
-    normalised = False
-    if sets == "i":
-        database = sklearn.datasets.load_iris()
-    elif sets == "w":
-        database = sklearn.datasets.load_wine()
-    elif sets == "p":
-        database, mean, std = tools.import_penguin("data/penguins_size.csv", False)
-        normalised = True
-    else:
-        database, mean, std, indexs, col = tools.load_sql(filename, sets)
-        normalised = True
-    if sets == "i" or sets == "w":
-        database = database.data
-        mean = 0
-        std = 1
-    return database, mean, std, normalised, col
+    database, mean, std, indexs, col = tools.load_sql(filename, sets)
+    return database, mean, std, col, indexs
 
 
 def load_gan_weight(filepath, mygan):
@@ -197,18 +156,17 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, normalised, samples, filepath, col):
+def show_samples(mygan, mean, std, database, batch, samples, filepath, col):
     """
     Creates a number of samples
     """
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        if normalised:
-            generated_data = tools.unnormalize(generated_data, mean, std)
-            generated_data.columns = col
-            if s == 0:
-                database = tools.unnormalize(database, mean, std)
-                database.columns = col
+        generated_data = tools.unnormalize(generated_data, mean, std)
+        generated_data.columns = col
+        if s == 0:
+            database = tools.unnormalize(database, mean, std)
+            database.columns = col
         print(generated_data)
         tools.calculate_fid(generated_data, database)
         tools.dagplot(generated_data, database, filepath)
@@ -251,7 +209,7 @@ def parameters_handeling(filepath, parameters_list):
     return parameters, successfully_loaded
 
 
-def run(mode, filepath, epochs, parameters, successfully_loaded, database):
+def run(filepath, epochs, parameters, successfully_loaded, database):
     """
     Creates and trains a GAN from the parameters provided.
     It will load the weights of the GAN if they exist.
@@ -262,17 +220,9 @@ def run(mode, filepath, epochs, parameters, successfully_loaded, database):
     mygan, batch, noise_dim = create_model(parameters, no_field)
     if successfully_loaded:
         mygan = load_gan_weight(filepath, mygan)
-    # marathon mode is not suitable when running less that 50000 epochs
-    if epochs < 50000 and mode == "m":
-        print("epochs too small, switch to normal ")
-        mode = "n"
     if epochs > 0:
         step = int(math.ceil(epochs * 0.01))
-        if mode == "m":
-            mygan = marathon_mode(mygan, database, batch, noise_dim, filepath, epochs)
-        else:
-            # train the GAN according to the number of epochs
-            mygan.train(database, batch, epochs, step)
+        mygan.train(database, batch, epochs, step)
         mygan.save_model(filepath)
         tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
         return mygan

@@ -4,7 +4,6 @@ from randomdatagen import generate_random_testing_data
 import numpy
 import ganrunner
 
-
 def test_help():
     exp_output = b"""Usage: __main__.py [OPTIONS]\n
   This code creates and trains a GAN. Core elements of this code are sourced
@@ -13,7 +12,6 @@ def test_help():
   from the library 'sklearn'. Soon this GAN should work on the DCWW dataset.
 
 Options:
-  --mode TEXT       mode?(s)pyder/(n)ormal/(m)arathon)
   --filepath TEXT   enter the file name and location of the database and model
   --epochs TEXT     choose how long that you want to train
   --dataset TEXT    choose the dataset/table that the GAN will train on - this
@@ -38,14 +36,14 @@ Options:
 
 
 def test_normal_run():
-    generate_random_testing_data(50)
+    #generate_random_testing_data(50)
     file_size = os.stat("flight.db").st_size
     status = subprocess.run(
         [
             "python",
             "-m",
             "ganrunner",
-            "--model=g",
+            "--model=gan",
             "--filepath=flight",
             "--opti=adam",
             "--noise=50",
@@ -61,21 +59,3 @@ def test_normal_run():
     assert os.path.isfile("flight_discriminator.h5")
     assert os.path.isfile("flight_parameters.npy")
     assert file_size < os.stat("flight.db").st_size and (file_size > 0)
-
-
-def test_marathon():
-    filepath = "marathon_test"
-    layers = 2
-    nodes = 7
-    data = 3
-    batch_size = 2
-    noise_vector = 5
-    epochs = 1020
-    dataset = numpy.array([[1.0, 1.2, 1.3], [2.1, 2.2, 2.3]])
-    testgan = ganrunner.dataGAN("adam", noise_vector, data, nodes, layers)
-    untrained = testgan.discriminator.predict(dataset)
-    ganrunner.marathon_mode(
-        testgan, dataset, batch_size, noise_vector, filepath, epochs
-    )
-    trained = testgan.discriminator.predict(dataset)
-    assert all(untrained < trained)

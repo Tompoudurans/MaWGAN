@@ -16,7 +16,7 @@ batch_size = 2
 noise_vector = 10
 clip = 0.1
 dataset = numpy.array([[1.0, 1.2, 1.3], [2.1, 2.2, 2.3]])
-testgan = ganrunner.wGAN('RSMprop', noise_vector, data, nodes, layers, clip)
+testgan = ganrunner.wGAN('RMSprop', noise_vector, data, nodes, layers, clip)
 
 def test_critic_training():
     """
