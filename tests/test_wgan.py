@@ -37,6 +37,7 @@ def test_critic_training():
     # assert any(untrained < trained)
 
 
+
 def test_gan_training():
     """
     Tests the training algorithm of the GAN as the generator cannot be trained directly.
