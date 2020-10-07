@@ -39,7 +39,7 @@ def unnormalize(dataset, mean, std):
 
 def get_norm(data):
     """
-    Provides the mean and standard deviation for the dataset so it can be normalised. 
+    Provides the mean and standard deviation for the dataset so it can be normalised.
     """
     mean = data.mean()
     std = data.std()

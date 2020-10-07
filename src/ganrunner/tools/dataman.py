@@ -45,9 +45,14 @@ def show_loss_progress(loss_discriminator, loss_generator, filepath, extention="
     logging.info(loss_discriminator)
     logging.info(loss_generator)
 
+
 def setup_log(filepath):
-    logging.basicConfig(filename=filepath, level=logging.INFO,
-                    format='%(asctime)s:%(levelname)s: \n%(message)s')
+    logging.basicConfig(
+        filename=filepath,
+        level=logging.INFO,
+        format="%(asctime)s:%(levelname)s: \n%(message)s",
+    )
+
 
 def save_data(df, file):
     """

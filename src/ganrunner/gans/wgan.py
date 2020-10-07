@@ -42,10 +42,6 @@ class wGAN:
         muti = y_true * y_pred
         s = K.sum(muti)
         return s / self.z_dim
-        # return -K.mean(y_true * y_pred)
-
-    def wasserstein_critic(self, fake, real):
-        return K.mean(fake) - K.mean(real)
 
     def make_generator(self, number_of_layers):
         """
@@ -113,8 +109,7 @@ class wGAN:
         idx = np.random.randint(0, x_train.shape[0], batch_size)
         true_imgs = x_train[idx]
         # create noise vector z
-        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        gen_imgs = self.generator.predict(noise)
+        gen_imgs = self.create_fake(batch_size)
         d_loss_real = self.critic.train_on_batch(true_imgs, valid)
         d_loss_fake = self.critic.train_on_batch(gen_imgs, fake)
         d_loss = 0.5 * (d_loss_real + d_loss_fake)
