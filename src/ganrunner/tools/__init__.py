@@ -1,7 +1,6 @@
 from ganrunner.tools.dataman import (
     dagplot,
     show_loss_progress,
-    save_data,
     simplesplit,
     setup_log,
 )
