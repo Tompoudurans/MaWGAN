@@ -52,15 +52,3 @@ def setup_log(filepath):
         level=logging.INFO,
         format="%(asctime)s:%(levelname)s: \n%(message)s",
     )
-
-
-def save_data(df, file):
-    """
-    Saves the synthetic data onto a csv. file
-    """
-    try:
-        df = df.drop(columns=["dataset"])
-    except KeyError:
-        print("failed")
-    finally:
-        df.to_csv(file + "_synthetic.csv")

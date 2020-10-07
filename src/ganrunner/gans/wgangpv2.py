@@ -90,14 +90,6 @@ class wGANgp:
         final_layer = tkl.Dense(1, activation="sigmoid")(dis_layer)
         self.critic = tf.keras.models.Model(inputs=dis_input, outputs=final_layer)
 
-    def set_trainable(self, m, val):
-        """
-        This freezes and unfreezes weights depending on the value of 'val'
-        """
-        m.trainable = val
-        for l in m.layers:
-            l.trainable = val
-
     def build_adversarial(self):
         """
         This compiles the critic and
@@ -115,8 +107,7 @@ class wGANgp:
         idx = np.random.randint(0, x_train.shape[0], batch_size)
         true_imgs = x_train[idx]
         # create noise vector z
-        noise = np.random.normal(0, 1, (batch_size, self.z_dim))
-        gen_imgs = self.generator.predict(noise)
+        gen_imgs = self.create_fake(batch_size)
         self.bypass = [gen_imgs, true_imgs]
         predict_true = self.critic.predict(true_imgs)
         d_loss = self.critic.train_on_batch(gen_imgs, predict_true)

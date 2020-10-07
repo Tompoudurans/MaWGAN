@@ -131,7 +131,7 @@ def load_gan_weight(filepath, mygan):
     try:
         mygan.load_weights(filepath)
     except OSError:  # as 'Unable to open file':
-        print("Error:404 file not found, starting from scratch")
+        print("file not found, starting from scratch")
     finally:
         return mygan
 
