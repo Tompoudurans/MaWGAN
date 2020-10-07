@@ -13,9 +13,7 @@ import random as rd
 
 
 class wGANgp:
-    def __init__(
-        self, optimiser, z_dim, data_dim, net_dim, number_of_layers, lamabda
-    ):
+    def __init__(self, optimiser, z_dim, data_dim, net_dim, number_of_layers, lamabda):
         """
         This builds the GAN model so it can be trained. The different variables are:
         'optimiser' which is the optimiser used for the whole GAN
@@ -33,29 +31,32 @@ class wGANgp:
         self.make_critc(number_of_layers)
         self.make_generator(number_of_layers)
         self.lamabda = float(lamabda)
-        self.bypass = np.array([[[2]*self.data_dim],[[1]*self.data_dim]])
+        self.bypass = np.array([[[2] * self.data_dim], [[1] * self.data_dim]])
         self.build_adversarial()
 
     def wasserstein_critic(self, fake, real):
         wasserstein = K.mean(fake) - K.mean(real) + self.gradient_penalty()
         return wasserstein
 
-    def generator_loss(self,fake,ones):
+    def generator_loss(self, fake, ones):
         # = self.critic(fake) - self.critic(fake)
-        predict = K.mean(- self.critic(fake)) + K.mean(ones) - K.mean(ones)
+        predict = K.mean(-self.critic(fake)) + K.mean(ones) - K.mean(ones)
         return predict
 
     def gradient_penalty(self):
         eta = np.random.rand()
-        interprated_data = self.bypass[0]*eta + self.bypass[1]*(1-eta)
+        interprated_data = self.bypass[0] * eta + self.bypass[1] * (1 - eta)
         zero = np.zeros((self.z_dim, 1), dtype=np.float32)
-        gradients = tf.gradients(zero,self.critic(interprated_data), unconnected_gradients='zero')
+        gradients = tf.gradients(
+            zero, self.critic(interprated_data), unconnected_gradients="zero"
+        )
         # compute the euclidean norm by squaring ...
         gradients_sqr = K.square(gradients)
-        #summing over the rows
-        gradients_sqr_sum = K.sum(gradients_sqr,
-                                  axis=np.arange(1, len(gradients_sqr.shape)))
-        #and sqrt
+        # summing over the rows
+        gradients_sqr_sum = K.sum(
+            gradients_sqr, axis=np.arange(1, len(gradients_sqr.shape))
+        )
+        # and sqrt
         gradient_l2_norm = K.sqrt(gradients_sqr_sum)
         # compute lambda * (1 - ||grad||)^2 still for each single sample
         gradient_penalty = self.lamabda * K.square(1 - gradient_l2_norm)
@@ -116,20 +117,19 @@ class wGANgp:
         # create noise vector z
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
         gen_imgs = self.generator.predict(noise)
-        self.bypass = [gen_imgs,true_imgs]
+        self.bypass = [gen_imgs, true_imgs]
         predict_true = self.critic.predict(true_imgs)
-        d_loss = self.critic.train_on_batch(gen_imgs,predict_true)
+        d_loss = self.critic.train_on_batch(gen_imgs, predict_true)
         return d_loss
-
 
     def train_generator(self, batch_size):
         """
         This trains the generator once by creating a set of fake data and
         uses the critic score to train on
         """
-        #idx = np.random.randint(0, x_train.shape[0], batch_size)
-        #true_imgs = x_train[idx]
-        lable = np.ones((batch_size,self.data_dim), dtype=np.float32)
+        # idx = np.random.randint(0, x_train.shape[0], batch_size)
+        # true_imgs = x_train[idx]
+        lable = np.ones((batch_size, self.data_dim), dtype=np.float32)
         # create noise vector z
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
         return self.generator.train_on_batch(noise, lable)
@@ -149,10 +149,7 @@ class wGANgp:
             g = self.train_generator(batch_size)
 
             if epoch % print_every_n_batches == 0:
-                print(
-                    "%d [D loss: %.3f] [G loss: %.3f]"
-                    % (epoch, d, g)
-                )
+                print("%d [D loss: %.3f] [G loss: %.3f]" % (epoch, d, g))
                 self.d_losses.append(d)
                 self.g_losses.append(g)
             self.epoch += 1

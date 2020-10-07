@@ -1,5 +1,6 @@
 import pandas
 
+
 def normalize(dataset, mean, std):
     """
     Normalises the dataset by mean and standard deviation

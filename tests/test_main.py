@@ -4,6 +4,7 @@ from randomdatagen import generate_random_testing_data
 import numpy
 import ganrunner
 
+
 def test_help():
     exp_output = b"""Usage: __main__.py [OPTIONS]\n
   This code creates and trains a GAN. Core elements of this code are sourced
@@ -36,7 +37,7 @@ Options:
 
 
 def test_normal_run():
-    #generate_random_testing_data(50)
+    # generate_random_testing_data(50)
     file_size = os.stat("flight.db").st_size
     status = subprocess.run(
         [

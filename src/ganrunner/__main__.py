@@ -5,6 +5,7 @@ import ganrunner.tools as tools
 import ganrunner.gans as gans
 import click
 
+
 @click.command()
 @click.option(
     "--filepath",
@@ -82,6 +83,7 @@ def main(
     )
     tools.save_sql(fake, filepath)
 
+
 def unpack(p):
     """
     Unpacks the parameters
@@ -143,10 +145,14 @@ def create_model(parameters, no_field):
         mygan = gans.dataGAN(opti, noise_dim, no_field, batch, number_of_layers)
         mygan.discriminator.summary()
     elif use_model == "wgan":
-        mygan = gans.wGAN(opti, noise_dim, no_field, batch, number_of_layers, parameters[6])
+        mygan = gans.wGAN(
+            opti, noise_dim, no_field, batch, number_of_layers, parameters[6]
+        )
         mygan.critic.summary()
     elif use_model == "wgangp":
-        mygan = gans.wGANgp(opti, noise_dim, no_field, batch, number_of_layers, parameters[6])
+        mygan = gans.wGANgp(
+            opti, noise_dim, no_field, batch, number_of_layers, parameters[6]
+        )
         mygan.critic.summary()
     else:
         raise ValueError("model not found")
