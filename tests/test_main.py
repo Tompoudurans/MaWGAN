@@ -30,6 +30,8 @@ Options:
 
   --help            Show this message and exit.
 """
+    if os.name == "nt":
+        exp_output = exp_output.replace(b"\n", b"\r\n")
     currunt_output = subprocess.run(
         ["python", "-m", "ganrunner", "--help"], capture_output=True
     )

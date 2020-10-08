@@ -51,7 +51,7 @@ def test_gan_training():
     trained_fake = testgan.generator.predict(noise)
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
-    assert any(untrained > trained)
+    assert all(untrained != trained)
 
 
 def test_save():
