@@ -1,6 +1,7 @@
 import sqlalchemy as sa
 from .prepocessing import get_norm
 import pandas as pd
+from .categorical import encoding
 
 
 def load_sql(file, table):
@@ -10,7 +11,7 @@ def load_sql(file, table):
     engine = sa.create_engine("sqlite:///" + file + ".db")
     connection = engine.connect()
     database = pd.read_sql(table, connection)
-    database, idexes = factorizing(database)
+    database, idexes = encoding(database)
     database = database.dropna()
     col = database.columns
     database, mean, std = get_norm(database)
