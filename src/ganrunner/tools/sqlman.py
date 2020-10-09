@@ -27,16 +27,3 @@ def save_sql(df, file, exists="append"):
     except KeyError:
         pass
     df.to_sql("generated_data", con=engine, if_exists=exists)
-
-
-def factorizing(data):
-    """
-    Transforms categorical data into numerical, saves maping on a list.
-    """
-    indexs = []
-    for name in data.columns:
-        if "O" == data[name].dtype:
-            new = pd.factorize(data[name])
-            data[name] = new[0]
-            indexs.append(new[1])
-    return data, indexs
