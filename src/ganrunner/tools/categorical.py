@@ -29,8 +29,9 @@ def decoding(data,details):
                 restore.append(set_of_cat.ix[value].idxmax())
             except TypeError:
                 restore.append(None)
+                print('x')
         data[details[current][0]] = restore
         current = current + 1
         position = end
-    data = data.drop(:,start:end)
+    data = data.drop(columns=data.columns[range(start,col_len)])
     return data

@@ -11,11 +11,11 @@ def load_sql(file, table):
     engine = sa.create_engine("sqlite:///" + file + ".db")
     connection = engine.connect()
     database = pd.read_sql(table, connection)
-    database, idexes = encoding(database)
+    database, details = encoding(database)
     database = database.dropna()
     col = database.columns
     database, mean, std = get_norm(database)
-    return database, mean, std, idexes, col
+    return database, mean, std, details, col
 
 
 def save_sql(df, file, exists="append"):

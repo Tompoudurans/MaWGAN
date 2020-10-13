@@ -69,7 +69,7 @@ def main(
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
     epochs = int(epochs)
-    database, mean, std, col, indexs = load_data(parameters[0], filepath)
+    database, mean, std, col, details = load_data(parameters[0], filepath)
     thegan = run(filepath, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
         thegan,
@@ -80,6 +80,7 @@ def main(
         sample,
         filepath,
         col,
+        details,
     )
     tools.save_sql(fake, filepath)
 
@@ -120,8 +121,8 @@ def load_data(sets, filename):
     """
     Loads a dataset, choices are (i)ris (w)ine or (p)enguin
     """
-    database, mean, std, indexs, col = tools.load_sql(filename, sets)
-    return database, mean, std, col, indexs
+    database, mean, std, details, col = tools.load_sql(filename, sets)
+    return database, mean, std, col, details
 
 
 def load_gan_weight(filepath, mygan):
@@ -162,7 +163,7 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, samples, filepath, col):
+def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info):
     """
     Creates a number of samples
     """
@@ -176,7 +177,7 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col):
         print(generated_data)
         tools.calculate_fid(generated_data, database)
         tools.dagplot(generated_data, database, filepath)
-    return generated_data
+    return tools.decoding(generated_data, info)
 
 
 def save_parameters(parameters, filepath):
