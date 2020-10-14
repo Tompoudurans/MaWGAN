@@ -53,11 +53,12 @@ def test_dagplot():
 
 
 def test_encoding():
-    data = pandas.read_csv('penguins_size.csv')
-    new,bit = ganrunner.tools.encoding(data)
-    assert new.dtypes.all() == 'uint8'
-    stuff = ganrunner.tools.decoding(new,bit)
+    data = pandas.read_csv("penguins_size.csv")
+    new, bit = ganrunner.tools.encoding(data)
+    assert new.dtypes.all() == "uint8"
+    stuff = ganrunner.tools.decoding(new, bit)
     assert len(stuff) == len(data)
+
 
 def test_sql_load_and_save():
     """
