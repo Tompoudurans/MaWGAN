@@ -13,6 +13,7 @@ def load_sql(file, table):
     database = pd.read_sql(table, connection)
     return database
 
+
 def procsses_sql(database):
     database, details = encoding(database)
     database = database.dropna()
@@ -30,4 +31,4 @@ def save_sql(df, file, exists="append"):
         df = df.drop(columns=["dataset"])
     except KeyError:
         pass
-    df.to_sql("generated_data", con=engine, if_exists=exists, index = False)
+    df.to_sql("generated_data", con=engine, if_exists=exists, index=False)

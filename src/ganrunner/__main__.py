@@ -65,7 +65,7 @@ def main(
     click.echo("loading...")
     if core != 0:
         tools.set_core(core)
-    filename = filepath.split('.')[0]
+    filename = filepath.split(".")[0]
     tools.setup_log(filename + "_progress.log")
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)

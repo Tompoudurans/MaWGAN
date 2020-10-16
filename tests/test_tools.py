@@ -53,7 +53,7 @@ def test_dagplot():
 
 
 def test_coding():
-    #data = pandas.read_csv("penguins_size.csv")
+    # data = pandas.read_csv("penguins_size.csv")
     data = pandas.DataFrame({1: [1.0, 1.2, 1.3], 2: ["apple", "orange", "apple"]})
     new, bit = ganrunner.tools.encoding(data)
     assert new.dtypes.all() == "uint8"
@@ -65,7 +65,7 @@ def test_sql_load_and_save():
     """
     Tests the import and export from SQL to python
     """
-    df = pandas.DataFrame({'A': [1.0, 1.2, 1.3], 'B': [2.1, 2.2, 2.3]})
+    df = pandas.DataFrame({"A": [1.0, 1.2, 1.3], "B": [2.1, 2.2, 2.3]})
     ganrunner.save_sql(df, "tests/test.db", "replace")
     raw_data = ganrunner.load_sql("tests/test.db", "generated_data")
     assert all(raw_data == df)
