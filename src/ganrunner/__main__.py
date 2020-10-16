@@ -65,12 +65,13 @@ def main(
     click.echo("loading...")
     if core != 0:
         tools.set_core(core)
-    tools.setup_log(filepath + "_progress.log")
+    filename = filepath.split('.')[0]
+    tools.setup_log(filename + "_progress.log")
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
-    parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
+    parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
-    database, mean, std, col, details = load_data(parameters[0], filepath)
-    thegan = run(filepath, epochs, parameters, successfully_loaded, database)
+    database, mean, std, details, col = load_data(parameters[0], filepath)
+    thegan = run(filename, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
         thegan,
         mean,
@@ -78,7 +79,7 @@ def main(
         database,
         int(parameters[4]),
         sample,
-        filepath,
+        filename,
         col,
         details,
     )
@@ -117,13 +118,13 @@ def setup(parameters_list):
     return parameters
 
 
-def load_data(sets, filename):
+def load_data(sets, filepath):
     """
     Loads a dataset from an sql table
     """
-    raw_data = tools.load_sql(filename, sets)
+    raw_data = tools.load_sql(filepath, sets)
     database, mean, std, details, col = tools.procsses_sql(raw_data)
-    return database, mean, std, col, details
+    return database, mean, std, details, col
 
 
 def load_gan_weight(filepath, mygan):

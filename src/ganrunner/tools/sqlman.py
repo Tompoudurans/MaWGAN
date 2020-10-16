@@ -30,4 +30,4 @@ def save_sql(df, file, exists="append"):
         df = df.drop(columns=["dataset"])
     except KeyError:
         pass
-    df.to_sql("generated_data", con=engine, if_exists=exists)
+    df.to_sql("generated_data", con=engine, if_exists=exists, index = False)

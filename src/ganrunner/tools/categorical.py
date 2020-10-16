@@ -23,7 +23,10 @@ def decoding(data, details):
     start = position
     current = 1
     while position < col_len:
-        end = position + details[current][1]
+        try:
+            end = position + details[current][1]
+        except IndexError:
+            break
         set_of_cat = data.iloc[:, position:end]
         restore = []
         for value in range(set_of_cat.shape[0]):
