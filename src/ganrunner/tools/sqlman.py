@@ -8,9 +8,12 @@ def load_sql(file, table):
     """
     Loads an SQL table and pre-procsses the table, ready to be trained
     """
-    engine = sa.create_engine("sqlite:///" + file + ".db")
+    engine = sa.create_engine("sqlite:///" + file)
     connection = engine.connect()
     database = pd.read_sql(table, connection)
+    return database
+
+def procsses_sql(database):
     database, details = encoding(database)
     database = database.dropna()
     col = database.columns
@@ -22,7 +25,7 @@ def save_sql(df, file, exists="append"):
     """
     Saves the generated data to a SQL table called generated_data
     """
-    engine = sa.create_engine("sqlite:///" + file + ".db")
+    engine = sa.create_engine("sqlite:///" + file)
     try:
         df = df.drop(columns=["dataset"])
     except KeyError:

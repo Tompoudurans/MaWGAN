@@ -52,8 +52,9 @@ def test_dagplot():
     assert os.path.isfile("test_compare.pdf")
 
 
-def test_encoding():
+def test_coding():
     data = pandas.read_csv("penguins_size.csv")
+    #ganrunner.load_sql("tests/flights.db", "readings")
     new, bit = ganrunner.tools.encoding(data)
     assert new.dtypes.all() == "uint8"
     stuff = ganrunner.tools.decoding(new, bit)
@@ -65,13 +66,10 @@ def test_sql_load_and_save():
     Tests the import and export from SQL to python
     """
     df = pandas.DataFrame({1: [1.0, 1.2, 1.3], 2: [2.1, 2.2, 2.3]})
-    ganrunner.save_sql(df, "tests/test", "replace")
-    database, mean, std, idexes, col = ganrunner.load_sql(
-        "tests/test", "generated_data"
-    )
-    dataset = ganrunner.unnormalize(database, mean, std)
-    dataset = dataset.drop(columns=[0])
-    assert all(dataset == df)
+    ganrunner.save_sql(df, "tests/test.db", "replace")
+    raw_data = ganrunner.load_sql("tests/test.db", "generated_data")
+    #dataset = dataset.drop(columns=[0])
+    assert all(raw_data == df)
 
 
 def test_simplesplit():

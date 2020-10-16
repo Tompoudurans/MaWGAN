@@ -45,7 +45,7 @@ def test_normal_run():
             "-m",
             "ganrunner",
             "--model=gan",
-            "--filepath=flight",
+            "--filepath=flight.db",
             "--opti=adam",
             "--noise=50",
             "--batch=50",

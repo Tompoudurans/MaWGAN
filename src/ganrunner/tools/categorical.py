@@ -27,11 +27,10 @@ def decoding(data, details):
         set_of_cat = data.iloc[:, position:end]
         restore = []
         for value in range(set_of_cat.shape[0]):
-            try:
-                restore.append(set_of_cat.ix[value].idxmax())
-            except TypeError:
+            if sum(set_of_cat.iloc[value]) > 0.1:
+                restore.append(set_of_cat.iloc[value].idxmax())
+            else:
                 restore.append(None)
-                print("x")
         data[details[current][0]] = restore
         current = current + 1
         position = end

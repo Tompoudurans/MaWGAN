@@ -119,9 +119,10 @@ def setup(parameters_list):
 
 def load_data(sets, filename):
     """
-    Loads a dataset, choices are (i)ris (w)ine or (p)enguin
+    Loads a dataset from an sql table
     """
-    database, mean, std, details, col = tools.load_sql(filename, sets)
+    raw_data = tools.load_sql(filename, sets)
+    database, mean, std, details, col = tools.procsses_sql(raw_data)
     return database, mean, std, col, details
 
 
