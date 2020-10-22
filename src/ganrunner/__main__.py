@@ -65,12 +65,13 @@ def main(
     click.echo("loading...")
     if core != 0:
         tools.set_core(core)
-    tools.setup_log(filepath + "_progress.log")
+    filename = filepath.split(".")[0]
+    tools.setup_log(filename + "_progress.log")
     parameters_list = [dataset, model, opti, noise, batch, layers, clip]
-    parameters, successfully_loaded = parameters_handeling(filepath, parameters_list)
+    parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
-    database, mean, std, col, indexs = load_data(parameters[0], filepath)
-    thegan = run(filepath, epochs, parameters, successfully_loaded, database)
+    database, mean, std, details, col = load_data(parameters[0], filepath)
+    thegan = run(filename, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
         thegan,
         mean,
@@ -78,8 +79,9 @@ def main(
         database,
         int(parameters[4]),
         sample,
-        filepath,
+        filename,
         col,
+        details,
     )
     tools.save_sql(fake, filepath)
 
@@ -116,12 +118,13 @@ def setup(parameters_list):
     return parameters
 
 
-def load_data(sets, filename):
+def load_data(sets, filepath):
     """
-    Loads a dataset, choices are (i)ris (w)ine or (p)enguin
+    Loads a dataset from an sql table
     """
-    database, mean, std, indexs, col = tools.load_sql(filename, sets)
-    return database, mean, std, col, indexs
+    raw_data = tools.load_sql(filepath, sets)
+    database, mean, std, details, col = tools.procsses_sql(raw_data)
+    return database, mean, std, details, col
 
 
 def load_gan_weight(filepath, mygan):
@@ -162,7 +165,7 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, samples, filepath, col):
+def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info):
     """
     Creates a number of samples
     """
@@ -176,7 +179,7 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col):
         print(generated_data)
         tools.calculate_fid(generated_data, database)
         tools.dagplot(generated_data, database, filepath)
-    return generated_data
+    return tools.decoding(generated_data, info)
 
 
 def save_parameters(parameters, filepath):

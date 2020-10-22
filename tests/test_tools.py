@@ -52,31 +52,23 @@ def test_dagplot():
     assert os.path.isfile("test_compare.pdf")
 
 
-def test_factorizing():
-    """
-    Tests the handling of the categorical data, this function should transform
-    all categorical data in to numbers and provide an index
-    """
-    data = pandas.DataFrame({"num": [1.0, 1.2, 1.3], "cat": ["A", "B", "A"]})
-    newdata, indexs = ganrunner.factorizing(data)
-    expected_index = numpy.array(["A", "B"], dtype="object")
-    expected_data = pandas.DataFrame({"num": [1.0, 1.2, 1.3], "cat": [1, 2, 1]})
-    assert all(newdata == expected_data)
-    assert all(indexs[0] == expected_index)
+def test_coding():
+    # data = pandas.read_csv("penguins_size.csv")
+    data = pandas.DataFrame({1: [1.0, 1.2, 1.3], 2: ["apple", "orange", "apple"]})
+    new, bit = ganrunner.tools.encoding(data)
+    assert new.dtypes.all() == "uint8"
+    stuff = ganrunner.tools.decoding(new, bit)
+    assert len(stuff) == len(data)
 
 
 def test_sql_load_and_save():
     """
     Tests the import and export from SQL to python
     """
-    df = pandas.DataFrame({1: [1.0, 1.2, 1.3], 2: [2.1, 2.2, 2.3]})
-    ganrunner.save_sql(df, "tests/test", "replace")
-    database, mean, std, idexes, col = ganrunner.load_sql(
-        "tests/test", "generated_data"
-    )
-    dataset = ganrunner.unnormalize(database, mean, std)
-    dataset = dataset.drop(columns=[0])
-    assert all(dataset == df)
+    df = pandas.DataFrame({"A": [1.0, 1.2, 1.3], "B": [2.1, 2.2, 2.3]})
+    ganrunner.save_sql(df, "tests/test.db", "replace")
+    raw_data = ganrunner.load_sql("tests/test.db", "generated_data")
+    assert all(raw_data == df)
 
 
 def test_simplesplit():
