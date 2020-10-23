@@ -41,11 +41,9 @@ class WGANGP():
 
         self.name = 'gan'
         self.input_dim = input_dim
-        self.critic_dropout_rate = critic_dropout_rate
         self.critic_learning_rate = critic_learning_rate
 
         self.net_dim = generator_initial_dense_layer_size
-        self.generator_dropout_rate = generator_dropout_rate
         self.generator_learning_rate = generator_learning_rate
 
         self.optimiser = optimiser
