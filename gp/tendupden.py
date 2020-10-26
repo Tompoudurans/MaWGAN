@@ -37,6 +37,7 @@ class WGANGP():
         , grad_weight
         , z_dim
         , batch_size
+        , lambdas
         ):
 
         self.name = 'gan'
@@ -45,7 +46,7 @@ class WGANGP():
 
         self.net_dim = generator_initial_dense_layer_size
         self.generator_learning_rate = generator_learning_rate
-
+        self.lambdas = lambdas
         self.optimiser = optimiser
 
         self.z_dim = z_dim
@@ -77,7 +78,7 @@ class WGANGP():
         #   ... and sqrt
         gradient_l2_norm = K.sqrt(gradients_sqr_sum)
         # compute lambda * (1 - ||grad||)^2 still for each single sample
-        gradient_penalty = 7 * K.square(1 - gradient_l2_norm)
+        gradient_penalty = self.lambdas * K.square(1 - gradient_l2_norm)
         # return the mean as loss over all the batch samples
         return K.mean(gradient_penalty)
 
@@ -244,43 +245,6 @@ class WGANGP():
 
 
             self.epoch+=1
-
-    def plot_model(self, run_folder):
-        plot_model(self.model, to_file=os.path.join(run_folder ,'viz/model.png'), show_shapes = True, show_layer_names = True)
-        plot_model(self.critic, to_file=os.path.join(run_folder ,'viz/critic.png'), show_shapes = True, show_layer_names = True)
-        plot_model(self.generator, to_file=os.path.join(run_folder ,'viz/generator.png'), show_shapes = True, show_layer_names = True)
-
-
-
-
-    def save(self, folder):
-
-            with open(os.path.join(folder, 'params.pkl'), 'wb') as f:
-                pickle.dump([
-                    self.input_dim
-                    , self.critic_conv_filters
-                    , self.critic_conv_kernel_size
-                    , self.critic_conv_strides
-                    , self.critic_batch_norm_momentum
-                    , self.critic_activation
-                    , self.critic_dropout_rate
-                    , self.critic_learning_rate
-                    , self.generator_initial_dense_layer_size
-                    , self.generator_upsample
-                    , self.generator_conv_filters
-                    , self.generator_conv_kernel_size
-                    , self.generator_conv_strides
-                    , self.generator_batch_norm_momentum
-                    , self.generator_activation
-                    , self.generator_dropout_rate
-                    , self.generator_learning_rate
-                    , self.optimiser
-                    , self.grad_weight
-                    , self.z_dim
-                    , self.batch_size
-                    ], f)
-
-            self.plot_model(folder)
 
     def save_model(self, run_folder):
         self.model.save(os.path.join(run_folder, 'model.h5'))

@@ -28,6 +28,7 @@ mygan = WGANGP(input_dim = no_field
         , grad_weight = 1
         , z_dim = 0
         , batch_size = batch
+        , lambdas = 1
         )
 #opti, noise_dim, no_field, batch, number_of_layers,pam6
 
