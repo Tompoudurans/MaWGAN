@@ -7,6 +7,15 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as mp
 
+def show_loss_progress(loss_discriminator, loss_generator, filepath, extention=".pdf"):
+    """
+    This plots and saves the progress of the Loss function over time
+    """
+    mp.plot(loss_discriminator)
+    mp.savefig(filepath + "_loss_progress_discriminator" + extention)
+    mp.plot(loss_generator)
+    mp.savefig(filepath + "_loss_progress_generator" + extention)
+
 def dagplot(x,y):
     fake = pd.DataFrame(x)
     real = pd.DataFrame(y)
@@ -14,7 +23,7 @@ def dagplot(x,y):
     real['dataset'] = ['real']*len(y)
     result = pd.concat([real, fake])
     sns.pairplot(result,hue='dataset')
-    mp.show()
+    mp.savefig("compare")
 
 batch = 150
 iris = datasets.load_iris()
@@ -40,4 +49,4 @@ noise = np.random.normal(0, 1, (150, 150))
 generated_data = mygan.generator.predict(noise)
 print(generated_data)
 dagplot(generated_data,iris.data)
-#show_loss_progress(mygan.d_losses,mygan.g_losses)
+show_loss_progress(mygan.d_losses,mygan.g_losses,"gp")
