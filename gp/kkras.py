@@ -55,26 +55,26 @@ def dagplot(x,y,i):
 batch = 150
 iris = datasets.load_iris()
 no_field = len(iris.data[1])
-#mygan = dataGAN('adam',batch,no_field,batch)
 mygan = WGANGP(input_dim = no_field
-        , critic_learning_rate =0.4
+        , critic_learning_rate =0.005
         , generator_initial_dense_layer_size = 150
-        , generator_learning_rate = 0.4
+        , generator_learning_rate = 0.005
         , optimiser = 'adam'
         , grad_weight = 1
         , z_dim = 0
         , batch_size = batch
         , lambdas = 10
         )
-#opti, noise_dim, no_field, batch, number_of_layers,pam6
+
 norm_data, mean, standard = get_norm(iris.data)
 mygan.critic.summary()
 mygan.model.summary()
-for i in range(50):
-    mygan.train(norm_data,batch,100,'wgangp/',10,5)
+mygan.load_weights("22_")
+for i in range(20):
+    mygan.train(norm_data,batch,30,'wgangp/',10,10)
     noise = np.random.normal(0, 1, (150, 150))
     generated_data = mygan.generator.predict(noise)
     unnormalize(generated_data, mean, standard)
-    dagplot(generated_data,iris.data,i)
-    run_folder=str(i) + "_"
+    dagplot(generated_data,iris.data,i+22)
+    run_folder=str(i+22) + "_"
     mygan.save_model(run_folder)
