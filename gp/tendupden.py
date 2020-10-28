@@ -253,4 +253,6 @@ class WGANGP():
         #pickle.dump(self, open( os.path.join(run_folder, "obj.pkl"), "wb" ))
 
     def load_weights(self, filepath):
-        self.model.load_weights(filepath)
+        self.model.load_weights(filepath + 'model.h5')
+        self.critic.load_weights(filepath + 'critic.h5')
+        self.generator.load_weights(filepath + 'generator.h5')
