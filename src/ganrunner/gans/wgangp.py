@@ -28,7 +28,7 @@ class RandomWeightedAverage(_Merge):
         return (alpha * inputs[0]) + ((1 - alpha) * inputs[1])
 
 #def __init__(self, optimiser, z_dim, data_dim, net_dim, number_of_layers, lamabda):
-class WGANGP():
+class wGANgp():
     def __init__(self
         , optimiser
         , input_dim
@@ -195,7 +195,7 @@ class WGANGP():
 
         self.set_trainable(self.critic, True)
 
-    def train_critic(self, x_train, batch_size, using_generator):
+    def train_critic(self, x_train, batch_size, using_generator=False):
 
         valid = np.ones((batch_size,1), dtype=np.float32)
         fake = -np.ones((batch_size,1), dtype=np.float32)

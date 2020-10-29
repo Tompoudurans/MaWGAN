@@ -62,8 +62,7 @@ mygan = WGANGP(optimiser = 'adam'
         , batch_size = batch
         , number_of_layers = 5
         , lambdas = 10
-        , generator_learning_rate = 0.008
-        , critic_learning_rate = 0.008
+        , learning_rate = 0.008
         )
 
 norm_data, mean, standard = get_norm(iris.data)
@@ -72,7 +71,7 @@ mygan.model.summary()
 startvalue = 30
 means = []
 mygan.load_weights("lab")
-for i in range(20):
+for i in range(9):
     mygan.train(norm_data,batch,100,5,15)
     noise = np.random.normal(0, 1, (100, 100))
     generated_data = mygan.generator.predict(noise)

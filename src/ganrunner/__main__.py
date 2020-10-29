@@ -154,7 +154,7 @@ def create_model(parameters, no_field):
         mygan.critic.summary()
     elif use_model == "wgangp":
         mygan = gans.wGANgp(
-            opti, noise_dim, no_field, batch, number_of_layers, parameters[6]
+            opti, noise_dim, no_field, batch, number_of_layers, parameters[6], 0.008
         )
         mygan.critic.summary()
     else:
