@@ -1,7 +1,5 @@
 from sklearn import datasets
-#from tengan import dataGAN
 from tendupden import WGANGP
-#from dataman import show_loss_progress
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -42,6 +40,8 @@ def show_loss_progress(loss_discriminator, loss_generator, filepath, extention="
     mp.savefig(filepath + "_loss_progress_discriminator" + extention)
     mp.plot(loss_generator)
     mp.savefig(filepath + "_loss_progress_generator" + extention)
+    mp.clf()
+
 
 def dagplot(x,y,i):
     fake = pd.DataFrame(x)
@@ -51,30 +51,36 @@ def dagplot(x,y,i):
     result = pd.concat([real, fake])
     sns.pairplot(result,hue='dataset')
     mp.savefig(str(i) + "_compare.pdf")
+    mp.clf()
 
-batch = 150
+batch = 100
 iris = datasets.load_iris()
 no_field = len(iris.data[1])
-mygan = WGANGP(input_dim = no_field
-        , critic_learning_rate =0.005
-        , generator_initial_dense_layer_size = 150
-        , generator_learning_rate = 0.005
-        , optimiser = 'adam'
-        , grad_weight = 1
-        , z_dim = 0
+mygan = WGANGP(optimiser = 'adam'
+        , input_dim = no_field
+        , noise_size = batch
         , batch_size = batch
+        , number_of_layers = 5
         , lambdas = 10
+        , generator_learning_rate = 0.008
+        , critic_learning_rate = 0.008
         )
 
 norm_data, mean, standard = get_norm(iris.data)
 mygan.critic.summary()
 mygan.model.summary()
-mygan.load_weights("22_")
+startvalue = 30
+means = []
+mygan.load_weights("lab")
 for i in range(20):
-    mygan.train(norm_data,batch,30,'wgangp/',10,10)
-    noise = np.random.normal(0, 1, (150, 150))
+    mygan.train(norm_data,batch,100,5,15)
+    noise = np.random.normal(0, 1, (100, 100))
     generated_data = mygan.generator.predict(noise)
-    unnormalize(generated_data, mean, standard)
-    dagplot(generated_data,iris.data,i+22)
-    run_folder=str(i+22) + "_"
-    mygan.save_model(run_folder)
+    generated_data = unnormalize(generated_data, mean, standard)
+    dagplot(generated_data,iris.data,i + startvalue)
+    run_folder=str(i + startvalue) + "_"
+    means.append(generated_data.mean())
+show_loss_progress(mygan.d_losses, mygan.g_losses, "lab")
+mygan.save_model("lab2")
+mp.plot(means)
+mp.savefig("means.pdf")

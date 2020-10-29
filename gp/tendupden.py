@@ -27,40 +27,38 @@ class RandomWeightedAverage(_Merge):
         alpha = K.random_uniform((self.batch_size, 1, 1, 1))
         return (alpha * inputs[0]) + ((1 - alpha) * inputs[1])
 
+#def __init__(self, optimiser, z_dim, data_dim, net_dim, number_of_layers, lamabda):
 class WGANGP():
     def __init__(self
-        , input_dim
-        , critic_learning_rate
-        , generator_initial_dense_layer_size
-        , generator_learning_rate
         , optimiser
-        , grad_weight
-        , z_dim
+        , input_dim
+        , noise_size
         , batch_size
+        , number_of_layers
         , lambdas
+        , generator_learning_rate
+        , critic_learning_rate
         ):
 
         self.name = 'gan'
         self.input_dim = input_dim
         self.critic_learning_rate = critic_learning_rate
 
-        self.net_dim = generator_initial_dense_layer_size
+        self.net_dim = noise_size
         self.generator_learning_rate = generator_learning_rate
         self.lambdas = lambdas
         self.optimiser = optimiser
 
-        self.z_dim = z_dim
-
         self.weight_init = RandomNormal(mean=0., stddev=0.02) # 'he_normal' #RandomNormal(mean=0., stddev=0.02)
-        self.grad_weight = grad_weight
+        self.grad_weight = 1
         self.batch_size = batch_size
 
         self.d_losses = []
         self.g_losses = []
         self.epoch = 0
 
-        self._build_critic()
-        self._build_generator()
+        self.make_critc(number_of_layers)
+        self.make_generator(number_of_layers)
 
         self._build_adversarial()
 
@@ -96,21 +94,33 @@ class WGANGP():
         alpha = K.random_uniform((self.batch_size, 1, 1, 1))
         return (alpha * inputs[0]) + ((1 - alpha) * inputs[1])
 
-    def _build_critic(self):
-        dis_input = Input(shape=(self.input_dim,),name='dis_input')
-        a =Dense(self.net_dim,activation = 'relu')(dis_input)
-        b =Dense(self.net_dim,activation = 'relu')(a)
-        c =Dense(self.net_dim,activation = 'relu')(b)
-        d =Dense(1,activation = None)(c)
-        self.critic = Model(inputs=dis_input,outputs=d)
+    def make_generator(self, number_of_layers):
+        """
+        This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
+        It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
+        """
+        gen_input = Input(shape=(self.batch_size,), name="gen_input")
+        gen_layer = Dense(self.net_dim, activation="tanh")(gen_input)
+        number_of_layers -= 2
+        while number_of_layers > 1:
+            gen_layer = Dense(self.net_dim, activation="tanh")(gen_layer)
+            number_of_layers -= 1
+        final_layer = Dense(self.input_dim, activation="linear")(gen_layer)
+        self.generator = Model(inputs=gen_input, outputs=final_layer)
 
-    def _build_generator(self):
-        gen_input = Input(shape=(self.net_dim,),name='gen_input')
-        a =Dense(self.net_dim,activation = 'tanh')(gen_input)
-        b =Dense(self.net_dim,activation = 'tanh')(a)
-        c =Dense(self.net_dim,activation = 'tanh')(b)
-        d =Dense(self.input_dim,activation = 'linear')(c)#,kernel_regularizer=reg.l2(0.1)))
-        self.generator = Model(inputs=gen_input,outputs=d)
+    def make_critc(self, number_of_layers):
+        """
+        This makes a critic network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
+        It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
+        """
+        dis_input = Input(shape=(self.input_dim,), name="dis_input")
+        dis_layer = Dense(self.net_dim, activation="relu")(dis_input)
+        number_of_layers -= 2
+        while number_of_layers > 1:
+            dis_layer = Dense(self.net_dim, activation="tanh")(dis_layer)
+            number_of_layers -= 1
+        final_layer = Dense(1, activation="sigmoid")(dis_layer)
+        self.critic = Model(inputs=dis_input, outputs=final_layer)
 
     def get_opti(self, lr):
         if self.optimiser == 'adam':
@@ -219,7 +229,7 @@ class WGANGP():
         return self.model.train_on_batch(noise, valid)
 
 
-    def train(self, x_train, batch_size, epochs, run_folder, print_every_n_batches = 10
+    def train(self, x_train, batch_size, epochs, print_every_n_batches = 10
     , n_critic = 5
     , using_generator = False):
 
@@ -235,13 +245,13 @@ class WGANGP():
 
             g_loss = self.train_generator(batch_size)
 
-
-            print ("%d (%d, %d) [D loss: (%.1f)(R %.1f, F %.1f, G %.1f)] [G loss: %.1f]" % (epoch, critic_loops, 1, d_loss[0], d_loss[1],d_loss[2],d_loss[3],g_loss))
-
-            # If at save interval => save generated image samples
             if epoch % print_every_n_batches == 0:
                     self.d_losses.append(d_loss)
                     self.g_losses.append(g_loss)
+                    print ("%d (%d, %d) [D loss: (%.1f)(R %.1f, F %.1f, G %.1f)] [G loss: %.1f]" % (epoch, critic_loops, 1, d_loss[0], d_loss[1],d_loss[2],d_loss[3],g_loss))
+
+            # If at save interval => save generated image samples
+
 
 
             self.epoch+=1
