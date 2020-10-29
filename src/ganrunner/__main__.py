@@ -153,9 +153,14 @@ def create_model(parameters, no_field):
         )
         mygan.critic.summary()
     elif use_model == "wgangp":
-        mygan = gans.wGANgp(
-            opti, noise_dim, no_field, batch, number_of_layers, parameters[6], 0.008
-        )
+        mygan = gans.wGANgp(optimiser = 'adam'
+                , input_dim = no_field
+                , noise_size = noise_dim
+                , batch_size = batch
+                , number_of_layers = number_of_layers
+                , lambdas = parameters[6]
+                , learning_rate = 0.005
+                )
         mygan.critic.summary()
     else:
         raise ValueError("model not found")

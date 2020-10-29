@@ -27,7 +27,6 @@ class RandomWeightedAverage(_Merge):
         alpha = K.random_uniform((self.batch_size, 1, 1, 1))
         return (alpha * inputs[0]) + ((1 - alpha) * inputs[1])
 
-#def __init__(self, optimiser, z_dim, data_dim, net_dim, number_of_layers, lamabda):
 class wGANgp():
     def __init__(self
         , optimiser
