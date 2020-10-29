@@ -219,9 +219,13 @@ class wGANgp():
         noise = np.random.normal(0, 1, (batch_size, self.net_dim))
         return self.model.train_on_batch(noise, valid)
 
+    def create_fake(self, batch_size):
+        noise = np.random.normal(0, 1, (batch_size, self.batch_size))
+        fake_data = self.generator.predict(noise)
+        return fake_data
 
     def train(self, x_train, batch_size, epochs, print_every_n_batches = 10
-    , n_critic = 5
+    , n_critic = 15
     , using_generator = False):
 
         for epoch in range(self.epoch, self.epoch + epochs):

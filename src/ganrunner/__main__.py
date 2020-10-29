@@ -44,6 +44,13 @@ import click
     type=int,
     help="choose the number of generated data you want: (samples*batch)",
 )
+
+@click.option(
+    "--rate",
+    default=0.005,
+    type=int,
+    help="choose the learing rate of the model",
+)
 def main(
     dataset,
     filepath,
@@ -56,6 +63,7 @@ def main(
     clip,
     core,
     sample,
+    rate
 ):
     """
     This code creates and trains a GAN.
@@ -67,7 +75,7 @@ def main(
         tools.set_core(core)
     filename = filepath.split(".")[0]
     tools.setup_log(filename + "_progress.log")
-    parameters_list = [dataset, model, opti, noise, batch, layers, clip]
+    parameters_list = [dataset, model, opti, noise, batch, layers, clip, rate]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
     database, mean, std, details, col = load_data(parameters[0], filepath)
@@ -115,6 +123,8 @@ def setup(parameters_list):
     if parameters[1] == "wgan" or parameters[1] == "wgangp":
         clip_threshold = float(input("learning constiction "))
         parameters.append(clip_threshold)
+    if parameters[1] == "wgangp":
+        parameters.append(float(input("rate ?")))
     return parameters
 
 
@@ -159,7 +169,7 @@ def create_model(parameters, no_field):
                 , batch_size = batch
                 , number_of_layers = number_of_layers
                 , lambdas = parameters[6]
-                , learning_rate = 0.005
+                , learning_rate = parameters[7]
                 )
         mygan.critic.summary()
     else:
