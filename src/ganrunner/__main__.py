@@ -44,12 +44,8 @@ import click
     type=int,
     help="choose the number of generated data you want: (samples*batch)",
 )
-
 @click.option(
-    "--rate",
-    default=0.005,
-    type=int,
-    help="choose the learing rate of the model",
+    "--rate", default=0.005, type=int, help="choose the learing rate of the model",
 )
 def main(
     dataset,
@@ -63,7 +59,7 @@ def main(
     clip,
     core,
     sample,
-    rate
+    rate,
 ):
     """
     This code creates and trains a GAN.
@@ -81,15 +77,7 @@ def main(
     database, mean, std, details, col = load_data(parameters[0], filepath)
     thegan = run(filename, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
-        thegan,
-        mean,
-        std,
-        database,
-        int(parameters[4]),
-        sample,
-        filename,
-        col,
-        details,
+        thegan, mean, std, database, int(parameters[4]), sample, filename, col, details,
     )
     tools.save_sql(fake, filepath)
 
@@ -163,14 +151,15 @@ def create_model(parameters, no_field):
         )
         mygan.critic.summary()
     elif use_model == "wgangp":
-        mygan = gans.wGANgp(optimiser = 'adam'
-                , input_dim = no_field
-                , noise_size = noise_dim
-                , batch_size = batch
-                , number_of_layers = number_of_layers
-                , lambdas = parameters[6]
-                , learning_rate = parameters[7]
-                )
+        mygan = gans.wGANgp(
+            optimiser="adam",
+            input_dim=no_field,
+            noise_size=noise_dim,
+            batch_size=batch,
+            number_of_layers=number_of_layers,
+            lambdas=parameters[6],
+            learning_rate=parameters[7],
+        )
         mygan.critic.summary()
     else:
         raise ValueError("model not found")

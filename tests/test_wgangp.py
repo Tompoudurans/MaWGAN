@@ -17,7 +17,7 @@ noise_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [2.1, 2.2, 2.3]])
 
-testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas,0.008)
+testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.008)
 
 
 def test_critic_training():

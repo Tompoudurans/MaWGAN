@@ -1,5 +1,4 @@
-
-from keras.layers import * # Input, Conv2D, Flatten, Dense, Conv2DTranspose, Reshape, Lambda, Activation, BatchNormalization, LeakyReLU, Dropout, ZeroPadding2D, UpSampling2D
+from keras.layers import *  # Input, Conv2D, Flatten, Dense, Conv2DTranspose, Reshape, Lambda, Activation, BatchNormalization, LeakyReLU, Dropout, ZeroPadding2D, UpSampling2D
 
 from keras.layers.merge import _Merge
 from keras.models import Model, Sequential
@@ -22,23 +21,27 @@ class RandomWeightedAverage(_Merge):
     def __init__(self, batch_size):
         super().__init__()
         self.batch_size = batch_size
+
     """Provides a (random) weighted average between real and generated image samples"""
+
     def _merge_function(self, inputs):
         alpha = K.random_uniform((self.batch_size, 1, 1, 1))
         return (alpha * inputs[0]) + ((1 - alpha) * inputs[1])
 
-class wGANgp():
-    def __init__(self
-        , optimiser
-        , input_dim
-        , noise_size
-        , batch_size
-        , number_of_layers
-        , lambdas
-        , learning_rate
-        ):
 
-        self.name = 'gan'
+class wGANgp:
+    def __init__(
+        self,
+        optimiser,
+        input_dim,
+        noise_size,
+        batch_size,
+        number_of_layers,
+        lambdas,
+        learning_rate,
+    ):
+
+        self.name = "gan"
         self.input_dim = input_dim
         self.critic_learning_rate = learning_rate
 
@@ -47,7 +50,9 @@ class wGANgp():
         self.lambdas = lambdas
         self.optimiser = optimiser
 
-        self.weight_init = RandomNormal(mean=0., stddev=0.02) # 'he_normal' #RandomNormal(mean=0., stddev=0.02)
+        self.weight_init = RandomNormal(
+            mean=0.0, stddev=0.02
+        )  # 'he_normal' #RandomNormal(mean=0., stddev=0.02)
         self.grad_weight = 1
         self.batch_size = batch_size
 
@@ -69,8 +74,9 @@ class wGANgp():
         # compute the euclidean norm by squaring ...
         gradients_sqr = K.square(gradients)
         #   ... summing over the rows ...
-        gradients_sqr_sum = K.sum(gradients_sqr,
-                                  axis=np.arange(1, len(gradients_sqr.shape)))
+        gradients_sqr_sum = K.sum(
+            gradients_sqr, axis=np.arange(1, len(gradients_sqr.shape))
+        )
         #   ... and sqrt
         gradient_l2_norm = K.sqrt(gradients_sqr_sum)
         # compute lambda * (1 - ||grad||)^2 still for each single sample
@@ -79,6 +85,9 @@ class wGANgp():
         return K.mean(gradient_penalty)
 
     def wasserstein(self, y_true, y_pred):
+        """
+        calcuate half the wasserstein distance
+        """
         return -K.mean(y_true * y_pred)
 
     def RandomWeightedAv(self, inputs):
@@ -114,27 +123,36 @@ class wGANgp():
         self.critic = Model(inputs=dis_input, outputs=final_layer)
 
     def get_opti(self, lr):
-        if self.optimiser == 'adam':
+        """
+        sets up optimisers to the network
+        """
+        if self.optimiser == "adam":
             opti = Adam(lr=lr, beta_1=0.5)
-        elif self.optimiser == 'rmsprop':
+        elif self.optimiser == "rmsprop":
             opti = RMSprop(lr=lr)
         else:
             opti = Adam(lr=lr)
 
         return opti
 
-
     def set_trainable(self, m, val):
+        """
+        This freezes and unfreezes weights depending on the value of 'val'
+        """
         m.trainable = val
         for l in m.layers:
             l.trainable = val
 
     def _build_adversarial(self):
-
-        #-------------------------------
+        """
+        This compiles the critic and
+        then compiles a GAN model that is used for training the generator
+        it consists of the generator directly outputed into a frozen critic
+        """
+        # -------------------------------
         # Construct Computational Graph
         #       for the Critic
-        #-------------------------------
+        # -------------------------------
 
         # Freeze generator's layers while training critic
         self.set_trainable(self.generator, False)
@@ -157,23 +175,25 @@ class wGANgp():
 
         # Use Python partial to provide loss function with additional
         # 'interpolated_samples' argument
-        partial_gp_loss = partial(self.gradient_penalty_loss,
-                          interpolated_samples=interpolated_img)
-        partial_gp_loss.__name__ = 'gradient_penalty' # Keras requires function names
+        partial_gp_loss = partial(
+            self.gradient_penalty_loss, interpolated_samples=interpolated_img
+        )
+        partial_gp_loss.__name__ = "gradient_penalty"  # Keras requires function names
 
-        self.critic_model = Model(inputs=[real_img, z_disc],
-                            outputs=[valid, fake, validity_interpolated])
+        self.critic_model = Model(
+            inputs=[real_img, z_disc], outputs=[valid, fake, validity_interpolated]
+        )
 
         self.critic_model.compile(
-            loss=[self.wasserstein,self.wasserstein, partial_gp_loss]
-            ,optimizer=self.get_opti(self.critic_learning_rate)
-            ,loss_weights=[1, 1, self.grad_weight]
-            )
+            loss=[self.wasserstein, self.wasserstein, partial_gp_loss],
+            optimizer=self.get_opti(self.critic_learning_rate),
+            loss_weights=[1, 1, self.grad_weight],
+        )
 
-        #-------------------------------
+        # -------------------------------
         # Construct Computational Graph
         #         for Generator
-        #-------------------------------
+        # -------------------------------
 
         # For the generator we freeze the critic's layers
         self.set_trainable(self.critic, False)
@@ -188,17 +208,22 @@ class wGANgp():
         # Defines generator model
         self.model = Model(model_input, model_output)
 
-        self.model.compile(optimizer=self.get_opti(self.generator_learning_rate)
-        , loss=self.wasserstein
+        self.model.compile(
+            optimizer=self.get_opti(self.generator_learning_rate), loss=self.wasserstein
         )
 
         self.set_trainable(self.critic, True)
 
     def train_critic(self, x_train, batch_size, using_generator=False):
-
-        valid = np.ones((batch_size,1), dtype=np.float32)
-        fake = -np.ones((batch_size,1), dtype=np.float32)
-        dummy = np.zeros((batch_size, 1), dtype=np.float32) # Dummy gt for gradient penalty
+        """
+        This trains the critc once by creating a set of fake_data and
+        traning them aganist the real_data, then the wieght are cliped
+        """
+        valid = np.ones((batch_size, 1), dtype=np.float32)
+        fake = -np.ones((batch_size, 1), dtype=np.float32)
+        dummy = np.zeros(
+            (batch_size, 1), dtype=np.float32
+        )  # Dummy gt for gradient penalty
 
         if using_generator:
             true_imgs = next(x_train)[0]
@@ -210,54 +235,83 @@ class wGANgp():
 
         noise = np.random.normal(0, 1, (batch_size, self.net_dim))
 
-        #print([true_imgs, noise], [valid, fake, dummy])
-        d_loss = self.critic_model.train_on_batch([true_imgs, noise], [valid, fake, dummy])
+        # print([true_imgs, noise], [valid, fake, dummy])
+        d_loss = self.critic_model.train_on_batch(
+            [true_imgs, noise], [valid, fake, dummy]
+        )
         return d_loss
 
     def train_generator(self, batch_size):
-        valid = np.ones((batch_size,1), dtype=np.float32)
+        """
+        This trains the generator once by creating a set of fake data and
+        uses the critic score to train on
+        """
+        valid = np.ones((batch_size, 1), dtype=np.float32)
         noise = np.random.normal(0, 1, (batch_size, self.net_dim))
         return self.model.train_on_batch(noise, valid)
 
     def create_fake(self, batch_size):
+        """
+        this creates a batch of fake data
+        """
         noise = np.random.normal(0, 1, (batch_size, self.batch_size))
         fake_data = self.generator.predict(noise)
         return fake_data
 
-    def train(self, x_train, batch_size, epochs, print_every_n_batches = 10
-    , n_critic = 15
-    , using_generator = False):
+    def train(
+        self,
+        x_train,
+        batch_size,
+        epochs,
+        print_every_n_batches=10,
+        n_critic=15,
+        using_generator=False,
+    ):
+        """
+        This trains the GAN by alternating between training the critic 'critic_round' times
+        and training the generator once in each epoch on
+        the dataset x_train which has a length of batch_size.
+        It will print and record the loss of the generator and critic every_n_batches.
+        """
 
-        for epoch in range(self.epoch, self.epoch + epochs):
-
-            if epoch % 100 == 0:
-                critic_loops = 5
-            else:
-                critic_loops = n_critic
-
-            for _ in range(critic_loops):
-                d_loss = self.train_critic(x_train, batch_size, using_generator)
-
-            g_loss = self.train_generator(batch_size)
-
-            if epoch % print_every_n_batches == 0:
-                    self.d_losses.append(d_loss)
-                    self.g_losses.append(g_loss)
-                    print ("%d (%d, %d) [D loss: (%.1f)(R %.1f, F %.1f, G %.1f)] [G loss: %.1f]" % (epoch, critic_loops, 1, d_loss[0], d_loss[1],d_loss[2],d_loss[3],g_loss))
-
-            # If at save interval => save generated image samples
-
-
-
-            self.epoch+=1
+    for epoch in range(self.epoch, self.epoch + epochs):
+        if epoch % 100 == 0:
+            critic_loops = 5
+        else:
+            critic_loops = n_critic
+        for _ in range(critic_loops):
+            d_loss = self.train_critic(x_train, batch_size, using_generator)
+        g_loss = self.train_generator(batch_size)
+        if epoch % print_every_n_batches == 0:
+            self.d_losses.append(d_loss)
+            self.g_losses.append(g_loss)
+            print(
+                "%d (%d, %d) [D loss: (%.1f)(R %.1f, F %.1f, G %.1f)] [G loss: %.1f]"
+                % (
+                    epoch,
+                    critic_loops,
+                    1,
+                    d_loss[0],
+                    d_loss[1],
+                    d_loss[2],
+                    d_loss[3],
+                    g_loss,
+                )
+            )
+        self.epoch += 1
 
     def save_model(self, run_folder):
-        self.model.save(run_folder + 'model.h5')
-        self.critic.save(run_folder + 'critic.h5')
-        self.generator.save(run_folder + 'generator.h5')
-        #pickle.dump(self, open( os.path.join(run_folder, "obj.pkl"), "wb" ))
+        """
+        This saves the weights of the three models that are used in the GAN on the 'filepath'.
+        """
+        self.model.save(run_folder + "model.h5")
+        self.critic.save(run_folder + "critic.h5")
+        self.generator.save(run_folder + "generator.h5")
 
     def load_weights(self, filepath):
-        self.model.load_weights(filepath + 'model.h5')
-        self.critic.load_weights(filepath + 'critic.h5')
-        self.generator.load_weights(filepath + 'generator.h5')
+        """
+        This loads the weights of the three models that are used in the GAN on the 'filepath'.
+        """
+        self.model.load_weights(filepath + "model.h5")
+        self.critic.load_weights(filepath + "critic.h5")
+        self.generator.load_weights(filepath + "generator.h5")
