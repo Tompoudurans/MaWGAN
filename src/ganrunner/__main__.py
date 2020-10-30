@@ -141,6 +141,10 @@ def create_model(parameters, no_field):
     """
     Builds the GAN using the parameters
     """
+    if len(parameters) == 8:
+        parameters[7]
+    else:
+        lr = 0.001
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
     if use_model == "gan":
         mygan = gans.dataGAN(opti, noise_dim, no_field, batch, number_of_layers)
@@ -158,7 +162,7 @@ def create_model(parameters, no_field):
             batch_size=batch,
             number_of_layers=number_of_layers,
             lambdas=parameters[6],
-            learning_rate=parameters[7],
+            learning_rate=lr
         )
         mygan.critic.summary()
     else:
