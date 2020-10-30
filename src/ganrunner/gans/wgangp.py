@@ -274,31 +274,31 @@ class wGANgp:
         It will print and record the loss of the generator and critic every_n_batches.
         """
 
-    for epoch in range(self.epoch, self.epoch + epochs):
-        if epoch % 100 == 0:
-            critic_loops = 5
-        else:
-            critic_loops = n_critic
-        for _ in range(critic_loops):
-            d_loss = self.train_critic(x_train, batch_size, using_generator)
-        g_loss = self.train_generator(batch_size)
-        if epoch % print_every_n_batches == 0:
-            self.d_losses.append(d_loss)
-            self.g_losses.append(g_loss)
-            print(
-                "%d (%d, %d) [D loss: (%.1f)(R %.1f, F %.1f, G %.1f)] [G loss: %.1f]"
-                % (
-                    epoch,
-                    critic_loops,
-                    1,
-                    d_loss[0],
-                    d_loss[1],
-                    d_loss[2],
-                    d_loss[3],
-                    g_loss,
+        for epoch in range(self.epoch, self.epoch + epochs):
+            if epoch % 100 == 0:
+                critic_loops = 5
+            else:
+                critic_loops = n_critic
+            for _ in range(critic_loops):
+                d_loss = self.train_critic(x_train, batch_size, using_generator)
+            g_loss = self.train_generator(batch_size)
+            if epoch % print_every_n_batches == 0:
+                self.d_losses.append(d_loss)
+                self.g_losses.append(g_loss)
+                print(
+                    "%d (%d, %d) [D loss: (%.1f)(R %.1f, F %.1f, G %.1f)] [G loss: %.1f]"
+                    % (
+                        epoch,
+                        critic_loops,
+                        1,
+                        d_loss[0],
+                        d_loss[1],
+                        d_loss[2],
+                        d_loss[3],
+                        g_loss,
+                    )
                 )
-            )
-        self.epoch += 1
+            self.epoch += 1
 
     def save_model(self, run_folder):
         """
