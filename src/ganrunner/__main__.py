@@ -45,7 +45,10 @@ import click
     help="choose the number of generated data you want: (samples*batch)",
 )
 @click.option(
-    "--rate", default=0.005, type=int, help="choose the learing rate of the model",
+    "--rate",
+    default=0.005,
+    type=int,
+    help="choose the learing rate of the model",
 )
 def main(
     dataset,
@@ -77,7 +80,15 @@ def main(
     database, mean, std, details, col = load_data(parameters[0], filepath)
     thegan = run(filename, epochs, parameters, successfully_loaded, database)
     fake = show_samples(
-        thegan, mean, std, database, int(parameters[4]), sample, filename, col, details,
+        thegan,
+        mean,
+        std,
+        database,
+        int(parameters[4]),
+        sample,
+        filename,
+        col,
+        details,
     )
     tools.save_sql(fake, filepath)
 
