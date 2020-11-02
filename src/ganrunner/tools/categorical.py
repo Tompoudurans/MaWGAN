@@ -17,7 +17,6 @@ def encoding(data):
 
 
 def decoding(data, details):
-    print("point")
     col_len = len(data.columns)
     position = details[0] - len(details) + 1
     start = position

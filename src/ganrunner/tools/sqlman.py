@@ -6,15 +6,20 @@ from .categorical import encoding
 
 def load_sql(file, table):
     """
-    Loads an SQL table and pre-procsses the table, ready to be trained
+    Loads an SQL table
     """
     engine = sa.create_engine("sqlite:///" + file)
     connection = engine.connect()
     database = pd.read_sql(table, connection)
-    return database
-
+    try:
+        return database.drop(columns ="index")
+    except KeyError:
+        return database
 
 def procsses_sql(database):
+    """
+    pre-procsses the table, ready to be trained
+    """
     database, details = encoding(database)
     database = database.dropna()
     col = database.columns
@@ -31,4 +36,4 @@ def save_sql(df, file, exists="append"):
         df = df.drop(columns=["dataset"])
     except KeyError:
         pass
-    df.to_sql("generated_data", con=engine, if_exists=exists, index=False)
+    df.to_sql("generated_data", con=engine, if_exists=exists)#, index=False)

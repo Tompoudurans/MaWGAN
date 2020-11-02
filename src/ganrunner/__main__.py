@@ -18,7 +18,7 @@ import click
 @click.option(
     "--dataset",
     default=None,
-    help="choose the dataset/table that the GAN will train on - this can't be a single letter - don't add .db",
+    help="choose the dataset/table that the GAN will train on",
 )
 @click.option("--model", default=None, help="choose which model you what to use")
 @click.option("--opti", default=None, help="choose the optimiser you want to use")
@@ -142,7 +142,7 @@ def create_model(parameters, no_field):
     Builds the GAN using the parameters
     """
     if len(parameters) == 8:
-        parameters[7]
+        lr = parameters[7]
     else:
         lr = 0.001
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
@@ -184,10 +184,12 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
         if s == 0:
             database = tools.unnormalize(database, mean, std)
             database.columns = col
-        print(generated_data)
+
         tools.calculate_fid(generated_data, database)
         tools.dagplot(generated_data, database, filepath)
-    return tools.decoding(generated_data, info)
+        values = tools.decoding(generated_data, info)
+        print(values)
+    return values
 
 
 def save_parameters(parameters, filepath):
@@ -242,7 +244,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
         mygan.train(database, batch, epochs, step)
         mygan.save_model(filepath)
         tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
-        return mygan
+    return mygan
 
 
 if __name__ == "__main__":
