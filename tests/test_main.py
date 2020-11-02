@@ -6,7 +6,7 @@ import ganrunner
 
 
 def test_help():
-    exp_output = b"""Usage: __main__.py [OPTIONS]\n
+    exp_output = b""""Usage: __main__.py [OPTIONS]\n
   This code creates and trains a GAN. Core elements of this code are sourced
   directly from the David Foster book 'Deep generative models' and have been
   modified to work with a numeric database such as the iris datasets taken

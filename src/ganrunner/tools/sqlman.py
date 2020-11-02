@@ -12,9 +12,10 @@ def load_sql(file, table):
     connection = engine.connect()
     database = pd.read_sql(table, connection)
     try:
-        return database.drop(columns ="index")
+        return database.drop(columns="index")
     except KeyError:
         return database
+
 
 def procsses_sql(database):
     """
@@ -36,4 +37,4 @@ def save_sql(df, file, exists="append"):
         df = df.drop(columns=["dataset"])
     except KeyError:
         pass
-    df.to_sql("generated_data", con=engine, if_exists=exists)#, index=False)
+    df.to_sql("generated_data", con=engine, if_exists=exists)  # , index=False)

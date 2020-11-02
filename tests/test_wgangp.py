@@ -17,7 +17,7 @@ noise_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [2.1, 2.2, 2.3]])
 
-testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.008)
+testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.0001)
 
 
 def test_critic_training():
@@ -46,7 +46,7 @@ def test_gan_training():
     numpy.random.seed(10)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake = testgan.generator.predict(noise)
-    testgan.train(dataset,batch_size,20)
+    testgan.train(dataset, batch_size, 20)
     trained_fake = testgan.generator.predict(noise)
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]

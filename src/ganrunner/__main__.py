@@ -162,7 +162,7 @@ def create_model(parameters, no_field):
             batch_size=batch,
             number_of_layers=number_of_layers,
             lambdas=parameters[6],
-            learning_rate=lr
+            learning_rate=lr,
         )
         mygan.critic.summary()
     else:
