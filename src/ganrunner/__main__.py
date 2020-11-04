@@ -3,7 +3,8 @@ import numpy as np
 import ganrunner.tools as tools
 import ganrunner.gans as gans
 import click
-
+import logging
+import os
 
 @click.command()
 @click.option(
@@ -77,18 +78,19 @@ def main(
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
     database, mean, std, details, col = load_data(parameters[0], filepath)
-    thegan = run(filename, epochs, parameters, successfully_loaded, database)
-    fake = show_samples(
-        thegan,
-        mean,
-        std,
-        database,
-        int(parameters[4]),
-        sample,
-        filename,
-        col,
-        details,
-    )
+    thegan, success = run(filename, epochs, parameters, successfully_loaded, database)
+    if success:
+        fake = show_samples(
+            thegan,
+            mean,
+            std,
+            database,
+            int(parameters[4]),
+            sample,
+            filename,
+            col,
+            details,
+        )
 
 
 def unpack(p):
@@ -243,15 +245,31 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
     """
     # select dataset
     no_field = len(database[1])
-    mygan, batch, noise_dim = create_model(parameters, no_field)
+    try:
+        mygan, batch, noise_dim = create_model(parameters, no_field)
+    except Exception as e:
+        print("building failed")
+        logging.error(str(e))
+        return None, False
     if successfully_loaded:
         mygan = load_gan_weight(filepath, mygan)
     if epochs > 0:
-        step = int(math.ceil(epochs * 0.01))
-        mygan.train(database, batch, epochs, step)
-        mygan.save_model(filepath)
-        tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
-    return mygan
+        step = int(math.ceil(epochs * 0.001))
+        try:
+            mygan.train(database, batch, epochs, step)
+        except AssertionError:
+            logging.error("Error: broken gradient")
+            tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+            return mygan, False
+        except ValueError as e:
+            logging.error("training fail due to" + str(e))
+            print("training failed check you parameters")
+            os.remove(filepath + "_parameters.npy")
+            return mygan, False
+        else:
+            mygan.save_model(filepath)
+            tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+    return mygan, True
 
 
 if __name__ == "__main__":

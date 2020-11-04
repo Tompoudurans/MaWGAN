@@ -131,8 +131,7 @@ class wGANgp:
         elif self.optimiser == "rmsprop":
             opti = RMSprop(lr=lr)
         else:
-            opti = Adam(lr=lr)
-
+            raise ValueError("Unknown optimizer")
         return opti
 
     def set_trainable(self, m, val):
@@ -282,6 +281,7 @@ class wGANgp:
             if epoch % print_every_n_batches == 0:
                 self.d_losses.append(d_loss)
                 self.g_losses.append(g_loss)
+                assert not np.isnan(g_loss)
                 print(
                     "%d (%d) [D loss: (%.1f)(R %.1f, F %.1f, G %.1f)] [G loss: %.1f]"
                     % (
