@@ -17,7 +17,7 @@ noise_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [2.1, 2.2, 2.3]])
 
-testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.0001)
+testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
 
 def test_critic_training():
@@ -57,9 +57,10 @@ def test_save():
     """
     Tests the 'save' function
     """
-    testgan.save_model("tests/test")
-    assert os.stat("tests/test_generator.h5").st_size > 0
-    assert os.stat("tests/test_critic.h5").st_size > 0
+    testgan.save_model("testing")
+    assert os.stat("testing_generator.h5").st_size > 0
+    assert os.stat("testing_critic.h5").st_size > 0
+    assert os.stat("testing_model.h5").st_size > 0
 
 
 def test_load():
@@ -70,7 +71,7 @@ def test_load():
     generator_weight = test.generator.get_weights()
     critic_weight = test.critic.get_weights()
     model_weight = test.model.get_weights()
-    test.load_weights("tests/test")
+    test.load_weights("testing")
     assert (generator_weight[0] != test.generator.get_weights()[0]).all()
     assert (critic_weight[0] != test.critic.get_weights()[0]).all()
 

@@ -58,10 +58,10 @@ def test_save():
     """
     Tests the 'save' function
     """
-    testgan.save_model("tests/test")
-    assert os.stat("tests/test_generator.h5").st_size > 0
-    assert os.stat("tests/test_discriminator.h5").st_size > 0
-    assert os.stat("tests/test_model.h5").st_size > 0
+    testgan.save_model("testing")
+    assert os.stat("testing_generator.h5").st_size > 0
+    assert os.stat("testing_discriminator.h5").st_size > 0
+    assert os.stat("testing_model.h5").st_size > 0
 
 
 def test_load():
@@ -72,7 +72,7 @@ def test_load():
     generator_weight = test.generator.get_weights()
     critic_weight = test.discriminator.get_weights()
     model_weight = test.model.get_weights()
-    test.load_weights("tests/test")
+    test.load_weights("testing")
     assert (generator_weight[0] != test.generator.get_weights()[0]).all()
     assert (critic_weight[0] != test.discriminator.get_weights()[0]).all()
     assert (model_weight[0] != test.model.get_weights()[0]).all()
