@@ -89,8 +89,7 @@ def main(
         filename,
         col,
         details,
-    )
-    tools.save_sql(fake, filepath)
+        )
 
 
 def unpack(p):
@@ -190,17 +189,15 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
     """
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
+        tools.calculate_fid(generated_data, database)
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
         if s == 0:
             database = tools.unnormalize(database, mean, std)
             database.columns = col
-
-        tools.calculate_fid(generated_data, database)
-        tools.dagplot(generated_data, database, filepath)
+        tools.dagplot(generated_data, database, filepath + "_" + str(s))
         values = tools.decoding(generated_data, info)
-        print(values)
-    return values
+        tools.save_sql(values,filepath + ".db")
 
 
 def save_parameters(parameters, filepath):
