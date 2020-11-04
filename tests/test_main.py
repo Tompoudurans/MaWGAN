@@ -4,6 +4,7 @@ from randomdatagen import generate_random_testing_data
 import numpy
 import ganrunner
 
+
 def test_normal_run():
     generate_random_testing_data(50)
     file_size = os.stat("flight.db").st_size

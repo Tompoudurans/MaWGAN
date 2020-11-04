@@ -1,4 +1,3 @@
-import sklearn
 import math
 import numpy as np
 import ganrunner.tools as tools
@@ -89,7 +88,7 @@ def main(
         filename,
         col,
         details,
-        )
+    )
 
 
 def unpack(p):
@@ -197,7 +196,7 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
             database.columns = col
         tools.dagplot(generated_data, database, filepath + "_" + str(s))
         values = tools.decoding(generated_data, info)
-        tools.save_sql(values,filepath + ".db")
+        tools.save_sql(values, filepath + ".db")
 
 
 def save_parameters(parameters, filepath):
