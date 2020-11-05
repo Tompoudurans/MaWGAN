@@ -46,7 +46,7 @@ import os
 )
 @click.option(
     "--rate",
-    default=0.005,
+    default=None,
     type=int,
     help="choose the learing rate of the model",
 )
@@ -77,7 +77,22 @@ def main(
     parameters_list = [dataset, model, opti, noise, batch, layers, clip, rate]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
-    database, mean, std, details, col = load_data(parameters[0], filepath)
+    try:
+        database, mean, std, details, col = load_data(parameters[0], filepath)
+    except tools.sqlman.sa.exc.OperationalError as oe:
+        logging.error(str(op))
+        try:
+            table = tools.all_tables(filepath)
+            print(dataset,"does not exists, try:")
+            print(str(table))
+        except Exception as e:
+            print("file not found")
+        os.remove(filename + "_parameters.npy")
+        return
+    except Exception as e:
+        print("Data could not be loaded propely see logs for more info")
+        logging.error(str(e))
+        return
     thegan, success = run(filename, epochs, parameters, successfully_loaded, database)
     if success:
         fake = show_samples(
@@ -91,7 +106,7 @@ def main(
             col,
             details,
         )
-
+    return thegan
 
 def unpack(p):
     """
@@ -106,26 +121,38 @@ def setup(parameters_list):
     """
     parameters = []
     questions = [
-        "dataset (table) ",
-        "model?: (wgan) /(gan) / (wgangp) ",
+        "table? ",
+        "model? (gan)/(wgan)/(wgangp) ",
         "opti? ",
         "noise size? ",
         "batch size? ",
         "layers? ",
+        "learning constiction? ",
+        "rate? "
     ]
     for q in range(len(questions)):
         if parameters_list[q] != None:
             param = parameters_list[q]
         else:
-            param = input(questions[q])
+            if q < 3:
+                param = input(questions[q])
+            else:
+                param = input_float(questions[q])
         parameters.append(param)
-    if parameters[1] == "wgan" or parameters[1] == "wgangp":
-        clip_threshold = float(input("learning constiction "))
-        parameters.append(clip_threshold)
-    if parameters[1] == "wgangp":
-        parameters.append(float(input("rate ?")))
+        if (q == 5) and (parameters[1] == 'gan'):
+            break
+        if (q == 6) and (parameters[1] == 'wgan'):
+            break
     return parameters
 
+def input_float(question):
+    while True:
+        try:
+            answer = float(input(question))
+        except Exception as e:
+            print("must be a number")
+        else:
+            return answer
 
 def load_data(sets, filepath):
     """
@@ -216,7 +243,7 @@ def load_parameters(filepath):
     """
     try:
         parameter_array = np.load(filepath + "_parameters.npy", allow_pickle=True)
-    except OSError:  # as 'Unable to open file':
+    except OSError:
         print("file not found, starting from scratch")
         successfully_loaded = False
         parameter_array = None
@@ -260,12 +287,12 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
         except AssertionError:
             logging.error("Error: broken gradient")
             tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
-            return mygan, False
+            return None, False
         except ValueError as e:
             logging.error("training fail due to" + str(e))
             print("training failed check you parameters")
             os.remove(filepath + "_parameters.npy")
-            return mygan, False
+            return None, False
         else:
             mygan.save_model(filepath)
             tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
