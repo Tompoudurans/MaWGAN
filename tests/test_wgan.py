@@ -33,7 +33,7 @@ def test_critic_training():
     for i in range(5):
         testgan.train_critic(dataset, batch_size)
     trained = testgan.critic.predict(dataset)
-    assert any(untrained < trained)
+    assert any(untrained != trained)
 
 
 def test_gan_training():

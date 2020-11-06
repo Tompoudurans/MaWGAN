@@ -12,10 +12,10 @@ import os
 layers = 5
 nodes = 3
 data = 3
-batch_size = 2
+batch_size = 3
 noise_vector = 3
 lambdas = 1
-dataset = numpy.array([[1.0, 1.2, 1.3], [2.1, 2.2, 2.3]])
+dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3],[1.4,1.2,1.5]])
 
 testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
@@ -67,7 +67,7 @@ def test_load():
     """
     Tests the 'load' function check the first weight
     """
-    test = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.008)
+    test = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
     generator_weight = test.generator.get_weights()
     critic_weight = test.critic.get_weights()
     model_weight = test.model.get_weights()

@@ -80,7 +80,7 @@ def main(
     try:
         database, mean, std, details, col = load_data(parameters[0], filepath)
     except tools.sqlman.sa.exc.OperationalError as oe:
-        logging.error(str(op))
+        logging.error(str(oe))
         try:
             table = tools.all_tables(filepath)
             print(dataset,"does not exists, try:")
@@ -275,7 +275,8 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
     try:
         mygan, batch, noise_dim = create_model(parameters, no_field)
     except Exception as e:
-        print("building failed")
+        print("building failed, check you parameters")
+        os.remove(filepath + "_parameters.npy")
         logging.error(str(e))
         return None, False
     if successfully_loaded:
