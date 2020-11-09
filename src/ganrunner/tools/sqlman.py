@@ -39,6 +39,7 @@ def save_sql(df, file, exists="append"):
         pass
     df.to_sql("generated_data", con=engine, if_exists=exists)  # , index=False)
 
+
 def all_tables(file):
     """
     Reads all tables

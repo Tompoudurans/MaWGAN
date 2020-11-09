@@ -6,6 +6,7 @@ import click
 import logging
 import os
 
+
 @click.command()
 @click.option(
     "--filepath",
@@ -83,7 +84,7 @@ def main(
         logging.error(str(oe))
         try:
             table = tools.all_tables(filepath)
-            print(dataset,"does not exists, try:")
+            print(dataset, "does not exists, try:")
             print(str(table))
         except Exception as e:
             print("file not found")
@@ -108,6 +109,7 @@ def main(
         )
     return thegan
 
+
 def unpack(p):
     """
     Unpacks the parameters
@@ -128,7 +130,7 @@ def setup(parameters_list):
         "batch size? ",
         "layers? ",
         "learning constiction? ",
-        "rate? "
+        "rate? ",
     ]
     for q in range(len(questions)):
         if parameters_list[q] != None:
@@ -139,11 +141,12 @@ def setup(parameters_list):
             else:
                 param = input_float(questions[q])
         parameters.append(param)
-        if (q == 5) and (parameters[1] == 'gan'):
+        if (q == 5) and (parameters[1] == "gan"):
             break
-        if (q == 6) and (parameters[1] == 'wgan'):
+        if (q == 6) and (parameters[1] == "wgan"):
             break
     return parameters
+
 
 def input_float(question):
     while True:
@@ -153,6 +156,7 @@ def input_float(question):
             print("must be a number")
         else:
             return answer
+
 
 def load_data(sets, filepath):
     """

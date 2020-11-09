@@ -24,6 +24,7 @@ def test_break_set():
     assert status.returncode == 0
     assert not os.path.isfile("flight_parameters.npy")
 
+
 def test_break_bulid():
     generate_random_testing_data(50)
     status = subprocess.run(
@@ -43,6 +44,7 @@ def test_break_bulid():
     )
     assert status.returncode == 0
     assert not os.path.isfile("flight_parameters.npy")
+
 
 def test_normal_run():
     file_size = os.stat("flight.db").st_size
