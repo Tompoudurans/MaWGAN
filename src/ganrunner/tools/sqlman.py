@@ -42,7 +42,7 @@ def save_sql(df, file, exists="append"):
 
 def all_tables(file):
     """
-    Reads all tables
+    Reads all tables in a sql file
     """
     engine = sa.create_engine("sqlite:///" + file)
     connection = engine.connect()

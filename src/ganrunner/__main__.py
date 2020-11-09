@@ -149,6 +149,9 @@ def setup(parameters_list):
 
 
 def input_float(question):
+    """
+    makes sure a number is inputed
+    """
     while True:
         try:
             answer = float(input(question))
