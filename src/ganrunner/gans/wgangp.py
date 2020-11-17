@@ -17,16 +17,21 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-class RandomWeightedAverage(_Merge):
+import tensorflow as tf
+print(tf.__version__)
+
+
+class RandomWeightedAverage(tf.keras.layers.Layer):
     def __init__(self, batch_size):
         super().__init__()
         self.batch_size = batch_size
 
-    """Provides a (random) weighted average between real and generated image samples"""
-
-    def _merge_function(self, inputs):
-        alpha = K.random_uniform((self.batch_size, 1, 1, 1))
+    def call(self, inputs, **kwargs):
+        alpha = tf.random_uniform((self.batch_size, 1, 1, 1))
         return (alpha * inputs[0]) + ((1 - alpha) * inputs[1])
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0]
 
 
 class wGANgp:
