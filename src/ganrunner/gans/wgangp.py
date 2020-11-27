@@ -1,25 +1,20 @@
-from keras.layers import *  # Input, Conv2D, Flatten, Dense, Conv2DTranspose, Reshape, Lambda, Activation, BatchNormalization, LeakyReLU, Dropout, ZeroPadding2D, UpSampling2D
+from keras.layers import *
 
-from keras.layers.merge import _Merge
 from keras.models import Model, Sequential
 from keras import backend as K
 from keras.optimizers import Adam, RMSprop
 from keras.callbacks import ModelCheckpoint
 from keras.utils import plot_model
 from keras.initializers import RandomNormal
-
 from functools import partial
-
 import numpy as np
 import json
 import os
 import pickle
 import matplotlib.pyplot as plt
-
-
 import tensorflow as tf
-print(tf.__version__)
 
+import logging
 
 class RandomWeightedAverage(tf.keras.layers.Layer):
     def __init__(self, batch_size):
@@ -27,7 +22,7 @@ class RandomWeightedAverage(tf.keras.layers.Layer):
         self.batch_size = batch_size
 
     def call(self, inputs, **kwargs):
-        alpha = tf.random_uniform((self.batch_size, 1, 1, 1))
+        alpha = tf.random.uniform((self.batch_size, 1))
         return (alpha * inputs[0]) + ((1 - alpha) * inputs[1])
 
     def compute_output_shape(self, input_shape):
@@ -45,7 +40,7 @@ class wGANgp:
         lambdas,
         learning_rate,
     ):
-
+        #tf.keras.backend.set_floatx('float32')
         self.name = "gan"
         self.input_dim = input_dim
         self.critic_learning_rate = learning_rate
@@ -54,11 +49,6 @@ class wGANgp:
         self.generator_learning_rate = learning_rate
         self.lambdas = lambdas
         self.optimiser = optimiser
-
-        self.weight_init = RandomNormal(
-            mean=0.0, stddev=0.02
-        )  # 'he_normal' #RandomNormal(mean=0., stddev=0.02)
-        self.grad_weight = 1
         self.batch_size = batch_size
 
         self.d_losses = []
@@ -74,8 +64,10 @@ class wGANgp:
         """
         Computes gradient penalty based on prediction and weighted real / fake samples
         """
-        gradients = K.gradients(y_pred, interpolated_samples)[0]
-
+        #interpolated_samples = tf.reshape(interpolated_samples,(self.batch_size,1))
+        #assert y_pred.shape == interpolated_samples.shape # <-------------------
+        gradients = tf.gradients(y_pred, interpolated_samples, unconnected_gradients="zero")[0]
+        #gradients = K.gradients(interpolated_samples, interpolated_samples)[0]
         # compute the euclidean norm by squaring ...
         gradients_sqr = K.square(gradients)
         #   ... summing over the rows ...
@@ -94,10 +86,6 @@ class wGANgp:
         calcuate half the wasserstein distance
         """
         return -K.mean(y_true * y_pred)
-
-    def RandomWeightedAv(self, inputs):
-        alpha = K.random_uniform((self.batch_size, 1, 1, 1))
-        return (alpha * inputs[0]) + ((1 - alpha) * inputs[1])
 
     def make_generator(self, number_of_layers):
         """
@@ -119,7 +107,7 @@ class wGANgp:
         It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
         """
         dis_input = Input(shape=(self.input_dim,), name="dis_input")
-        dis_layer = Dense(self.net_dim, activation="relu")(dis_input)
+        dis_layer = Dense(self.net_dim, activation="tanh")(dis_input)
         number_of_layers -= 2
         while number_of_layers > 1:
             dis_layer = Dense(self.net_dim, activation="tanh")(dis_layer)
@@ -178,7 +166,7 @@ class wGANgp:
         validity_interpolated = self.critic(interpolated_img)
 
         # Use Python partial to provide loss function with additional
-        # 'interpolated_samples' argument
+        # 'interpolated_samples' argument--------------------------------------------------------------------------
         partial_gp_loss = partial(
             self.gradient_penalty_loss, interpolated_samples=interpolated_img
         )
@@ -191,7 +179,7 @@ class wGANgp:
         self.critic_model.compile(
             loss=[self.wasserstein, self.wasserstein, partial_gp_loss],
             optimizer=self.get_opti(self.critic_learning_rate),
-            loss_weights=[1, 1, self.grad_weight],
+            loss_weights=[1, 1, 1],
         )
 
         # -------------------------------
@@ -225,8 +213,7 @@ class wGANgp:
         """
         valid = np.ones((batch_size, 1), dtype=np.float32)
         fake = -np.ones((batch_size, 1), dtype=np.float32)
-        dummy = np.zeros(
-            (batch_size, 1), dtype=np.float32
+        dummy = np.zeros((batch_size, 1), dtype=np.float32
         )  # Dummy gt for gradient penalty
 
         if using_generator:
