@@ -17,9 +17,14 @@ data = 3
 batch_size = 3
 noise_vector = 3
 lambdas = 1
-dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]], dtype="float32")
+dataset = numpy.array(
+    [[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]], dtype="float32"
+)
 
-testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00000001)
+testgan = ganrunner.wGANgp(
+    "adam", noise_vector, data, nodes, layers, lambdas, 0.00000001
+)
+
 
 def test_random_uniform():
     """
@@ -28,6 +33,7 @@ def test_random_uniform():
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     fake_img = testgan.generator.predict(noise)
     av = RandomWeightedAverage(batch_size)([dataset, fake_img])
+
 
 def test_critic_training():
     """
@@ -41,7 +47,7 @@ def test_critic_training():
     untrained = testgan.critic.predict(dataset)
     testgan.train_critic(dataset, batch_size)
     trained = testgan.critic.predict(dataset)
-    #assert all(untrained != trained)
+    # assert all(untrained != trained)
 
 
 def test_gan_training():

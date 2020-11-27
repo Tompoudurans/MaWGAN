@@ -29,11 +29,11 @@ jobs:
         python -m pip install pytest-sugar
         python -m pip install matplotlib>=3.0.2
         python -m pip install black
-    - name: Check format (only on py3.8 and ubuntu)
-      if: matrix.python-version == 3.8 && matrix.os == 'ubuntu-latest'
-      run: |
-        python -m black . --check
     - name: Test with pytest
       run: |
         python setup.py develop
         python -m pytest --cov src/ --cov-report term-missing
+    - name: Check format (only on py3.8 and ubuntu)
+      if: matrix.python-version == 3.8 && matrix.os == 'ubuntu-latest'
+      run: |
+        python -m black . --check

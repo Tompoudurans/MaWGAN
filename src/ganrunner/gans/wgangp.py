@@ -16,6 +16,7 @@ import tensorflow as tf
 
 import logging
 
+
 class RandomWeightedAverage(tf.keras.layers.Layer):
     def __init__(self, batch_size):
         super().__init__()
@@ -40,7 +41,7 @@ class wGANgp:
         lambdas,
         learning_rate,
     ):
-        #tf.keras.backend.set_floatx('float32')
+        # tf.keras.backend.set_floatx('float32')
         self.name = "gan"
         self.input_dim = input_dim
         self.critic_learning_rate = learning_rate
@@ -64,10 +65,12 @@ class wGANgp:
         """
         Computes gradient penalty based on prediction and weighted real / fake samples
         """
-        #interpolated_samples = tf.reshape(interpolated_samples,(self.batch_size,1))
-        #assert y_pred.shape == interpolated_samples.shape # <-------------------
-        gradients = tf.gradients(y_pred, interpolated_samples, unconnected_gradients="zero")[0]
-        #gradients = K.gradients(interpolated_samples, interpolated_samples)[0]
+        # interpolated_samples = tf.reshape(interpolated_samples,(self.batch_size,1))
+        # assert y_pred.shape == interpolated_samples.shape # <-------------------
+        gradients = tf.gradients(
+            y_pred, interpolated_samples, unconnected_gradients="zero"
+        )[0]
+        # gradients = K.gradients(interpolated_samples, interpolated_samples)[0]
         # compute the euclidean norm by squaring ...
         gradients_sqr = K.square(gradients)
         #   ... summing over the rows ...
@@ -213,7 +216,8 @@ class wGANgp:
         """
         valid = np.ones((batch_size, 1), dtype=np.float32)
         fake = -np.ones((batch_size, 1), dtype=np.float32)
-        dummy = np.zeros((batch_size, 1), dtype=np.float32
+        dummy = np.zeros(
+            (batch_size, 1), dtype=np.float32
         )  # Dummy gt for gradient penalty
 
         if using_generator:
