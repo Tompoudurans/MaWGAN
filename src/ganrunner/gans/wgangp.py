@@ -61,7 +61,7 @@ class wGANgp:
         self.d_optimizer = self.get_opti(learning_rate)
         self.g_optimizer = self.get_opti(learning_rate)
         #self._build_adversarial()
-        
+
     def critic_loss(self,real_img, fake_img):
         real_loss = tf.reduce_mean(real_img)
         fake_loss = tf.reduce_mean(fake_img)
@@ -236,7 +236,7 @@ class wGANgp:
         for epoch in range(self.epoch, self.epoch + epochs):
                 loss = self.train_step(data,n_critic,batch_size)
                 print(
-                    "%d [D loss: %.1f][G loss: %.1f]"
+                    "%d [D loss: %.2f][G loss: %.2f]"
                     % (
                         epoch,
                         loss[0],
@@ -249,7 +249,6 @@ class wGANgp:
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.save(run_folder + "_model.h5")
         self.critic.save(run_folder + "_critic.h5")
         self.generator.save(run_folder + "_generator.h5")
 
@@ -257,6 +256,5 @@ class wGANgp:
         """
         This loads the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.load_weights(filepath + "_model.h5")
         self.critic.load_weights(filepath + "_critic.h5")
         self.generator.load_weights(filepath + "_generator.h5")

@@ -214,7 +214,6 @@ def create_model(parameters, no_field):
         raise ValueError("model not found")
     # print the stucture of the gan
     mygan.generator.summary()
-    mygan.model.summary()
     return mygan, batch, noise_dim
 
 
