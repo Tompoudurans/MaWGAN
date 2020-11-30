@@ -20,22 +20,6 @@ dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
 testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
 
-def test_critic_training():
-    """
-    Tests the training algorithm of the critic.
-    This is done by taking an untrained sample,
-    training the critic, then taking a new sample
-    and comparing the untrained sample and trained sample.
-    The trained sample should provide a better result.
-    """
-    numpy.random.seed(21)
-    untrained = testgan.critic.predict(dataset)
-    for i in range(5):
-        testgan.train_critic(dataset, batch_size)
-    trained = testgan.critic.predict(dataset)
-    assert all(untrained != trained)
-
-
 def test_gan_training():
     """
     Tests the training algorithm of the GAN as the generator cannot be trained directly.
@@ -89,3 +73,5 @@ def test_build():
     assert testgan.generator.output_shape == (None, data)
     assert testgan.critic.layers[1].output_shape == (None, nodes)
     assert testgan.generator.layers[1].output_shape == (None, nodes)
+
+test_gan_training()
