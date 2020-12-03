@@ -11,7 +11,7 @@ def test_break_set():
             "python",
             "-m",
             "ganrunner",
-            "--model=gan",
+            "--model=wgangp",
             "--filepath=flight.db",
             "--opti=adam",
             "--noise=50",
@@ -22,6 +22,7 @@ def test_break_set():
         ]
     )
     assert status.returncode == 0
+    #assert status.errout = ""
     assert not os.path.isfile("flight_parameters.npy")
 
 
@@ -32,7 +33,7 @@ def test_break_bulid():
             "python",
             "-m",
             "ganrunner",
-            "--model=gan",
+            "--model=wgangp",
             "--filepath=flight.db",
             "--opti=adam",
             "--noise=50",
@@ -53,7 +54,7 @@ def test_normal_run():
             "python",
             "-m",
             "ganrunner",
-            "--model=gan",
+            "--model=wgangp",
             "--filepath=flight.db",
             "--opti=adam",
             "--noise=50",
@@ -69,3 +70,16 @@ def test_normal_run():
     assert os.path.isfile("flight_discriminator.h5")
     assert os.path.isfile("flight_parameters.npy")
     assert file_size < os.stat("flight.db").st_size and (file_size > 0)
+
+def test_reload():
+    file_size = os.stat("flight.db").st_size
+    status = subprocess.run(
+        [
+            "python",
+            "-m",
+            "ganrunner",
+            "--model=wgangp",
+            "--filepath=flight.db"
+        ]
+    )
+    assert status.returncode == 0

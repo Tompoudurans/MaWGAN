@@ -7,4 +7,6 @@ __pycache__
 *.db
 *.log
 src/ganrunner.egg-info
-.coverage
+*.coverage
+*.html
+*.pkl

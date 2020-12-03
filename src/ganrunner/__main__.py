@@ -138,6 +138,8 @@ def setup(parameters_list):
         else:
             if q < 3:
                 param = input(questions[q])
+            elif q < 7:
+                param = input_int(questions[q])
             else:
                 param = input_float(questions[q])
         parameters.append(param)
@@ -147,6 +149,17 @@ def setup(parameters_list):
             break
     return parameters
 
+def input_int(question):
+    """
+    makes sure a number is inputed
+    """
+    while True:
+        try:
+            answer = int(input(question))
+        except Exception as e:
+            print("must be a number")
+        else:
+            return answer
 
 def input_float(question):
     """
@@ -191,30 +204,18 @@ def create_model(parameters, no_field):
     else:
         lr = 0.001
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
-    if use_model == "gan":
-        mygan = gans.dataGAN(opti, noise_dim, no_field, batch, number_of_layers)
-        mygan.discriminator.summary()
-    elif use_model == "wgan":
-        mygan = gans.wGAN(
-            opti, noise_dim, no_field, batch, number_of_layers, parameters[6]
-        )
-        mygan.critic.summary()
-    elif use_model == "wgangp":
-        mygan = gans.wGANgp(
-            optimiser="adam",
-            input_dim=no_field,
-            noise_size=noise_dim,
-            batch_size=batch,
-            number_of_layers=number_of_layers,
-            lambdas=parameters[6],
-            learning_rate=lr,
-        )
-        mygan.critic.summary()
-    else:
-        raise ValueError("model not found")
+    mygan = gans.wGANgp(
+        optimiser="adam",
+        input_dim=no_field,
+        noise_size=noise_dim,
+        batch_size=batch,
+        number_of_layers=number_of_layers,
+        lambdas=parameters[6],
+        learning_rate=lr,
+    )
+    #mygan.critic.summary()
     # print the stucture of the gan
-    mygan.generator.summary()
-    mygan.model.summary()
+    #mygan.generator.summary()
     return mygan, batch, noise_dim
 
 
@@ -224,7 +225,7 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
     """
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        tools.calculate_fid(generated_data, database)
+        #tools.calculate_fid(generated_data, database)
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
         if s == 0:
@@ -303,7 +304,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
             return None, False
         else:
             mygan.save_model(filepath)
-            tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+            #tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
 
 
