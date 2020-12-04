@@ -31,7 +31,7 @@ import os
     "--layers", default=None, help="choose the number of layers of each network"
 )
 @click.option(
-    "--clip", default=None, help="if using WGAN choose the clipping threshold"
+    "--lambdas", type=float, default=None, help="learning penalty"
 )
 @click.option(
     "--core",
@@ -48,7 +48,7 @@ import os
 @click.option(
     "--rate",
     default=None,
-    type=int,
+    type=float,
     help="choose the learing rate of the model",
 )
 def main(
@@ -60,7 +60,7 @@ def main(
     noise,
     batch,
     layers,
-    clip,
+    lambdas,
     core,
     sample,
     rate,
@@ -75,7 +75,7 @@ def main(
         tools.set_core(core)
     filename = filepath.split(".")[0]
     tools.setup_log(filename + "_progress.log")
-    parameters_list = [dataset, model, opti, noise, batch, layers, clip, rate]
+    parameters_list = [dataset, model, opti, noise, batch, layers, lambdas, rate]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
     try:
@@ -88,6 +88,7 @@ def main(
             print(str(table))
         except Exception as e:
             print("file not found")
+            logging.error(str(e))
         os.remove(filename + "_parameters.npy")
         return
     except Exception as e:
@@ -95,6 +96,7 @@ def main(
         logging.error(str(e))
         return
     thegan, success = run(filename, epochs, parameters, successfully_loaded, database)
+    fake = None
     if success:
         fake = show_samples(
             thegan,
@@ -107,7 +109,7 @@ def main(
             col,
             details,
         )
-    return thegan
+    return thegan,fake
 
 
 def unpack(p):
@@ -138,7 +140,7 @@ def setup(parameters_list):
         else:
             if q < 3:
                 param = input(questions[q])
-            elif q < 7:
+            elif q < 6:
                 param = input_int(questions[q])
             else:
                 param = input_float(questions[q])
@@ -155,9 +157,12 @@ def input_int(question):
     """
     while True:
         try:
-            answer = int(input(question))
-        except Exception as e:
+            a = input(question)
+            answer = int(a)
+        except Exception:
             print("must be a number")
+            if a == '' or None:
+                raise RuntimeError
         else:
             return answer
 
@@ -167,9 +172,12 @@ def input_float(question):
     """
     while True:
         try:
-            answer = float(input(question))
-        except Exception as e:
+            a = input(question)
+            answer = float(a)
+        except Exception:
             print("must be a number")
+            if a == '' or None:
+                raise RuntimeError
         else:
             return answer
 
@@ -188,7 +196,7 @@ def load_gan_weight(filepath, mygan):
     Loads weight from previous trained GAN
     """
     try:
-        mygan.load_weights(filepath)
+        mygan.load_weights(filepath) #-----------------------------------
     except OSError:  # as 'Unable to open file':
         print("file not found, starting from scratch")
     finally:
@@ -199,10 +207,7 @@ def create_model(parameters, no_field):
     """
     Builds the GAN using the parameters
     """
-    if len(parameters) == 8:
-        lr = parameters[7]
-    else:
-        lr = 0.001
+    lr = parameters[7]
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
     mygan = gans.wGANgp(
         optimiser="adam",
@@ -225,7 +230,7 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
     """
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        #tools.calculate_fid(generated_data, database)
+        tools.calculate_fid(generated_data, database)
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
         if s == 0:
@@ -307,6 +312,11 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
             #tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
 
+def tests_env():
+    param = ['all', 'wgangp', 'adam', 150, 150, 5, 10, 0.0001]
+    database, mean, std, details, col = load_data(param[0], "data/iris.db")
+    gan, boo = run("data/iris.db", 1000, param, False, database)
+    return database, mean, std, gan
 
 if __name__ == "__main__":
     main()

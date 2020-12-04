@@ -61,8 +61,9 @@ class wGANgp(object):
         self.Critic.add_module(str(number_of_layers) + "layer",nn.Linear(self.net_dim,1))
 
     def create_fake(self, batch_size):
-        z = self.get_torch_variable(torch.randn(batch_size, 150))
+        z = torch.randn(batch_size, self.data_dim)
         fake_images = self.Generator(z)
+        return fake_images.detach().numpy()
 
     def get_torch_variable(self, arg):
             return Variable(arg)
@@ -93,7 +94,7 @@ class wGANgp(object):
                 d_loss_real.backward(mone)
 
                 # Train with fake images
-                z = self.get_torch_variable(torch.randn(self.batch_size, 150))
+                z = self.get_torch_variable(torch.randn(self.batch_size, self.data_dim))
 
                 fake_images = self.Generator(z)
                 d_loss_fake = self.Critic(fake_images)
@@ -115,7 +116,7 @@ class wGANgp(object):
             self.Generator.zero_grad()
             # train generator
             # compute loss with fake images
-            z = self.get_torch_variable(torch.randn(self.batch_size, 150))
+            z = self.get_torch_variable(torch.randn(self.batch_size, self.data_dim))
             fake_images = self.Generator(z)
             g_loss = self.Critic(fake_images)
             g_loss = g_loss.mean()
@@ -150,11 +151,13 @@ class wGANgp(object):
         return x.data.cpu().numpy()
 
     def save_model(self,filepath):
-        torch.save(self.Generator.state_dict(),filepath + '/generator.pkl')
-        torch.save(self.Critic.state_dict(),filepath + '/critic.pkl')
+        torch.save(self.Generator.state_dict(),filepath + '_generator.pkl')
+        torch.save(self.Critic.state_dict(),filepath + '_critic.pkl')
         print('Models saved ')
 
-    def load_model(self, D_model_filename, G_model_filename):
+    def load_model(self, filepath):
+        G_model_filename = filepath + '_generator.pkl'
+        D_model_filename = filepath + '_critic.pkl'
         D_model_path = os.path.join(os.getcwd(), D_model_filename)
         G_model_path = os.path.join(os.getcwd(), G_model_filename)
         self.Critic.load_state_dict(torch.load(D_model_path))
