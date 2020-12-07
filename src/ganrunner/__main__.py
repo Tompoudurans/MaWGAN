@@ -207,7 +207,7 @@ def create_model(parameters, no_field):
     """
     Builds the GAN using the parameters
     """
-    lr = parameters[7]
+    lr = float(parameters[7])
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
     mygan = gans.wGANgp(
         optimiser="adam",
@@ -215,7 +215,7 @@ def create_model(parameters, no_field):
         noise_size=noise_dim,
         batch_size=batch,
         number_of_layers=number_of_layers,
-        lambdas=parameters[6],
+        lambdas=float(parameters[6]),
         learning_rate=lr,
     )
     mygan.summary()
@@ -228,7 +228,8 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
     """
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        tools.calculate_fid(generated_data, database)
+        if s == 0:
+            tools.calculate_fid(generated_data, database)
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
         if s == 0:
@@ -236,6 +237,7 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
             database.columns = col
         tools.dagplot(generated_data, database, filepath + "_" + str(s))
         values = tools.decoding(generated_data, info)
+        print("sample",s)
         tools.save_sql(values, filepath + ".db")
 
 
@@ -288,7 +290,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
     except Exception as e:
         print("building failed, check you parameters")
         os.remove(filepath + "_parameters.npy")
-        logging.error(str(e))
+        logging.error("building failed due to" + str(e))
         return None, False
     if successfully_loaded:
         mygan = load_gan_weight(filepath, mygan)

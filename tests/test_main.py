@@ -69,7 +69,8 @@ def test_normal_run():
             "--epochs=10",
             "--dataset=readings",
             "--rate=000.1",
-            "--lambdas=10"
+            "--lambdas=10",
+            "--sample=2"
         ]
     )
     assert status.returncode == 0
@@ -90,3 +91,4 @@ def test_reload():
         ]
     )
     assert status.returncode == 0
+    #assert len(status.stdout) > 12 
