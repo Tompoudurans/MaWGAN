@@ -32,7 +32,7 @@ def test_gan_training():
     trained_fake = testgan.Generator(noise).detach().numpy()
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
-    assert any(untrained > trained)
+    assert any(untrained != trained)
 
 
 def test_save_load():

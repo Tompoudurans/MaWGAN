@@ -65,12 +65,9 @@ class wGANgp(object):
         fake_images = self.Generator(z)
         return fake_images.detach().numpy()
 
-    def get_torch_variable(self, arg):
-            return Variable(arg)
-
     def train(self,data,batch_size,epochs,print_every_n_batches=10,n_critic=5):
         self.batch_size = batch_size
-        self.data = torch.Tensor(data)
+        data_tensor = torch.Tensor(data)
         one = torch.tensor(1, dtype=torch.float)
         mone = one * -1
         for g_iter in range(epochs):
@@ -83,9 +80,8 @@ class wGANgp(object):
             # Train Dicriminator forward-loss-backward-update n_critic times while 1 Generator forward-loss-backward-update
             for d_iter in range(n_critic):
                 self.Critic.zero_grad()
-
-                images = self.get_torch_variable(self.data)
-
+                sample = self.pick_sample(data_tensor)
+                images = Variable(sample)
                 # Train discriminator
                 # WGAN - Training discriminator more iterations than generator
                 # Train with real images
@@ -94,7 +90,7 @@ class wGANgp(object):
                 d_loss_real.backward(mone)
 
                 # Train with fake images
-                z = self.get_torch_variable(torch.randn(self.batch_size, self.data_dim))
+                z = Variable(torch.randn(self.batch_size, self.data_dim))
 
                 fake_images = self.Generator(z)
                 d_loss_fake = self.Critic(fake_images)
@@ -116,7 +112,7 @@ class wGANgp(object):
             self.Generator.zero_grad()
             # train generator
             # compute loss with fake images
-            z = self.get_torch_variable(torch.randn(self.batch_size, self.data_dim))
+            z = Variable(torch.randn(self.batch_size, self.data_dim))
             fake_images = self.Generator(z)
             g_loss = self.Critic(fake_images)
             g_loss = g_loss.mean()
@@ -148,7 +144,13 @@ class wGANgp(object):
         return grad_penalty
 
     def summary(self):
-        pass
+        print(self.Critic)
+        print(self.Generator)
+        
+    def pick_sample(self,data):
+        perm = torch.randperm(len(data))
+        index = perm[:self.batch_size]
+        return data[index]
 
     def save_model(self,filepath):
         torch.save(self.Generator.state_dict(),filepath + '_generator.pkl')
