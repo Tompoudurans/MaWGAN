@@ -79,7 +79,6 @@ def test_normal_run():
     assert file_size < os.stat("flight.db").st_size and (file_size > 0)
 
 def test_reload():
-    file_size = os.stat("flight.db").st_size
     status = subprocess.run(
         [
             "python",

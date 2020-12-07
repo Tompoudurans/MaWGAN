@@ -147,9 +147,9 @@ class wGANgp(object):
         grad_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * self.lambda_term
         return grad_penalty
 
-    def to_np(self, x):
-        return x.data.cpu().numpy()
-
+    def summary():
+        pass
+        
     def save_model(self,filepath):
         torch.save(self.Generator.state_dict(),filepath + '_generator.pkl')
         torch.save(self.Critic.state_dict(),filepath + '_critic.pkl')
@@ -164,8 +164,3 @@ class wGANgp(object):
         self.Generator.load_state_dict(torch.load(G_model_path))
         print('Generator model loaded from {}.'.format(G_model_path))
         print('Critic model loaded from {}-'.format(D_model_path))
-
-    def get_infinite_batches(self, data_loader):
-        while True:
-            for i, (images, _) in enumerate(data_loader):
-                yield images

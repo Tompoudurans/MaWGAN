@@ -196,7 +196,7 @@ def load_gan_weight(filepath, mygan):
     Loads weight from previous trained GAN
     """
     try:
-        mygan.load_weights(filepath) #-----------------------------------
+        mygan.load_model(filepath) #-----------------------------------
     except OSError:  # as 'Unable to open file':
         print("file not found, starting from scratch")
     finally:
@@ -218,9 +218,7 @@ def create_model(parameters, no_field):
         lambdas=parameters[6],
         learning_rate=lr,
     )
-    #mygan.critic.summary()
-    # print the stucture of the gan
-    #mygan.generator.summary()
+    mygan.summary()
     return mygan, batch, noise_dim
 
 
@@ -298,11 +296,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
         step = int(math.ceil(epochs * 0.001))
         try:
             mygan.train(database, batch, epochs, step)
-        except AssertionError:
-            logging.error("Error: broken gradient")
-            tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
-            return None, False
-        except ValueError as e:
+        except Exception as e:
             logging.error("training fail due to" + str(e))
             print("training failed check you parameters")
             os.remove(filepath + "_parameters.npy")
@@ -313,10 +307,10 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
     return mygan, True
 
 def tests_env():
-    param = ['all', 'wgangp', 'adam', 150, 150, 5, 10, 0.0001]
-    database, mean, std, details, col = load_data(param[0], "data/iris.db")
-    gan, boo = run("data/iris.db", 1000, param, False, database)
+    param = ['readings', 'wgangp', 'adam', 60, 60, 5, 10, 0.0001]
+    database, mean, std, details, col = load_data(param[0], "flight.db")
+    gan, boo = run("flight", 100, param, False, database)
     return database, mean, std, gan
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()

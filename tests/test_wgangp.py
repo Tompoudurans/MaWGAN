@@ -17,7 +17,6 @@ batch_size = 3
 noise_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
-
 testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
 def test_gan_training():
@@ -36,37 +35,31 @@ def test_gan_training():
     assert any(untrained > trained)
 
 
-def test_save():
+def test_save_load():
     """
-    Tests the 'save' function
+    Tests the 'save' and 'load' function
     """
     testgan.save_model("testing")
+    generator_weight_save = testgan.Generator.state_dict()
+    critic_weight_save = testgan.Critic.state_dict()
     assert os.stat("testing_generator.pkl").st_size > 0
     assert os.stat("testing_critic.pkl").st_size > 0
-
-
-def dont_test_load():
-    """
-    Tests the 'load' function check the first weight
-    """
     test = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
-    generator_weight = test.Generator.get_weights()
-    critic_weight = test.Critic.get_weights()
-    test.load_weights("testing")
-    assert (generator_weight[0] != test.Generator.get_weights()[0]).all()
-    assert (critic_weight[0] != test.critic.get_weights()[0]).all()
+    test.load_model("testing")
+    assert all(generator_weight_save) == all(test.Generator.state_dict())
+    assert all(critic_weight_save) == all(test.Critic.state_dict())
 
-
-def dont_test_build():
+def test_build():
     """
     This test checks that the GAN is well built and has the correct
     number of layers, input and output shape
     """
-    assert len(testgan.Critic.layers) == layers
-    assert len(testgan.Generator.layers) == layers
-    assert testgan.Critic.input_shape == (None, data)
-    assert testgan.Generator.input_shape == (None, noise_vector)
-    assert testgan.critic.output_shape == (None, 1)
-    assert testgan.Generator.output_shape == (None, data)
-    assert testgan.critic.layers[1].output_shape == (None, nodes)
-    assert testgan.Generator.layers[1].output_shape == (None, nodes)
+    val = (layers*2)-1
+    assert len(testgan.Critic) == val
+    assert len(testgan.Generator) == val
+    assert testgan.Critic[0].in_features ==  data
+    assert testgan.Generator[0].in_features == noise_vector
+    assert testgan.Critic[2].in_features ==  nodes == testgan.Critic[0].out_features
+    assert testgan.Generator[2].in_features == nodes == testgan.Generator[0].out_features
+    assert testgan.Critic[(val-1)].out_features ==  1
+    assert testgan.Generator[(val-1)].out_features == data
