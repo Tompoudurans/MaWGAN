@@ -312,5 +312,5 @@ def tests_env():
     gan, boo = run("flight", 100, param, False, database)
     return database, mean, std, gan
 
-#if __name__ == "__main__":
-#    main()
+if __name__ == "__main__":
+    main()
