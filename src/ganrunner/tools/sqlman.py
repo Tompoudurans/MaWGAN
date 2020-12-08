@@ -38,3 +38,13 @@ def save_sql(df, file, exists="append"):
     except KeyError:
         pass
     df.to_sql("generated_data", con=engine, if_exists=exists)  # , index=False)
+
+
+def all_tables(file):
+    """
+    Reads all tables in a sql file
+    """
+    engine = sa.create_engine("sqlite:///" + file)
+    connection = engine.connect()
+    inspector = sa.inspect(engine)
+    return inspector.get_table_names()

@@ -131,8 +131,7 @@ class wGANgp:
         elif self.optimiser == "rmsprop":
             opti = RMSprop(lr=lr)
         else:
-            opti = Adam(lr=lr)
-
+            raise ValueError("Unknown optimizer")
         return opti
 
     def set_trainable(self, m, val):
@@ -282,6 +281,7 @@ class wGANgp:
             if epoch % print_every_n_batches == 0:
                 self.d_losses.append(d_loss)
                 self.g_losses.append(g_loss)
+                assert not np.isnan(g_loss)
                 print(
                     "%d (%d) [D loss: (%.1f)(R %.1f, F %.1f, G %.1f)] [G loss: %.1f]"
                     % (
@@ -300,14 +300,14 @@ class wGANgp:
         """
         This saves the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.save(run_folder + "model.h5")
-        self.critic.save(run_folder + "critic.h5")
-        self.generator.save(run_folder + "generator.h5")
+        self.model.save(run_folder + "_model.h5")
+        self.critic.save(run_folder + "_critic.h5")
+        self.generator.save(run_folder + "_generator.h5")
 
     def load_weights(self, filepath):
         """
         This loads the weights of the three models that are used in the GAN on the 'filepath'.
         """
-        self.model.load_weights(filepath + "model.h5")
-        self.critic.load_weights(filepath + "critic.h5")
-        self.generator.load_weights(filepath + "generator.h5")
+        self.model.load_weights(filepath + "_model.h5")
+        self.critic.load_weights(filepath + "_critic.h5")
+        self.generator.load_weights(filepath + "_generator.h5")

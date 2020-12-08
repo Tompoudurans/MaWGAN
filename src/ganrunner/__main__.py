@@ -3,6 +3,8 @@ import numpy as np
 import ganrunner.tools as tools
 import ganrunner.gans as gans
 import click
+import logging
+import os
 
 
 @click.command()
@@ -45,7 +47,7 @@ import click
 )
 @click.option(
     "--rate",
-    default=0.005,
+    default=None,
     type=int,
     help="choose the learing rate of the model",
 )
@@ -76,19 +78,36 @@ def main(
     parameters_list = [dataset, model, opti, noise, batch, layers, clip, rate]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
-    database, mean, std, details, col = load_data(parameters[0], filepath)
-    thegan = run(filename, epochs, parameters, successfully_loaded, database)
-    fake = show_samples(
-        thegan,
-        mean,
-        std,
-        database,
-        int(parameters[4]),
-        sample,
-        filename,
-        col,
-        details,
-    )
+    try:
+        database, mean, std, details, col = load_data(parameters[0], filepath)
+    except tools.sqlman.sa.exc.OperationalError as oe:
+        logging.error(str(oe))
+        try:
+            table = tools.all_tables(filepath)
+            print(dataset, "does not exists, try:")
+            print(str(table))
+        except Exception as e:
+            print("file not found")
+        os.remove(filename + "_parameters.npy")
+        return
+    except Exception as e:
+        print("Data could not be loaded propely see logs for more info")
+        logging.error(str(e))
+        return
+    thegan, success = run(filename, epochs, parameters, successfully_loaded, database)
+    if success:
+        fake = show_samples(
+            thegan,
+            mean,
+            std,
+            database,
+            int(parameters[4]),
+            sample,
+            filename,
+            col,
+            details,
+        )
+    return thegan
 
 
 def unpack(p):
@@ -104,25 +123,42 @@ def setup(parameters_list):
     """
     parameters = []
     questions = [
-        "dataset (table) ",
-        "model?: (wgan) /(gan) / (wgangp) ",
+        "table? ",
+        "model? (gan)/(wgan)/(wgangp) ",
         "opti? ",
         "noise size? ",
         "batch size? ",
         "layers? ",
+        "learning constiction? ",
+        "rate? ",
     ]
     for q in range(len(questions)):
         if parameters_list[q] != None:
             param = parameters_list[q]
         else:
-            param = input(questions[q])
+            if q < 3:
+                param = input(questions[q])
+            else:
+                param = input_float(questions[q])
         parameters.append(param)
-    if parameters[1] == "wgan" or parameters[1] == "wgangp":
-        clip_threshold = float(input("learning constiction "))
-        parameters.append(clip_threshold)
-    if parameters[1] == "wgangp":
-        parameters.append(float(input("rate ?")))
+        if (q == 5) and (parameters[1] == "gan"):
+            break
+        if (q == 6) and (parameters[1] == "wgan"):
+            break
     return parameters
+
+
+def input_float(question):
+    """
+    makes sure a number is inputed
+    """
+    while True:
+        try:
+            answer = float(input(question))
+        except Exception as e:
+            print("must be a number")
+        else:
+            return answer
 
 
 def load_data(sets, filepath):
@@ -214,7 +250,7 @@ def load_parameters(filepath):
     """
     try:
         parameter_array = np.load(filepath + "_parameters.npy", allow_pickle=True)
-    except OSError:  # as 'Unable to open file':
+    except OSError:
         print("file not found, starting from scratch")
         successfully_loaded = False
         parameter_array = None
@@ -243,15 +279,32 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
     """
     # select dataset
     no_field = len(database[1])
-    mygan, batch, noise_dim = create_model(parameters, no_field)
+    try:
+        mygan, batch, noise_dim = create_model(parameters, no_field)
+    except Exception as e:
+        print("building failed, check you parameters")
+        os.remove(filepath + "_parameters.npy")
+        logging.error(str(e))
+        return None, False
     if successfully_loaded:
         mygan = load_gan_weight(filepath, mygan)
     if epochs > 0:
-        step = int(math.ceil(epochs * 0.01))
-        mygan.train(database, batch, epochs, step)
-        mygan.save_model(filepath)
-        tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
-    return mygan
+        step = int(math.ceil(epochs * 0.001))
+        try:
+            mygan.train(database, batch, epochs, step)
+        except AssertionError:
+            logging.error("Error: broken gradient")
+            tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+            return None, False
+        except ValueError as e:
+            logging.error("training fail due to" + str(e))
+            print("training failed check you parameters")
+            os.remove(filepath + "_parameters.npy")
+            return None, False
+        else:
+            mygan.save_model(filepath)
+            tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+    return mygan, True
 
 
 if __name__ == "__main__":

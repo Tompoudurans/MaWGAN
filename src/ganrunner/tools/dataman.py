@@ -47,6 +47,9 @@ def show_loss_progress(loss_discriminator, loss_generator, filepath, extention="
 
 
 def setup_log(filepath):
+    """
+    creates a log file
+    """
     logging.basicConfig(
         filename=filepath,
         level=logging.INFO,
