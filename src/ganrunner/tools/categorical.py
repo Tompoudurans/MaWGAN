@@ -17,7 +17,9 @@ def encoding(data):
 
 
 def decoding(data, details):
-    print("point")
+    """
+    Transforms numerical data into categorical data using the saved mapping (details)
+    """
     col_len = len(data.columns)
     position = details[0] - len(details) + 1
     start = position

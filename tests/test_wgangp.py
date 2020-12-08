@@ -10,14 +10,14 @@ import numpy
 import os
 
 layers = 5
-nodes = 20
+nodes = 3
 data = 3
-batch_size = 2
-noise_vector = 10
+batch_size = 3
+noise_vector = 3
 lambdas = 1
-dataset = numpy.array([[1.0, 1.2, 1.3], [2.1, 2.2, 2.3]])
+dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
 
-testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas)
+testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
 
 def test_critic_training():
@@ -33,7 +33,7 @@ def test_critic_training():
     for i in range(5):
         testgan.train_critic(dataset, batch_size)
     trained = testgan.critic.predict(dataset)
-    assert all(untrained < trained)
+    assert all(untrained != trained)
 
 
 def test_gan_training():
@@ -46,33 +46,32 @@ def test_gan_training():
     numpy.random.seed(10)
     noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
     untrained_fake = testgan.generator.predict(noise)
-    for i in range(10):
-        testgan.train_critic(dataset, batch_size)
-        testgan.train_generator(batch_size)
+    testgan.train(dataset, batch_size, 20)
     trained_fake = testgan.generator.predict(noise)
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
-    # assert any(untrained > trained)
+    assert any(untrained > trained)
 
 
 def test_save():
     """
     Tests the 'save' function
     """
-    testgan.save_model("tests/test")
-    assert os.stat("tests/test_generator.h5").st_size > 0
-    assert os.stat("tests/test_critic.h5").st_size > 0
+    testgan.save_model("testing")
+    assert os.stat("testing_generator.h5").st_size > 0
+    assert os.stat("testing_critic.h5").st_size > 0
+    assert os.stat("testing_model.h5").st_size > 0
 
 
 def test_load():
     """
     Tests the 'load' function check the first weight
     """
-    test = ganrunner.wGAN("adam", noise_vector, data, nodes, layers, lambdas)
+    test = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
     generator_weight = test.generator.get_weights()
     critic_weight = test.critic.get_weights()
     model_weight = test.model.get_weights()
-    test.load_weights("tests/test")
+    test.load_weights("testing")
     assert (generator_weight[0] != test.generator.get_weights()[0]).all()
     assert (critic_weight[0] != test.critic.get_weights()[0]).all()
 

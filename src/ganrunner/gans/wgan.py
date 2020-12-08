@@ -154,6 +154,9 @@ class wGAN:
             self.epoch += 1
 
     def create_fake(self, batch_size):
+        """
+        this creates a batch of fake data
+        """
         noise = np.random.normal(0, 1, (batch_size, self.z_dim))
         fake_data = self.generator.predict(noise)
         return fake_data
