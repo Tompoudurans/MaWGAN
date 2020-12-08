@@ -41,6 +41,10 @@ class wGANgp(object):
         self.lambda_term = lambdas
 
     def Make_Generator(self, number_of_layers):
+        """
+        This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
+        It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
+        """
         self.Generator = nn.Sequential()
         self.Generator.add_module(
             str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
@@ -62,6 +66,10 @@ class wGANgp(object):
         # nn.ReLU(True),
 
     def Make_Critic(self, number_of_layers):
+        """
+        This makes a critic network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
+        It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
+        """
         self.Critic = nn.Sequential()
         self.Critic.add_module(
             str(number_of_layers) + "layer", nn.Linear(self.z_dim, self.net_dim)
@@ -79,11 +87,20 @@ class wGANgp(object):
         )
 
     def create_fake(self, batch_size):
+        """
+        this creates a batch of fake data
+        """
         z = torch.randn(batch_size, self.data_dim)
         fake_images = self.Generator(z)
         return fake_images.detach().numpy()
 
     def train(self, data, batch_size, epochs, print_every_n_batches=10, n_critic=5):
+        """
+        This trains the GAN by alternating between training the critic 'critic_round' times
+        and training the generator once in each epoch on
+        the dataset x_train which has a length of batch_size.
+        It will print and record the loss of the generator and critic every_n_batches.
+        """
         self.batch_size = batch_size
         data_tensor = torch.Tensor(data)
         one = torch.tensor(1, dtype=torch.float)
@@ -145,6 +162,9 @@ class wGANgp(object):
             # Saving model and sampling images every 1000th generator iterations
 
     def calculate_gradient_penalty(self, real_images, fake_images):
+        """
+        Computes gradient penalty based on prediction and weighted real / fake samples
+        """
         eta = torch.FloatTensor(self.batch_size, 1).uniform_(0, 1)
         eta = eta.expand(self.batch_size, real_images.size(1))
         interpolated = eta * real_images + ((1 - eta) * fake_images)
@@ -168,20 +188,32 @@ class wGANgp(object):
         return grad_penalty
 
     def summary(self):
+        """
+        prints the composition of the gan
+        """
         print(self.Critic)
         print(self.Generator)
 
     def pick_sample(self, data):
+        """
+        pick a smaple of the data of size of the batch
+        """
         perm = torch.randperm(len(data))
         index = perm[: self.batch_size]
         return data[index]
 
     def save_model(self, filepath):
+        """
+        This saves the weights of the two networks that are used in the GAN on the 'filepath'.
+        """
         torch.save(self.Generator.state_dict(), filepath + "_generator.pkl")
         torch.save(self.Critic.state_dict(), filepath + "_critic.pkl")
         print("Models saved ")
 
     def load_model(self, filepath):
+        """
+        This loads the weights of the two networks that are used in the GAN on the 'filepath'.
+        """
         G_model_filename = filepath + "_generator.pkl"
         D_model_filename = filepath + "_critic.pkl"
         D_model_path = os.path.join(os.getcwd(), D_model_filename)

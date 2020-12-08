@@ -308,13 +308,5 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
             # tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
 
-
-def tests_env():
-    param = ["readings", "wgangp", "adam", 60, 60, 5, 10, 0.0001]
-    database, mean, std, details, col = load_data(param[0], "flight.db")
-    gan, boo = run("flight", 100, param, False, database)
-    return database, mean, std, gan
-
-
 if __name__ == "__main__":
     main()
