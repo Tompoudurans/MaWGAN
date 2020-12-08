@@ -19,6 +19,7 @@ lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
 testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
+
 def test_gan_training():
     """
     Tests the training algorithm of the GAN as the generator cannot be trained directly.
@@ -49,17 +50,20 @@ def test_save_load():
     assert all(generator_weight_save) == all(test.Generator.state_dict())
     assert all(critic_weight_save) == all(test.Critic.state_dict())
 
+
 def test_build():
     """
     This test checks that the GAN is well built and has the correct
     number of layers, input and output shape
     """
-    val = (layers*2)-1
+    val = (layers * 2) - 1
     assert len(testgan.Critic) == val
     assert len(testgan.Generator) == val
-    assert testgan.Critic[0].in_features ==  data
+    assert testgan.Critic[0].in_features == data
     assert testgan.Generator[0].in_features == noise_vector
-    assert testgan.Critic[2].in_features ==  nodes == testgan.Critic[0].out_features
-    assert testgan.Generator[2].in_features == nodes == testgan.Generator[0].out_features
-    assert testgan.Critic[(val-1)].out_features ==  1
-    assert testgan.Generator[(val-1)].out_features == data
+    assert testgan.Critic[2].in_features == nodes == testgan.Critic[0].out_features
+    assert (
+        testgan.Generator[2].in_features == nodes == testgan.Generator[0].out_features
+    )
+    assert testgan.Critic[(val - 1)].out_features == 1
+    assert testgan.Generator[(val - 1)].out_features == data

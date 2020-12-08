@@ -30,9 +30,7 @@ import os
 @click.option(
     "--layers", default=None, help="choose the number of layers of each network"
 )
-@click.option(
-    "--lambdas", type=float, default=None, help="learning penalty"
-)
+@click.option("--lambdas", type=float, default=None, help="learning penalty")
 @click.option(
     "--core",
     default=0,
@@ -109,7 +107,7 @@ def main(
             col,
             details,
         )
-    return thegan,fake
+    return thegan, fake
 
 
 def unpack(p):
@@ -151,6 +149,7 @@ def setup(parameters_list):
             break
     return parameters
 
+
 def input_int(question):
     """
     makes sure a number is inputed
@@ -161,10 +160,11 @@ def input_int(question):
             answer = int(a)
         except Exception:
             print("must be a number")
-            if a == '' or None:
+            if a == "" or None:
                 raise RuntimeError
         else:
             return answer
+
 
 def input_float(question):
     """
@@ -176,7 +176,7 @@ def input_float(question):
             answer = float(a)
         except Exception:
             print("must be a number")
-            if a == '' or None:
+            if a == "" or None:
                 raise RuntimeError
         else:
             return answer
@@ -196,7 +196,7 @@ def load_gan_weight(filepath, mygan):
     Loads weight from previous trained GAN
     """
     try:
-        mygan.load_model(filepath) #-----------------------------------
+        mygan.load_model(filepath)  # -----------------------------------
     except OSError:  # as 'Unable to open file':
         print("file not found, starting from scratch")
     finally:
@@ -237,7 +237,7 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
             database.columns = col
         tools.dagplot(generated_data, database, filepath + "_" + str(s))
         values = tools.decoding(generated_data, info)
-        print("sample",s)
+        print("sample", s)
         tools.save_sql(values, filepath + ".db")
 
 
@@ -305,14 +305,16 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
             return None, False
         else:
             mygan.save_model(filepath)
-            #tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+            # tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
 
+
 def tests_env():
-    param = ['readings', 'wgangp', 'adam', 60, 60, 5, 10, 0.0001]
+    param = ["readings", "wgangp", "adam", 60, 60, 5, 10, 0.0001]
     database, mean, std, details, col = load_data(param[0], "flight.db")
     gan, boo = run("flight", 100, param, False, database)
     return database, mean, std, gan
+
 
 if __name__ == "__main__":
     main()
