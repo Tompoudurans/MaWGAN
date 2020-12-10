@@ -54,11 +54,7 @@ filepath and epochs are maninitory, put the epochs to 0 to just read the the mod
 
   --dataset    choose the dataset/table that the GAN will train on
 
-  --model      choose which model you what to use
-
   --opti       choose the optimiser you want to use
-
-  --noise      choose the length of the noise vector
 
   --batch      choose how many fake data you want to make in one go
 

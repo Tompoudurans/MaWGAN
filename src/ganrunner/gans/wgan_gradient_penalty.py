@@ -15,14 +15,12 @@ class wGANgp(object):
         self,
         optimiser,
         input_dim,
-        noise_size,
         batch_size,
         number_of_layers,
         lambdas,
         learning_rate,
     ):
-        self.net_dim = noise_size
-        self.data_dim = noise_size
+        self.net_dim = batch_size
         self.z_dim = input_dim
         self.Make_Generator(number_of_layers)
         self.Make_Critic(number_of_layers)
@@ -90,7 +88,7 @@ class wGANgp(object):
         """
         this creates a batch of fake data
         """
-        z = torch.randn(batch_size, self.data_dim)
+        z = torch.randn(batch_size, self.net_dim)
         fake_images = self.Generator(z)
         return fake_images.detach().numpy()
 
@@ -125,7 +123,7 @@ class wGANgp(object):
                 d_loss_real.backward(mone)
 
                 # Train with fake images
-                z = Variable(torch.randn(self.batch_size, self.data_dim))
+                z = Variable(torch.randn(self.batch_size, self.net_dim))
 
                 fake_images = self.Generator(z)
                 d_loss_fake = self.Critic(fake_images)
@@ -148,7 +146,7 @@ class wGANgp(object):
             self.Generator.zero_grad()
             # train generator
             # compute loss with fake images
-            z = Variable(torch.randn(self.batch_size, self.data_dim))
+            z = Variable(torch.randn(self.batch_size, self.net_dim))
             fake_images = self.Generator(z)
             g_loss = self.Critic(fake_images)
             g_loss = g_loss.mean()

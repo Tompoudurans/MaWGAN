@@ -21,9 +21,7 @@ import os
     default=None,
     help="choose the dataset/table that the GAN will train on",
 )
-@click.option("--model", default=None, help="choose which model you what to use")
 @click.option("--opti", default=None, help="choose the optimiser you want to use")
-@click.option("--noise", default=None, help="choose the length of the noise vector")
 @click.option(
     "--batch", default=None, help="choose how many fake data you want to make in one go"
 )
@@ -53,9 +51,7 @@ def main(
     dataset,
     filepath,
     epochs,
-    model,
     opti,
-    noise,
     batch,
     layers,
     lambdas,
@@ -73,7 +69,7 @@ def main(
         tools.set_core(core)
     filename = filepath.split(".")[0]
     tools.setup_log(filename + "_progress.log")
-    parameters_list = [dataset, model, opti, noise, batch, layers, lambdas, rate]
+    parameters_list = [dataset, opti, batch, layers, lambdas, rate]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
     try:
@@ -101,7 +97,7 @@ def main(
             mean,
             std,
             database,
-            int(parameters[4]),
+            int(parameters[2]),
             sample,
             filename,
             col,
@@ -114,7 +110,11 @@ def unpack(p):
     """
     Unpacks the parameters
     """
-    return p[1], p[2], int(p[3]), int(p[4]), int(p[5])
+    return (
+        p[1],
+        int(p[2]),
+        int(p[3]),
+    )
 
 
 def setup(parameters_list):
@@ -124,9 +124,7 @@ def setup(parameters_list):
     parameters = []
     questions = [
         "table? ",
-        "model? (gan)/(wgan)/(wgangp) ",
         "opti? ",
-        "noise size? ",
         "batch size? ",
         "layers? ",
         "learning constiction? ",
@@ -138,15 +136,11 @@ def setup(parameters_list):
         else:
             if q < 3:
                 param = input(questions[q])
-            elif q < 6:
+            elif q < 5:
                 param = input_int(questions[q])
             else:
                 param = input_float(questions[q])
         parameters.append(param)
-        if (q == 5) and (parameters[1] == "gan"):
-            break
-        if (q == 6) and (parameters[1] == "wgan"):
-            break
     return parameters
 
 
@@ -207,19 +201,18 @@ def create_model(parameters, no_field):
     """
     Builds the GAN using the parameters
     """
-    lr = float(parameters[7])
-    use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
+    lr = float(parameters[5])
+    opti, batch, number_of_layers = unpack(parameters)
     mygan = gans.wGANgp(
         optimiser="adam",
         input_dim=no_field,
-        noise_size=noise_dim,
         batch_size=batch,
         number_of_layers=number_of_layers,
-        lambdas=float(parameters[6]),
+        lambdas=float(parameters[4]),
         learning_rate=lr,
     )
     mygan.summary()
-    return mygan, batch, noise_dim
+    return mygan, batch
 
 
 def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info):
@@ -286,7 +279,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
     # select dataset
     no_field = len(database[1])
     try:
-        mygan, batch, noise_dim = create_model(parameters, no_field)
+        mygan, batch = create_model(parameters, no_field)
     except Exception as e:
         print("building failed, check you parameters")
         os.remove(filepath + "_parameters.npy")
