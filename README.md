@@ -1,7 +1,7 @@
 # About
 
 This code creates and trains a GAN. Core elements of this code are sourced
-directly from the David Foster book 'Deep generative models' and have been
+directly from Green9's version of code from Improved Training of Wasserstein GANs" (https://arxiv.org/abs/1704.00028) and have been
 modified to work with a numeric database such as the iris datasets taken
 from the library 'sklearn'. Soon this GAN should work on the DCWW dataset.
 

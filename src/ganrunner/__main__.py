@@ -308,5 +308,6 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
             # tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
 
+
 if __name__ == "__main__":
     main()
