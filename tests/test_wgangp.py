@@ -8,6 +8,7 @@ Created on Mon Jun  1 15:31:20 2020
 import ganrunner
 import numpy
 import os
+import torch
 
 layers = 5
 nodes = 3
@@ -16,24 +17,7 @@ batch_size = 3
 noise_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
-
 testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
-
-
-def test_critic_training():
-    """
-    Tests the training algorithm of the critic.
-    This is done by taking an untrained sample,
-    training the critic, then taking a new sample
-    and comparing the untrained sample and trained sample.
-    The trained sample should provide a better result.
-    """
-    numpy.random.seed(21)
-    untrained = testgan.critic.predict(dataset)
-    for i in range(5):
-        testgan.train_critic(dataset, batch_size)
-    trained = testgan.critic.predict(dataset)
-    assert all(untrained != trained)
 
 
 def test_gan_training():
@@ -43,37 +27,28 @@ def test_gan_training():
     and comparing the untrained sample and trained sample.
     The trained sample should provide a better result
     """
-    numpy.random.seed(10)
-    noise = numpy.random.normal(0, 1, (batch_size, noise_vector))
-    untrained_fake = testgan.generator.predict(noise)
+    noise = torch.randn(batch_size, noise_vector)
+    untrained_fake = testgan.Generator(noise).detach().numpy()
     testgan.train(dataset, batch_size, 20)
-    trained_fake = testgan.generator.predict(noise)
+    trained_fake = testgan.Generator(noise).detach().numpy()
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
-    assert any(untrained > trained)
+    assert any(untrained != trained)
 
 
-def test_save():
+def test_save_load():
     """
-    Tests the 'save' function
+    Tests the 'save' and 'load' function
     """
     testgan.save_model("testing")
-    assert os.stat("testing_generator.h5").st_size > 0
-    assert os.stat("testing_critic.h5").st_size > 0
-    assert os.stat("testing_model.h5").st_size > 0
-
-
-def test_load():
-    """
-    Tests the 'load' function check the first weight
-    """
+    generator_weight_save = testgan.Generator.state_dict()
+    critic_weight_save = testgan.Critic.state_dict()
+    assert os.stat("testing_generator.pkl").st_size > 0
+    assert os.stat("testing_critic.pkl").st_size > 0
     test = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
-    generator_weight = test.generator.get_weights()
-    critic_weight = test.critic.get_weights()
-    model_weight = test.model.get_weights()
-    test.load_weights("testing")
-    assert (generator_weight[0] != test.generator.get_weights()[0]).all()
-    assert (critic_weight[0] != test.critic.get_weights()[0]).all()
+    test.load_model("testing")
+    assert all(generator_weight_save) == all(test.Generator.state_dict())
+    assert all(critic_weight_save) == all(test.Critic.state_dict())
 
 
 def test_build():
@@ -81,11 +56,14 @@ def test_build():
     This test checks that the GAN is well built and has the correct
     number of layers, input and output shape
     """
-    assert len(testgan.critic.layers) == layers
-    assert len(testgan.generator.layers) == layers
-    assert testgan.critic.input_shape == (None, data)
-    assert testgan.generator.input_shape == (None, noise_vector)
-    assert testgan.critic.output_shape == (None, 1)
-    assert testgan.generator.output_shape == (None, data)
-    assert testgan.critic.layers[1].output_shape == (None, nodes)
-    assert testgan.generator.layers[1].output_shape == (None, nodes)
+    val = (layers * 2) - 1
+    assert len(testgan.Critic) == val
+    assert len(testgan.Generator) == val
+    assert testgan.Critic[0].in_features == data
+    assert testgan.Generator[0].in_features == noise_vector
+    assert testgan.Critic[2].in_features == nodes == testgan.Critic[0].out_features
+    assert (
+        testgan.Generator[2].in_features == nodes == testgan.Generator[0].out_features
+    )
+    assert testgan.Critic[(val - 1)].out_features == 1
+    assert testgan.Generator[(val - 1)].out_features == data

@@ -37,7 +37,7 @@ def save_sql(df, file, exists="append"):
         df = df.drop(columns=["dataset"])
     except KeyError:
         pass
-    df.to_sql("generated_data", con=engine, if_exists=exists)  # , index=False)
+    df.to_sql("torch_generated_data", con=engine, if_exists=exists)  # , index=False)
 
 
 def all_tables(file):

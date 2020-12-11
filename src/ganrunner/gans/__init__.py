@@ -1,3 +1,1 @@
-from ganrunner.gans.tengan import dataGAN
-from ganrunner.gans.wgan import wGAN
-from ganrunner.gans.wgangp import wGANgp
+from ganrunner.gans.wgan_gradient_penalty import wGANgp
