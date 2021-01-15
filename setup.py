@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-with open("requirements.txt") as f:
+with open("requirements.txt") as f:# this doesnt work
     requirements = []
     for library in f.read().splitlines():
         requirements.append(library)
@@ -9,4 +9,5 @@ setup(
     version="0.0.4",
     packages=find_packages("src"),
     package_dir={"": "src"},
+    install_requires=requirements,
 )
