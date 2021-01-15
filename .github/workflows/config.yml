@@ -21,6 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        python setup.py develop
     - name: Install testing dependencies
       run: |
         python -m pip install pytest
@@ -30,7 +31,6 @@ jobs:
         python -m pip install black
     - name: Test with pytest
       run: |
-        python setup.py develop
         python -m pytest --cov src/ --cov-report term-missing
     - name: Check format (only on py3.8 and ubuntu)
       if: matrix.python-version == 3.8 && matrix.os == 'ubuntu-latest'

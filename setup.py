@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-with open("requirements.txt") as f:# this doesnt work
+with open("requirements.txt") as f:
     requirements = []
     for library in f.read().splitlines():
         requirements.append(library)
