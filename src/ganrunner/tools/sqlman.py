@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from .prepocessing import get_norm
+from .prepocessing import get_norm,missing_numb
 import pandas as pd
 from .categorical import encoding
 
@@ -22,8 +22,8 @@ def procsses_sql(database):
     pre-procsses the table, ready to be trained
     """
     database, details = encoding(database)
-    database = database.dropna()
     col = database.columns
+    database = missing_numb(database,col,"mean")
     database, mean, std = get_norm(database)
     return database, mean, std, details, col
 
