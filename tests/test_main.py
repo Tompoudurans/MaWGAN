@@ -17,7 +17,7 @@ def test_break_set():
             "-m",
             "ganrunner",
             "--model=wgangp",
-            "--filepath=flight.db",
+            "--filepath=test.csv",
             "--opti=adam",
             "--noise=60",
             "--batch=60",

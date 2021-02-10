@@ -71,13 +71,13 @@ def main(
     click.echo("loading...")
     if core != 0:
         tools.set_core(core)
-    filename = filepath.split(".")[0]
+    filename,extention = filepath.split(".")
     tools.setup_log(filename + "_progress.log")
     parameters_list = [dataset, model, opti, noise, batch, layers, lambdas, rate]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
     try:
-        database, mean, std, details, col = load_data(parameters[0], filepath)
+        database, mean, std, details, col = load_data(parameters[0], filepath, extention)
     except tools.sqlman.sa.exc.OperationalError as oe:
         logging.error(str(oe))
         try:
@@ -182,11 +182,14 @@ def input_float(question):
             return answer
 
 
-def load_data(sets, filepath):
+def load_data(sets, filepath, extention):
     """
     Loads a dataset from an sql table
     """
-    raw_data = tools.load_sql(filepath, sets)
+    if extention == "db":
+        raw_data = tools.load_sql(filepath, sets)
+    else:
+        raw_data = tools.pandas.read_csv(filepath + ".csv")
     database, mean, std, details, col = tools.procsses_sql(raw_data)
     return database, mean, std, details, col
 

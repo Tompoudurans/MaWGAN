@@ -21,14 +21,14 @@ def simplesplit(x, fac=10):
     return x[z[0]], x[z[1]]
 
 
-def dagplot(x, y, filepath, extention=".pdf"):
+def dagplot(synthetic, original, filepath, extention=".pdf"):
     """
     plots original data vs the synthetic data then saves
     """
-    fake = pd.DataFrame(x)
-    real = pd.DataFrame(y)
-    fake["dataset"] = ["fake"] * len(x)
-    real["dataset"] = ["real"] * len(y)
+    fake = pd.DataFrame(synthetic)
+    real = pd.DataFrame(original)
+    fake["dataset"] = ["synthetic"] * len(synthetic)
+    real["dataset"] = ["original"] * len(original)
     result = pd.concat([real, fake])
     sns.pairplot(result, hue="dataset")
     mp.savefig(filepath + "_compare" + extention)
