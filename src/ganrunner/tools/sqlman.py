@@ -23,7 +23,7 @@ def procsses_sql(database):
     """
     database, details = encoding(database)
     col = database.columns
-    database = missing_numb(database,col,"mean")
+    database = missing_numb(database,col,"drop")
     database, mean, std = get_norm(database)
     return database, mean, std, details, col
 

@@ -1,5 +1,4 @@
 import pandas
-import numpy.nan
 
 def normalize(dataset, mean, std):
     """
@@ -33,10 +32,10 @@ def missing_numb(data,col,method):
     if method == "drop":
         return data.dropna()
     elif method == "zero":
-        return data.replace(numpy.nan,0)
+        return data.fillna(0)
     elif method == "mean":
         for i in col:
-            data[i]=data[i].replace(numpy.nan,data[i].mean())
+            data[i]=data[i].fillna(data[i].mean())
         return data
     else:
         return data

@@ -189,7 +189,7 @@ def load_data(sets, filepath, extention):
     if extention == "db":
         raw_data = tools.load_sql(filepath, sets)
     else:
-        raw_data = tools.pandas.read_csv(filepath + ".csv")
+        raw_data = tools.pd.read_csv(filepath)
     database, mean, std, details, col = tools.procsses_sql(raw_data)
     return database, mean, std, details, col
 
