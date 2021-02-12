@@ -77,35 +77,32 @@ def main(
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
     try:
-        database, mean, std, details, col = load_data(parameters[0], filepath, extention)
+        database, details = load_data(parameters[0], filepath, extention)
     except tools.sqlman.sa.exc.OperationalError as oe:
-        logging.error(str(oe))
+        logging.exception(oe)
         try:
             table = tools.all_tables(filepath)
             print(dataset, "does not exists, try:")
             print(str(table))
         except Exception as e:
             print("file not found")
-            logging.error(str(e))
+            logging.exception(e)
         os.remove(filename + "_parameters.npy")
         return
     except Exception as e:
         print("Data could not be loaded propely see logs for more info")
-        logging.error(str(e))
+        logging.exception(e)
         return
     thegan, success = run(filename, epochs, parameters, successfully_loaded, database)
     fake = None
     if success:
         fake = show_samples(
             thegan,
-            mean,
-            std,
             database,
             int(parameters[4]),
             sample,
             filename,
-            col,
-            details,
+            details
         )
     return thegan, fake
 
@@ -190,8 +187,8 @@ def load_data(sets, filepath, extention):
         raw_data = tools.load_sql(filepath, sets)
     else:
         raw_data = tools.pd.read_csv(filepath)
-    database, mean, std, details, col = tools.procsses_sql(raw_data)
-    return database, mean, std, details, col
+    database, details = tools.procsses_sql(raw_data)
+    return database, details
 
 
 def load_gan_weight(filepath, mygan):
@@ -225,10 +222,11 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info):
+def show_samples(mygan, database, batch, samples, filepath, details):
     """
     Creates a number of samples
     """
+    mean, std, info, col, tag = details
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
         if s == 0:
@@ -240,6 +238,7 @@ def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info
             database.columns = col
         tools.dagplot(generated_data, database, filepath + "_" + str(s))
         values = tools.decoding(generated_data, info)
+        values = tools.categorical.binary_out(values, tag)
         print("sample", s)
         tools.save_sql(values, filepath + ".db")
 
@@ -302,7 +301,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
         try:
             mygan.train(database, batch, epochs, step)
         except Exception as e:
-            logging.error("training fail due to" + str(e))
+            logging.exception(e)
             print("training failed check you parameters")
             os.remove(filepath + "_parameters.npy")
             return None, False

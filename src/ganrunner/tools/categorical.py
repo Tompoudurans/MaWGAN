@@ -1,6 +1,4 @@
 import pandas
-import numpy
-
 
 def encoding(data):
     """
@@ -32,12 +30,26 @@ def decoding(data, details):
         set_of_cat = data.iloc[:, position:end]
         restore = []
         for value in range(set_of_cat.shape[0]):
-            if sum(set_of_cat.iloc[value]) > 0.1:
-                restore.append(set_of_cat.iloc[value].idxmax())
-            else:
-                restore.append(None)
+            restore.append(set_of_cat.iloc[value].idxmax())
         data[details[current][0]] = restore
         current = current + 1
         position = end
     data = data.drop(columns=data.columns[range(start, col_len)])
+    return data
+
+def binary_in(data):
+    tag = []
+    for i in range(data.shape[1]):
+        column = data.iloc[:,i]
+        if column.max() == 1 and column.min() == 0:
+            data.iloc[:,i] = column.fillna(0.5)
+            tag.append(True)
+        else:
+            tag.append(False)
+    return data,tag
+
+def binary_out(data,tag):
+    for i in range(data.shape[1]):
+        if tag[i]:
+            data.iloc[:,i] = data.iloc[:,i].round()
     return data
