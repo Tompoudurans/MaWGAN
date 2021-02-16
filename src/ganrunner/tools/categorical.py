@@ -6,7 +6,7 @@ def encoding(data):
     """
     details = [len(data.columns)]
     for name in data.columns:
-        if "O" == data[name].dtype:
+        if "O" == data[name].dtype or 'bool'== data[name].dtype:
             new = pandas.get_dummies(data[name])
             data[new.columns] = new
             data = data.drop(columns=name)
@@ -38,18 +38,11 @@ def decoding(data, details):
     return data
 
 def binary_in(data):
-    tag = []
+    """
+    Find binary values and transfom them into categorical
+    """
     for i in range(data.shape[1]):
         column = data.iloc[:,i]
         if column.max() == 1 and column.min() == 0:
-            data.iloc[:,i] = column.fillna(0.5)
-            tag.append(True)
-        else:
-            tag.append(False)
-    return data,tag
-
-def binary_out(data,tag):
-    for i in range(data.shape[1]):
-        if tag[i]:
-            data.iloc[:,i] = data.iloc[:,i].round()
+            data.iloc[:,i] = column.replace([0,1],[False,True])
     return data

@@ -20,12 +20,12 @@ def procsses_sql(database):
     """
     pre-procsses the table, ready to be trained
     """
-    database, tag = binary_in(database)
+    database = binary_in(database)
     database, details = encoding(database)
     col = database.columns
     database = missing_numb(database,col,"none")
     database, mean, std = get_norm(database)
-    return database, [mean, std, details, col, tag]
+    return database, [mean, std, details, col]
 
 
 def save_sql(df, file, exists="append"):

@@ -228,7 +228,7 @@ def show_samples(mygan, database, batch, samples, filepath, details):
     """
     database = tools.pd.DataFrame(database)
     database = database.sample(batch)
-    mean, std, info, col, tag = details
+    mean, std, info, col = details
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
         if s == 0:
@@ -243,7 +243,6 @@ def show_samples(mygan, database, batch, samples, filepath, details):
         #tools.dagplot(generated_data, database, filepath + "_" + str(s))
         #print("plot")
         values = tools.decoding(generated_data, info)
-        values = tools.categorical.binary_out(values, tag)
         print("sample", s)
         tools.save_sql(values, filepath + ".db")
 
