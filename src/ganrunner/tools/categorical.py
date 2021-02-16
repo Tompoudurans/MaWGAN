@@ -6,11 +6,16 @@ def encoding(data):
     """
     details = [len(data.columns)]
     for name in data.columns:
-        if "O" == data[name].dtype or 'bool'== data[name].dtype:
+        if "O" == data[name].dtype:
             new = pandas.get_dummies(data[name])
             data[new.columns] = new
             data = data.drop(columns=name)
             details.append([name, len(new.columns)])
+        if data[name].max() == 1 and data[name].min() == 0:
+            new = data[name]
+            data = data.drop(columns=name)
+            data[name] = new
+            details.append([name, 1])
     return data, details
 
 
@@ -29,20 +34,13 @@ def decoding(data, details):
             break
         set_of_cat = data.iloc[:, position:end]
         restore = []
-        for value in range(set_of_cat.shape[0]):
-            restore.append(set_of_cat.iloc[value].idxmax())
-        data[details[current][0]] = restore
+        if set_of_cat.shape[1] == 1:
+            data[details[current][0]] = set_of_cat.round()
+        else:
+            for value in range(set_of_cat.shape[0]):
+                restore.append(set_of_cat.iloc[value].idxmax())
+            data[details[current][0]] = restore
         current = current + 1
         position = end
-    data = data.drop(columns=data.columns[range(start, col_len)])
-    return data
-
-def binary_in(data):
-    """
-    Find binary values and transfom them into categorical
-    """
-    for i in range(data.shape[1]):
-        column = data.iloc[:,i]
-        if column.max() == 1 and column.min() == 0:
-            data.iloc[:,i] = column.replace([0,1],[False,True])
+    #data = data.drop(columns=data.columns[range(start, col_len)])
     return data
