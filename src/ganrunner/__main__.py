@@ -226,6 +226,8 @@ def show_samples(mygan, database, batch, samples, filepath, details):
     """
     Creates a number of samples
     """
+    database = tools.pd.DataFrame(database)
+    database = database.sample(batch)
     mean, std, info, col, tag = details
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
@@ -233,10 +235,13 @@ def show_samples(mygan, database, batch, samples, filepath, details):
             tools.calculate_fid(generated_data, database)
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
+        print("unnorm complete gen")
         if s == 0:
             database = tools.unnormalize(database, mean, std)
             database.columns = col
-        tools.dagplot(generated_data, database, filepath + "_" + str(s))
+        print("unnorm complete org")
+        #tools.dagplot(generated_data, database, filepath + "_" + str(s))
+        #print("plot")
         values = tools.decoding(generated_data, info)
         values = tools.categorical.binary_out(values, tag)
         print("sample", s)
