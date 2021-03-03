@@ -5,6 +5,7 @@ from torch.autograd import Variable
 from torch import autograd
 import time as t
 import matplotlib.pyplot as plt
+from .utlility import copy_format
 
 plt.switch_backend("agg")
 import os
@@ -94,13 +95,16 @@ class wGANgp(object):
         fake_images = self.Generator(z)
         return fake_images.detach().numpy()
 
-    def train(self, data, batch_size, epochs, print_every_n_batches=10, n_critic=5):
+    def train(self, data, batch_size, epochs, hasmissing, print_every_n_batches=10, n_critic=5):
         """
         This trains the GAN by alternating between training the critic 'critic_round' times
         and training the generator once in each epoch on
         the dataset x_train which has a length of batch_size.
         It will print and record the loss of the generator and critic every_n_batches.
         """
+
+        if hasmissing:
+            print('missing data mode on')
         self.batch_size = batch_size
         data_tensor = torch.Tensor(data)
         one = torch.tensor(1, dtype=torch.float)
@@ -118,16 +122,19 @@ class wGANgp(object):
                 sample = self.pick_sample(data_tensor)
                 images = Variable(sample)
                 # Train discriminator
-                # WGAN - Training discriminator more iterations than generator
+                z = Variable(torch.randn(self.batch_size, self.data_dim))
+                fake_images = self.Generator(z)
+
+                if hasmissing:
+                    images, fake_images = copy_format(images, fake_images)
+                
                 # Train with real images
                 d_loss_real = self.Critic(images)
                 d_loss_real = d_loss_real.mean()
                 d_loss_real.backward(mone)
 
                 # Train with fake images
-                z = Variable(torch.randn(self.batch_size, self.data_dim))
 
-                fake_images = self.Generator(z)
                 d_loss_fake = self.Critic(fake_images)
                 d_loss_fake = d_loss_fake.mean()
                 d_loss_fake.backward(one)
@@ -159,6 +166,7 @@ class wGANgp(object):
                 print(
                     f"iteration: {g_iter}/{epochs}, g_loss: {g_loss}, loss_fake: {d_loss_fake}, loss_real: {d_loss_real}"
                 )
+            assert (g_loss > 0 or g_loss < 0)
             # Saving model and sampling images every 1000th generator iterations
 
     def calculate_gradient_penalty(self, real_images, fake_images):

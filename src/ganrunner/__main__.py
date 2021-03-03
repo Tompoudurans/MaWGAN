@@ -72,6 +72,8 @@ def main(
     if core != 0:
         tools.set_core(core)
     filename,extention = filepath.split(".")
+    if extention == "csv":
+        dataset = True
     tools.setup_log(filename + "_progress.log")
     parameters_list = [dataset, model, opti, noise, batch, layers, lambdas, rate]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
@@ -237,15 +239,36 @@ def show_samples(mygan, database, batch, samples, filepath, details):
         generated_data.columns = col
         print("unnorm complete gen")
         if s == 0:
-            database = tools.unnormalize(database, mean, std)
-            database.columns = col
+           database = tools.unnormalize(database, mean, std)
+           database.columns = col
         print("unnorm complete org")
-        #tools.dagplot(generated_data, database, filepath + "_" + str(s))
-        #print("plot")
+        tools.dagplot(generated_data, database, filepath + "_" + str(s))
+        print("plot")
         values = tools.decoding(generated_data, info)
         print("sample", s)
         tools.save_sql(values, filepath + ".db")
 
+def make_samples(mygan, database, batch, samples, filepath, details):
+    """
+    Creates a number of samples
+    """
+    database = tools.pd.DataFrame(database)
+    database = database.sample(batch)
+    mean, std, info, col = details
+    fullset = None
+    for s in range(int(samples)):
+        generated_data = mygan.create_fake(batch)
+        generated_data = tools.unnormalize(generated_data, mean, std)
+        generated_data.columns = col
+        print("unnorm complete gen")
+        values = tools.decoding(generated_data, info)
+        print("sample", s)
+        if s > 0:
+            fullset = tools.pd.merge(fullset,values,"outer")
+        else:
+            fullset  = values
+    tools.save_sql(fullset, filepath + ".db")
+    return fullset
 
 def save_parameters(parameters, filepath):
     """
@@ -295,23 +318,23 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
         mygan, batch, noise_dim = create_model(parameters, no_field)
     except Exception as e:
         print("building failed, check you parameters")
-        os.remove(filepath + "_parameters.npy")
         logging.error("building failed due to" + str(e))
         return None, False
     if successfully_loaded:
         mygan = load_gan_weight(filepath, mygan)
     if epochs > 0:
         step = int(math.ceil(epochs * 0.001))
+        checkI = tools.pd.DataFrame(database)
+        checkII = checkI.isnull().sum().sum() > 0
         try:
-            mygan.train(database, batch, epochs, step)
+            mygan.train(database, batch, epochs, checkII, step)
         except Exception as e:
             logging.exception(e)
             print("training failed check you parameters")
-            os.remove(filepath + "_parameters.npy")
             return None, False
         else:
             mygan.save_model(filepath)
-            # tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+            #tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
 
 
