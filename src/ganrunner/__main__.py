@@ -71,7 +71,7 @@ def main(
     click.echo("loading...")
     if core != 0:
         tools.set_core(core)
-    filename,extention = filepath.split(".")
+    filename, extention = filepath.split(".")
     if extention == "csv":
         dataset = True
     tools.setup_log(filename + "_progress.log")
@@ -99,12 +99,7 @@ def main(
     fake = None
     if success:
         fake = show_samples(
-            thegan,
-            database,
-            int(parameters[4]),
-            sample,
-            filename,
-            details
+            thegan, database, int(parameters[4]), sample, filename, details
         )
     return thegan, fake
 
@@ -239,14 +234,15 @@ def show_samples(mygan, database, batch, samples, filepath, details):
         generated_data.columns = col
         print("unnorm complete gen")
         if s == 0:
-           database = tools.unnormalize(database, mean, std)
-           database.columns = col
+            database = tools.unnormalize(database, mean, std)
+            database.columns = col
         print("unnorm complete org")
         tools.dagplot(generated_data, database, filepath + "_" + str(s))
         print("plot")
         values = tools.decoding(generated_data, info)
         print("sample", s)
         tools.save_sql(values, filepath + ".db")
+
 
 def make_samples(mygan, database, batch, samples, filepath, details):
     """
@@ -264,11 +260,12 @@ def make_samples(mygan, database, batch, samples, filepath, details):
         values = tools.decoding(generated_data, info)
         print("sample", s)
         if s > 0:
-            fullset = tools.pd.merge(fullset,values,"outer")
+            fullset = tools.pd.merge(fullset, values, "outer")
         else:
-            fullset  = values
+            fullset = values
     tools.save_sql(fullset, filepath + ".db")
     return fullset
+
 
 def save_parameters(parameters, filepath):
     """
@@ -334,7 +331,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
             return None, False
         else:
             mygan.save_model(filepath)
-            #tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+            # tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
 
 

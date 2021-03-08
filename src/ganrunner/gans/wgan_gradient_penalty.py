@@ -95,7 +95,9 @@ class wGANgp(object):
         fake_images = self.Generator(z)
         return fake_images.detach().numpy()
 
-    def train(self, data, batch_size, epochs, hasmissing, print_every_n_batches=10, n_critic=5):
+    def train(
+        self, data, batch_size, epochs, hasmissing, print_every_n_batches=10, n_critic=5
+    ):
         """
         This trains the GAN by alternating between training the critic 'critic_round' times
         and training the generator once in each epoch on
@@ -104,7 +106,7 @@ class wGANgp(object):
         """
 
         if hasmissing:
-            print('missing data mode on')
+            print("missing data mode on")
         self.batch_size = batch_size
         data_tensor = torch.Tensor(data)
         one = torch.tensor(1, dtype=torch.float)
@@ -127,7 +129,7 @@ class wGANgp(object):
 
                 if hasmissing:
                     images, fake_images = copy_format(images, fake_images)
-                
+
                 # Train with real images
                 d_loss_real = self.Critic(images)
                 d_loss_real = d_loss_real.mean()
@@ -166,7 +168,7 @@ class wGANgp(object):
                 print(
                     f"iteration: {g_iter}/{epochs}, g_loss: {g_loss}, loss_fake: {d_loss_fake}, loss_real: {d_loss_real}"
                 )
-            assert (g_loss > 0 or g_loss < 0)
+            assert g_loss > 0 or g_loss < 0
             # Saving model and sampling images every 1000th generator iterations
 
     def calculate_gradient_penalty(self, real_images, fake_images):

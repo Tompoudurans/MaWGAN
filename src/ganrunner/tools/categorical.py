@@ -1,5 +1,6 @@
 import pandas
 
+
 def encoding(data):
     """
     Transforms categorical data into numerical, saves maping on a list.
@@ -42,5 +43,5 @@ def decoding(data, details):
             data[details[current][0]] = restore
         current = current + 1
         position = end
-    #data = data.drop(columns=data.columns[range(start, col_len)])
+    # data = data.drop(columns=data.columns[range(start, col_len)])
     return data
