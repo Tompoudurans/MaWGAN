@@ -2,8 +2,7 @@
 
 import ganrunner
 
-filepath = "test.csv"
-epochs = 1000
+epochs = 400
 
 
 def main(
@@ -47,7 +46,7 @@ def main(
 
 a,b = main(
     None,
-    "missiris.csv",
+    "50_percent_iris.csv",
     epochs,
     "wgangp",
     "adam",
@@ -58,3 +57,5 @@ a,b = main(
     3,
     0.0004,
 )
+full = ganrunner.tools.pd.read_csv('fulliris.csv')
+ganrunner.tools.dagplot(b,full,"50_percent")
