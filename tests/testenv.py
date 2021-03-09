@@ -2,7 +2,7 @@
 
 import ganrunner
 
-epochs = 400
+epochs = 12000
 
 
 def main(
@@ -39,23 +39,25 @@ def main(
     fake = None
     if success:
         fake = ganrunner.make_samples(
-            thegan, database, int(parameters[4]), sample, filename, details
+            thegan, database, int(parameters[4]), sample, filename, details, extention, False
         )
     return thegan, fake
 
 
 a, b = main(
     None,
-    "50_percent_iris.csv",
+    "missiris.csv",
     epochs,
     "wgangp",
     "adam",
-    50,
-    50,
+    150,
+    150,
     5,
     10,
     3,
     0.0004,
 )
 full = ganrunner.tools.pd.read_csv("fulliris.csv")
-ganrunner.tools.dagplot(b, full, "50_percent")
+x = ganrunner.tools.get_norm(full)
+y = ganrunner.tools.get_norm(b)
+ganrunner.calculate_fid(x[0],y[0])
