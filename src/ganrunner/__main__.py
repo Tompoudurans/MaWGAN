@@ -98,7 +98,7 @@ def main(
     thegan, success = run(filename, epochs, parameters, successfully_loaded, database)
     fake = None
     if success:
-        fake = nake_samples(
+        fake = make_samples(
             thegan, database, int(parameters[4]), sample, filename, details, extention
         )
     return thegan, fake
@@ -219,7 +219,9 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def make_samples(mygan, database, batch, samples, filepath, details, extention, show=True):
+def make_samples(
+    mygan, database, batch, samples, filepath, details, extention, show=True
+):
     """
     Creates a number of samples
     """
@@ -247,10 +249,10 @@ def make_samples(mygan, database, batch, samples, filepath, details, extention, 
             fullset = tools.pd.merge(fullset, values, "outer")
         else:
             fullset = values
-    if extention == ".db":
+    if extention == "db":
         tools.save_sql(fullset, filepath + ".db")
     else:
-        fullset.to_csv(filepath + "_synthetic.csv",index=False)
+        fullset.to_csv(filepath + "_synthetic.csv", index=False)
     return fullset
 
 

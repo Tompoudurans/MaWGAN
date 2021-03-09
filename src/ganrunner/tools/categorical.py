@@ -13,8 +13,8 @@ def encoding(data):
             data[new.columns] = new
             data = data.drop(columns=name)
             details.append([name, len(new.columns)])
-            count_o =+ 1
-    print("there are",count_o,"categorical data variables")
+            count_o = +1
+    print("there are", count_o, "categorical data variables")
     return data, details
 
 

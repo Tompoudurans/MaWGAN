@@ -96,7 +96,13 @@ class wGANgp(object):
         return fake_images.detach().numpy()
 
     def train(
-        self, data, batch_size, epochs, hasmissing, print_every_n_batches=10, n_critic=5
+        self,
+        data,
+        batch_size,
+        epochs,
+        hasmissing=False,
+        print_every_n_batches=10,
+        n_critic=5,
     ):
         """
         This trains the GAN by alternating between training the critic 'critic_round' times

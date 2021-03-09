@@ -39,7 +39,14 @@ def main(
     fake = None
     if success:
         fake = ganrunner.make_samples(
-            thegan, database, int(parameters[4]), sample, filename, details, extention, False
+            thegan,
+            database,
+            int(parameters[4]),
+            sample,
+            filename,
+            details,
+            extention,
+            False,
         )
     return thegan, fake
 
@@ -60,4 +67,4 @@ a, b = main(
 full = ganrunner.tools.pd.read_csv("fulliris.csv")
 x = ganrunner.tools.get_norm(full)
 y = ganrunner.tools.get_norm(b)
-ganrunner.calculate_fid(x[0],y[0])
+ganrunner.calculate_fid(x[0], y[0])

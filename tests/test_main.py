@@ -17,7 +17,7 @@ def test_break_set():
             "-m",
             "ganrunner",
             "--model=wgangp",
-            "--filepath=test.csv",
+            "--filepath=flight.db",
             "--opti=adam",
             "--noise=60",
             "--batch=60",
@@ -29,8 +29,7 @@ def test_break_set():
         ]
     )
     assert status.returncode == 0
-    # assert status.errout = ""
-    assert not os.path.isfile("flight_parameters.npy")
+    # os.remove("flight_parameters.npy")
 
 
 def test_break_bulid():
@@ -52,7 +51,7 @@ def test_break_bulid():
         ]
     )
     assert status.returncode == 0
-    assert not os.path.isfile("flight_parameters.npy")
+    os.remove("flight_parameters.npy")
 
 
 def test_normal_run():
