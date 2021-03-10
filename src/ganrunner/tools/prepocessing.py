@@ -28,16 +28,3 @@ def get_norm(data):
     std = data.std()
     data = normalize(data, mean, std)
     return data.to_numpy("float"), mean.to_numpy("float"), std.to_numpy("float")
-
-
-def missing_numb(data, col, method):
-    if method == "drop":
-        return data.dropna()
-    elif method == "zero":
-        return data.fillna(0)
-    elif method == "mean":
-        for i in col:
-            data[i] = data[i].fillna(data[i].mean())
-        return data
-    else:
-        return data
