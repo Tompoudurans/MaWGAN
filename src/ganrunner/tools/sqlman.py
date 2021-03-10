@@ -1,7 +1,7 @@
 import sqlalchemy as sa
-from .prepocessing import get_norm
+from .prepocessing import get_norm, missing_numb
 import pandas as pd
-from .categorical import encoding
+from .categorical import encoding  # , binary_in
 
 
 def load_sql(file, table):
@@ -21,11 +21,12 @@ def procsses_sql(database):
     """
     pre-procsses the table, ready to be trained
     """
+    # atabase = binary_in(database)
     database, details = encoding(database)
-    database = database.dropna()
     col = database.columns
+    database = missing_numb(database, col, "none")
     database, mean, std = get_norm(database)
-    return database, mean, std, details, col
+    return database, [mean, std, details, col]
 
 
 def save_sql(df, file, exists="append"):

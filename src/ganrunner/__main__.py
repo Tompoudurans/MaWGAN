@@ -71,41 +71,35 @@ def main(
     click.echo("loading...")
     if core != 0:
         tools.set_core(core)
-    filename = filepath.split(".")[0]
+    filename, extention = filepath.split(".")
+    if extention == "csv":
+        dataset = True
     tools.setup_log(filename + "_progress.log")
     parameters_list = [dataset, model, opti, noise, batch, layers, lambdas, rate]
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
     try:
-        database, mean, std, details, col = load_data(parameters[0], filepath)
+        database, details = load_data(parameters[0], filepath, extention)
     except tools.sqlman.sa.exc.OperationalError as oe:
-        logging.error(str(oe))
+        logging.exception(oe)
         try:
             table = tools.all_tables(filepath)
             print(dataset, "does not exists, try:")
             print(str(table))
         except Exception as e:
             print("file not found")
-            logging.error(str(e))
+            logging.exception(e)
         os.remove(filename + "_parameters.npy")
         return
     except Exception as e:
         print("Data could not be loaded propely see logs for more info")
-        logging.error(str(e))
+        logging.exception(e)
         return
     thegan, success = run(filename, epochs, parameters, successfully_loaded, database)
     fake = None
     if success:
-        fake = show_samples(
-            thegan,
-            mean,
-            std,
-            database,
-            int(parameters[4]),
-            sample,
-            filename,
-            col,
-            details,
+        fake = make_samples(
+            thegan, database, int(parameters[4]), sample, filename, details, extention
         )
     return thegan, fake
 
@@ -182,13 +176,16 @@ def input_float(question):
             return answer
 
 
-def load_data(sets, filepath):
+def load_data(sets, filepath, extention):
     """
     Loads a dataset from an sql table
     """
-    raw_data = tools.load_sql(filepath, sets)
-    database, mean, std, details, col = tools.procsses_sql(raw_data)
-    return database, mean, std, details, col
+    if extention == "db":
+        raw_data = tools.load_sql(filepath, sets)
+    else:
+        raw_data = tools.pd.read_csv(filepath)
+    database, details = tools.procsses_sql(raw_data)
+    return database, details
 
 
 def load_gan_weight(filepath, mygan):
@@ -222,23 +219,41 @@ def create_model(parameters, no_field):
     return mygan, batch, noise_dim
 
 
-def show_samples(mygan, mean, std, database, batch, samples, filepath, col, info):
+def make_samples(
+    mygan, database, batch, samples, filepath, details, extention, show=True
+):
     """
     Creates a number of samples
     """
+    database = tools.pd.DataFrame(database)
+    database = database.sample(batch)
+    mean, std, info, col = details
+    fullset = None
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        if s == 0:
+        if s == 0 and show:
             tools.calculate_fid(generated_data, database)
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
-        if s == 0:
+        print("unnorm complete gen")
+        if s == 0 and show:
             database = tools.unnormalize(database, mean, std)
             database.columns = col
-        tools.dagplot(generated_data, database, filepath + "_" + str(s))
+            print("unnorm complete org")
+        if show:
+            tools.dagplot(generated_data, database, filepath + "_" + str(s))
+            print("plot")
         values = tools.decoding(generated_data, info)
         print("sample", s)
-        tools.save_sql(values, filepath + ".db")
+        if s > 0:
+            fullset = tools.pd.merge(fullset, values, "outer")
+        else:
+            fullset = values
+    if extention == "db":
+        tools.save_sql(fullset, filepath + ".db")
+    else:
+        fullset.to_csv(filepath + "_synthetic.csv", index=False)
+    return fullset
 
 
 def save_parameters(parameters, filepath):
@@ -289,19 +304,19 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
         mygan, batch, noise_dim = create_model(parameters, no_field)
     except Exception as e:
         print("building failed, check you parameters")
-        os.remove(filepath + "_parameters.npy")
         logging.error("building failed due to" + str(e))
         return None, False
     if successfully_loaded:
         mygan = load_gan_weight(filepath, mygan)
     if epochs > 0:
         step = int(math.ceil(epochs * 0.001))
+        checkI = tools.pd.DataFrame(database)
+        checkII = checkI.isnull().sum().sum() > 0
         try:
-            mygan.train(database, batch, epochs, step)
+            mygan.train(database, batch, epochs, checkII, step)
         except Exception as e:
-            logging.error("training fail due to" + str(e))
+            logging.exception(e)
             print("training failed check you parameters")
-            os.remove(filepath + "_parameters.npy")
             return None, False
         else:
             mygan.save_model(filepath)
