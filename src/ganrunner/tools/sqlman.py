@@ -1,7 +1,8 @@
 import sqlalchemy as sa
 from .prepocessing import get_norm
 import pandas as pd
-from .categorical import encoding 
+from .categorical import encoding
+
 
 def load_sql(file, table):
     """
