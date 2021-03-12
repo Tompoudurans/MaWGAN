@@ -49,6 +49,12 @@ import os
     type=float,
     help="choose the learing rate of the model",
 )
+@click.option(
+    "--graph",
+    default=True,
+    type=bin,
+    help="compare sythetic and on a grath, not sutable for large dataset",
+)
 def main(
     dataset,
     filepath,
@@ -62,6 +68,7 @@ def main(
     core,
     sample,
     rate,
+    graph,
 ):
     """
     This code creates and trains a GAN.
@@ -99,7 +106,14 @@ def main(
     fake = None
     if success:
         fake = make_samples(
-            thegan, database, int(parameters[4]), sample, filename, details, extention
+            thegan,
+            database,
+            int(parameters[4]),
+            sample,
+            filename,
+            details,
+            extention,
+            graph,
         )
     return thegan, fake
 
@@ -231,8 +245,8 @@ def make_samples(
     fullset = None
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        if s == 0 and show:
-            tools.calculate_fid(generated_data, database)
+        if s == 0:
+            tools.calculate_fid(generated_data, database.sample(batch))
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
         print("unnorm complete gen")
