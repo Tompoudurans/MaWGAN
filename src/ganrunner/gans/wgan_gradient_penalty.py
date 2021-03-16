@@ -12,6 +12,9 @@ import os
 
 
 class wGANgp(object):
+    """
+    This makes a GAN network with 'number_of_layers' layers per network.
+    """
     def __init__(
         self,
         optimiser,
@@ -27,19 +30,28 @@ class wGANgp(object):
         self.z_dim = input_dim
         self.Make_Generator(number_of_layers)
         self.Make_Critic(number_of_layers)
-        # WGAN values from paper
         self.learning_rate = learning_rate
-        self.b1 = 0.5
-        self.b2 = 0.999
-
-        # WGAN_gradient penalty uses ADAM ------------------------ do somthing here
-        self.d_optimizer = optim.Adam(
-            self.Critic.parameters(), lr=self.learning_rate, betas=(self.b1, self.b2)
-        )
-        self.g_optimizer = optim.Adam(
-            self.Generator.parameters(), lr=self.learning_rate, betas=(self.b1, self.b2)
-        )
+        self.select_opti(optimiser)
         self.lambda_term = lambdas
+
+    def select_opti(self,opti):
+        """
+        attached am optimiser to the networks
+        """
+        if opti.lower() == "adam":
+            self.d_optimizer = optim.Adam(self.Critic.parameters(), lr=self.learning_rate)
+            self.g_optimizer = optim.Adam(self.Generator.parameters(), lr=self.learning_rate)
+        elif opti.lower() == "rmsprop":
+            self.d_optimizer = optim.RMSprop(self.Critic.parameters(), lr=self.learning_rate)
+            self.g_optimizer = optim.RMSprop(self.Generator.parameters(), lr=self.learning_rate)
+        elif opti.lower() == "sgd":
+            self.d_optimizer = optim.SGD(self.Critic.parameters(), lr=self.learning_rate)
+            self.g_optimizer = optim.SGD(self.Generator.parameters(), lr=self.learning_rate)
+        elif opti.lower() == "adadelta":
+            self.d_optimizer = optim.Adadelta(self.Critic.parameters(), lr=self.learning_rate)
+            self.g_optimizer = optim.Adadelta(self.Generator.parameters(), lr=self.learning_rate)
+        else:
+            raise ValueError("optimizer does not exist")
 
     def Make_Generator(self, number_of_layers):
         """
@@ -61,10 +73,6 @@ class wGANgp(object):
         self.Generator.add_module(
             str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.z_dim)
         )
-        # ------------------------------------------------------------------------------------------------------------------
-        # nn.ConvTranspose2d(in_channels=100, out_channels=1024, kernel_size=4, stride=1, padding=0),
-        # nn.BatchNorm2d(num_features=1024),
-        # nn.ReLU(True),
 
     def Make_Critic(self, number_of_layers):
         """

@@ -13,7 +13,7 @@ def encoding(data):
             data[new.columns] = new
             data = data.drop(columns=name)
             details.append([name, len(new.columns)])
-            count_o = +1
+            count_o = count_o + 1
     print("there are", count_o, "categorical data variables")
     return data, details
 
@@ -41,5 +41,5 @@ def decoding(data, details):
             data[details[current][0]] = restore
         current = current + 1
         position = end
-    # data = data.drop(columns=data.columns[range(start, col_len)])
+    data = data.drop(columns=data.columns[range(start, col_len)])
     return data
