@@ -245,16 +245,16 @@ def make_samples(
     fullset = None
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        tools.calculate_fid(generated_data, database.sample(batch))
+        tools.calculate_fid(generated_data, database)
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
         print("unnorm complete gen")
         if s == 0 and show:
-            database = tools.unnormalize(database, mean, std)
-            database.columns = col
+            unormdata = tools.unnormalize(database, mean, std)
+            unormdata.columns = col
             print("unnorm complete org")
         if show:
-            tools.dagplot(generated_data, database, filepath + "_" + str(s))
+            tools.dagplot(generated_data, unormdata, filepath + "_" + str(s))
             print("plot")
         values = tools.decoding(generated_data, info)
         print("sample", s)

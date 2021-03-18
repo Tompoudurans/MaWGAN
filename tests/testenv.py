@@ -2,8 +2,6 @@
 
 import ganrunner
 
-epochs = 12000
-
 
 def main(
     dataset,
@@ -48,23 +46,30 @@ def main(
             extention,
             False,
         )
-    return thegan, fake
+    return thegan, fake, details
 
-
-a, b = main(
-    None,
-    "missiris.csv",
-    epochs,
-    "wgangp",
-    "adam",
-    150,
-    150,
-    5,
-    10,
-    3,
-    0.0004,
-)
-full = ganrunner.tools.pd.read_csv("fulliris.csv")
-x = ganrunner.tools.get_norm(full)
-y = ganrunner.tools.get_norm(b)
-ganrunner.calculate_fid(x[0], y[0])
+def fid_run(batch,per):
+    epochs = 30000
+    a, b, c = main(
+        None,
+        "Kag.csv",
+        epochs,
+        "wgangp",
+        "adam",
+        batch,
+        batch,
+        5,
+        10,
+        4,
+        0.00001
+    )
+    full = ganrunner.tools.pd.read_csv("kag2.csv")
+    x = ganrunner.tools.get_norm(full)
+    original = ganrunner.tools.pd.DataFrame(x[0])
+    for i in range(20):
+        generated_data = ganrunner.tools.pd.DataFrame(a.create_fake(batch))
+        gendata = ganrunner.decoding(generated_data,c[2])
+        ganrunner.tools.calculate_fid(gendata, original.sample(batch))
+    return original, generated_data, c
+i=5
+gan,data,de = fid_run(250, str(i))
