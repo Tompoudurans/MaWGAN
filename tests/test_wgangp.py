@@ -12,11 +12,18 @@ import torch
 
 layers = 5
 nodes = 3
-data = 3
-batch_size = 3
-noise_vector = 3
+data = 5
+batch_size = 5
+noise_vector = 5
 lambdas = 1
-dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
+from random import randint
+data = []
+for i in range(10):
+    a = randint(200, 800)/100
+    b = randint(0, 10)/1
+    c = randint(50, 200)/10
+    data.append([a,b,c])
+dataset = numpy.array(data)
 testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
 
