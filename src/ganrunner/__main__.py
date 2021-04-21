@@ -89,7 +89,7 @@ def main(
         except Exception as e:
             print("file not found")
             logging.exception(e)
-        os.remove(filename + "_parameters.npy")
+        #os.remove(filename + "_parameters.npy")
         return
     except Exception as e:
         print("Data could not be loaded propely see logs for more info")

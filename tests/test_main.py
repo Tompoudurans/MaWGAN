@@ -29,7 +29,7 @@ def test_break_set():
         ]
     )
     assert status.returncode == 0
-    # os.remove("flight_parameters.npy")
+    os.remove("flight_parameters.npy")
 
 
 def test_break_bulid():

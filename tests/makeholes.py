@@ -10,6 +10,7 @@ import random
 import numpy
 
 def mkhol(percent,data):
+    data = pandas.DataFrame(data)
     x, y = data.shape
     count = 0
     aim = round(x * y * percent)
@@ -20,7 +21,7 @@ def mkhol(percent,data):
         count = data.isna().sum().sum()
         if count % 1000 == 0:
             print(count, "(", aim, ")/", x*y, sep="")
-    print(count, "(", aim, ")/", x * y," final", sep="")
+    return data
 
 def main():
     percent = 0.5

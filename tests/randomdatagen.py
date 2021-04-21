@@ -1,10 +1,25 @@
 # -*- coding: utf-8 -*-
-
+import torch
 from collections import namedtuple
 from random import uniform, randint
 import sqlalchemy as sa
 import pandas as pd
+from makeholes import mkhol
 
+def make_data(number,alt):
+    gendata = []
+    for i in range(number):
+        a = randint(200, 800)/100
+        b = randint(0, 10)/1
+        c = randint(50, 200)/10
+        gendata.append([a,b,c])
+    dataset = torch.tensor(gendata)
+    if alt:
+        hole = mkhol(0.2,gendata)
+        datahole = torch.tensor(hole.to_numpy())
+    else:
+        datahole = None
+    return datahole, dataset
 
 def generate_random_testing_data(size):
     """

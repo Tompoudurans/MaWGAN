@@ -9,23 +9,17 @@ import ganrunner
 import numpy
 import os
 import torch
+from randomdatagen import make_data
 
 layers = 5
 nodes = 3
-data = 5
-batch_size = 5
-noise_vector = 5
+data = 3
+batch_size = 3
+noise_vector = 3
 lambdas = 1
-from random import randint
-data = []
-for i in range(10):
-    a = randint(200, 800)/100
-    b = randint(0, 10)/1
-    c = randint(50, 200)/10
-    data.append([a,b,c])
-dataset = numpy.array(data)
-testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
+#dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
+testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
 
 def test_gan_training():
     """
@@ -34,10 +28,11 @@ def test_gan_training():
     and comparing the untrained sample and trained sample.
     The trained sample should provide a better result
     """
+    dis,dataset = make_data(3,False)
     noise = torch.randn(batch_size, noise_vector)
-    untrained_fake = testgan.Generator(noise).detach().numpy()
+    untrained_fake = testgan.Generator(noise)#.detach().numpy()
     testgan.train(dataset, batch_size, 20)
-    trained_fake = testgan.Generator(noise).detach().numpy()
+    trained_fake = testgan.Generator(noise)#.detach().numpy()
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
     assert any(untrained != trained)

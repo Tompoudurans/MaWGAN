@@ -35,7 +35,7 @@ def make_mask(data):
     make mask hidding missing data
     """
     binary_mask = data.isnan()
-    inverse_mask = tensor(binary_mask, dtype=int)
+    inverse_mask = torch.tensor(binary_mask, dtype=int)
     mask = 1 - inverse_mask
     return mask, binary_mask
 
