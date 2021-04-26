@@ -2,18 +2,25 @@ import torch
 import numpy
 
 def vardag(x):
+    #34.8 ms ± 1.53 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     li= []
     for i in x:
-         torch.var(x)
-         li.append(torch.var(i))
+         torch.var(x) # calulate the variance of the varible i
+         li.append(torch.var(i)) #append to a vector
     matrix = torch.tensor(li)
-    return matrix.diag()
+    return matrix.diag()# makes a diagonal matix with that vector
 
 def vardrag(x):
-    covmat = numpy.cov(x)
-    varvec = covmat.diagonal()
+    #4.54 ms ± 55.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    covmat = numpy.cov(x)# make covarince matrix
+    varvec = covmat.diagonal()#put diagonal values in a vector
     vartensor = torch.tensor(varvec)
-    return vartensor.diag()
+    vardiag = vartensor.diag()# makes a diagonal matix with that vector
+    return vardiag.float()
+
+def convert_item(item,sets):
+    leng = sets[0].shape[0]
+    return item.reshape(1,leng)
 
 def weighted_entopy(x,y):
     pass
@@ -21,14 +28,24 @@ def weighted_entopy(x,y):
     #mod = w*eucalian_distance(x-y)
     #return mod
 
-def mahalanobis_distance(x,y):
+def mahalanobis_distance(full,x,y):
     #D^2=(x-y)^T*V^-1*(x-y)
-    V=vardag(x)
+    V=vardrag(full)
     right=x-y # must be array or tensor
     mid=torch.inverse(V)
     left=right.T
-    mid_right = torch.mm(mid,right)
-    return torch.mm(left,mid_right)
+    return torch.mm(left,torch.mm(mid,right))
+
+def mutil_mahalanobis_distance(x,y):
+    #D^2=(x-y)^T*V^-1*(x-y)
+    V=vardrag(x.T)
+    mid=torch.inverse(V)
+    mutil_dis = []
+    for i in range(len(x)):
+        right=convert_item(x[i]-y[i],y)
+        left=right.T
+        mutil_dis.append(torch.mm(right,torch.mm(mid,left)))
+    return torch.cat(mutil_dis)
 
 def make_mask(data):
     """
