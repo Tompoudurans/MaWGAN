@@ -118,7 +118,7 @@ def setup(parameters_list):
     parameters = []
     questions = [
         "table? ",
-        "model? (gan)/(wgan)/(wgangp) ",
+        "model? (mdgan)/(wgangp) ",
         "opti? ",
         "noise size? ",
         "batch size? ",
@@ -206,15 +206,28 @@ def create_model(parameters, no_field):
     """
     lr = float(parameters[7])
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
-    mygan = gans.wGANgp(
-        optimiser="adam",
-        input_dim=no_field,
-        noise_size=noise_dim,
-        batch_size=batch,
-        number_of_layers=number_of_layers,
-        lambdas=float(parameters[6]),
-        learning_rate=lr,
-    )
+    if use_model = "mdgan":
+        mygan = gans.MDgan(
+            optimiser="adam",
+            input_dim=no_field,
+            noise_size=noise_dim,
+            batch_size=batch,
+            number_of_layers=number_of_layers,
+            lambdas=float(parameters[6]),
+            learning_rate=lr,
+        )
+    else if use_model = "wgangp":
+        mygan = gans.wGANgp(
+            optimiser="adam",
+            input_dim=no_field,
+            noise_size=noise_dim,
+            batch_size=batch,
+            number_of_layers=number_of_layers,
+            lambdas=float(parameters[6]),
+            learning_rate=lr,
+        )
+    else:
+        raise NameError("Model :" + use_model + " not reconised")
     mygan.summary()
     return mygan, batch, noise_dim
 

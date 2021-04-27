@@ -12,7 +12,7 @@ plt.switch_backend("agg")
 import os
 
 
-class wGANgp(object):
+class MDgan(object):
     def __init__(
         self,
         optimiser,
@@ -169,7 +169,8 @@ class wGANgp(object):
             g_loss = self.Critic(fake_images)
             g_loss = g_loss.mean()
             g_loss.backward(mone)
-            penalty2 = penaltyf(images,fake_images)
+            penalty2 = self.penaltyf(images,fake_images)
+            penalty2.backward()
             #----------------------------------------------------------------------------
             g_cost = - g_loss  + penalty2
             #g_cost = s_g_loss - o_g_loss + gradient_penalty + penalty2
@@ -180,6 +181,11 @@ class wGANgp(object):
                 )
             assert g_loss > 0 or g_loss < 0
             # Saving model and sampling images every 1000th generator iterations
+
+    def penaltyf(self,orginal,synthetic):
+        distance_list = mutil_mahalanobis_distance(orginal,synthetic)
+        # finish rest of funtion
+        return 
 
     def calculate_gradient_penalty(self, real_images, fake_images):
         """
