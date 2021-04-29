@@ -5,8 +5,7 @@ from torch.autograd import Variable
 from torch import autograd
 import time as t
 import matplotlib.pyplot as plt
-from .utlility import copy_format
-from .ads_add_on import mahalanobis_distance as penaltyf
+from .utlility import copy_format,mutil_mahalanobis_distance
 
 plt.switch_backend("agg")
 import os
@@ -167,13 +166,15 @@ class MDgan(object):
             z = Variable(torch.randn(self.batch_size, self.data_dim))
             fake_images = self.Generator(z)
             g_loss = self.Critic(fake_images)
+            penalty2 = self.penaltyf(images,fake_images)
+            g_loss = - g_loss + penalty2 # aply penalty before .mean() and .barckward
             g_loss = g_loss.mean()
             g_loss.backward(mone)
-            penalty2 = self.penaltyf(images,fake_images)
-            penalty2.backward()
-            #----------------------------------------------------------------------------
-            g_cost = - g_loss  + penalty2
+            #penalty2.backward()
+            #mmd = penalty2.mean()
+            #g_cost = - g_loss  + penalty2
             #g_cost = s_g_loss - o_g_loss + gradient_penalty + penalty2
+            g_cost = g_loss
             self.g_optimizer.step()
             if g_iter % print_every_n_batches == 0:
                 print(
@@ -185,7 +186,7 @@ class MDgan(object):
     def penaltyf(self,orginal,synthetic):
         distance_list = mutil_mahalanobis_distance(orginal,synthetic)
         # finish rest of funtion
-        return 
+        return
 
     def calculate_gradient_penalty(self, real_images, fake_images):
         """

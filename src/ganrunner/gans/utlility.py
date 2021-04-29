@@ -1,7 +1,7 @@
 import torch
 import numpy
 
-def vardag(x):
+def vardrag_with_list(x):
     #34.8 ms ± 1.53 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     li= []
     for i in x:
@@ -10,7 +10,7 @@ def vardag(x):
     matrix = torch.tensor(li)
     return matrix.diag()# makes a diagonal matix with that vector
 
-def vardrag(x):
+def vardrag_with_cov(x):
     #4.54 ms ± 55.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
     covmat = numpy.cov(x)# make covarince matrix
     varvec = covmat.diagonal()#put diagonal values in a vector
@@ -30,7 +30,7 @@ def weighted_entopy(x,y):
 
 def mahalanobis_distance(full,x,y):
     #D^2=(x-y)^T*V^-1*(x-y)
-    V=vardrag(full)
+    V=vardrag_with_cov(full)
     right=x-y # must be array or tensor
     mid=torch.inverse(V)
     left=right.T
@@ -38,7 +38,7 @@ def mahalanobis_distance(full,x,y):
 
 def mutil_mahalanobis_distance(x,y):
     #D^2=(x-y)^T*V^-1*(x-y)
-    V=vardrag(x.T)
+    V=vardrag_with_cov(x.T)
     mid=torch.inverse(V)
     mutil_dis = []
     for i in range(len(x)):

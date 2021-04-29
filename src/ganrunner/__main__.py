@@ -206,7 +206,7 @@ def create_model(parameters, no_field):
     """
     lr = float(parameters[7])
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
-    if use_model = "mdgan":
+    if use_model == "mdgan":
         mygan = gans.MDgan(
             optimiser="adam",
             input_dim=no_field,
@@ -216,7 +216,7 @@ def create_model(parameters, no_field):
             lambdas=float(parameters[6]),
             learning_rate=lr,
         )
-    else if use_model = "wgangp":
+    elif use_model == "wgangp":
         mygan = gans.wGANgp(
             optimiser="adam",
             input_dim=no_field,
