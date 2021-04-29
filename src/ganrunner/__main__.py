@@ -245,7 +245,7 @@ def make_samples(
     fullset = None
     for s in range(int(samples)):
         generated_data = mygan.create_fake(batch)
-        if s == 0:
+        if s == 0 and show:
             tools.calculate_fid(generated_data, database.sample(batch))
         generated_data = tools.unnormalize(generated_data, mean, std)
         generated_data.columns = col
