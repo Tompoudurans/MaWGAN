@@ -71,3 +71,14 @@ filepath and epochs are maninitory, put the epochs to 0 to just read the the mod
   --sample    choose the number of generated data you want:(samples*batch)
 
   --rate     choose the learning rate of the model
+
+  --graph    compare synthetic and on a graph, not suitable for large dataset"
+
+examples:
+.db file without data missing, and displaying a compare graph
+
+  $ python -m ganrunner --model=wgangp --filepath=iris.db --opti=adam --noise=100 --batch=100 --layers=5 --epochs=1000 --dataset=all --rate=0.0001 --lambdas=10 --sample=3 --graph=True
+
+.csv file with data missing
+
+  $ python -m ganrunner --model=wgangp --filepath=10_Deprivation_percent.csv --opti=adam --noise=300 --batch=300 --layers=5 --epochs=1000 --rate=0.0001 --lambdas=10 --sample=2 --graph=False
