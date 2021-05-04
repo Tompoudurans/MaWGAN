@@ -21,6 +21,6 @@ while count < aim:
     data.iloc[row, col] = numpy.nan
     count = data.isna().sum().sum()
     if count % 1000 == 0:
-        print(count, "(", aim, ")/", x*y, sep="")
-print(count, "(", aim, ")/", x * y," final", sep="")
+        print(count, "(", aim, ")/", x * y, sep="")
+print(count, "(", aim, ")/", x * y, " final", sep="")
 data.to_csv(str(int(percent * 100)) + "_letter_percent_.csv", index=False)
