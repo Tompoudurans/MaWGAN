@@ -323,7 +323,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
     if successfully_loaded:
         mygan = load_gan_weight(filepath, mygan)
     if epochs > 0:
-        step = int(math.ceil(epochs * 0.001))
+        step = int(math.ceil(epochs * 0.1))
         checkI = tools.pd.DataFrame(database)
         checkII = checkI.isnull().sum().sum() > 0
         try:
