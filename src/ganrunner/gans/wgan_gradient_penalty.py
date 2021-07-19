@@ -233,7 +233,7 @@ class wGANgp(object):
             self.g_optimizer.step()
             if g_iter % print_every_n_batches == 0:
                 print(
-                    f"iteration: {g_iter}/{epochs}, g_loss: {g_loss}, loss_fake: {d_loss_fake}, loss_real: {d_loss_real}"
+                    f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
                 )
             assert g_loss > 0 or g_loss < 0
         self.Critic = self.Critic.cpu()
