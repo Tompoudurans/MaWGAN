@@ -84,18 +84,13 @@ def poolrun(dataname,batch):
     p.join()
     return result
 
-def dummyfunc(block):
-    per,dataname,batch = block
-    return [per*batch,per+2,per,batch]
-    print(dataname)
-
 def singal(dataname,batch):
     set = []
     for i in range(6):
         set.append(fid_run([i,dataname,batch]))
     return set
 
-def one(dataname,muti,batch):
+def one_dataset(dataname,muti,batch):
     if muti:
         fidata = poolrun(dataname,batch)
     else:
@@ -104,13 +99,5 @@ def one(dataname,muti,batch):
     frame.to_csv("fids" + dataname)
 
 if __name__ == '__main__':
-    alls = False
     muti = True
-    datanames = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
-    if alls:
-        batch = 100
-        for dn in datanames:
-            one(dn,muti,batch)
-            batch = batch + 100
-    else:
-        one(datanames[1],muti,200)
+        one_dataset(datanames[1],muti,200)
