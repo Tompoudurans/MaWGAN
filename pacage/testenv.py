@@ -49,11 +49,11 @@ def main(
     return thegan, fake, details
 
 def fid_run(block):
-    per,dataname,batch = block
+    per,dataname,batch,folder = block
     epochs = 20000
     a, b, c= main(
         None,
-        str(per) + "0" + dataname,
+        folder + str(per) + "0" + dataname,
         epochs,
         "wgangp",
         "adam",
@@ -74,30 +74,31 @@ def fid_run(block):
         fids.append(ganrunner.tools.calculate_fid(gendata, original.sample(batch)))
     return fids
 
-def poolrun(dataname,batch):
+def poolrun(dataname,batch,folder):
     block = []
     for i in range(6):
-        block.append([i,dataname,batch])
-    p = mpg.Pool(6)
+        block.append([i,dataname,batch,folder])
+    p = mpg.Pool(processes=6)#--------------------------------------------------------------------------?
     result = p.map(fid_run,block)
     p.close()
     p.join()
     return result
 
-def singal(dataname,batch):
+def singal(dataname,batch,folder):
     set = []
     for i in range(6):
-        set.append(fid_run([i,dataname,batch]))
+        set.append(fid_run([i,dataname,batch,folder]))
     return set
 
-def one_dataset(dataname,muti,batch):
+def one_dataset(dataname,muti,batch,folder):
     if muti:
-        fidata = poolrun(dataname,batch)
+        fidata = poolrun(dataname,batch,folder)
     else:
-        fidata = singal(dataname,batch)
+        fidata = singal(dataname,batch,folder)
     frame = ganrunner.tools.pd.DataFrame(fidata)
-    frame.to_csv("fids" + dataname)
+    frame.to_csv(folder + "fids" + dataname)
 
 if __name__ == '__main__':
+    datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
     muti = True
-        one_dataset(datanames[1],muti,200)
+    one_dataset(datanames[2],muti,300,"./")

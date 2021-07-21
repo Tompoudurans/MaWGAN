@@ -10,9 +10,9 @@ import random
 import numpy
 
 def mkhole(block):
-    i,file = block
+    i,file,folder = block
     percent = i/10
-    data = pandas.read_csv(00 + file)
+    data = pandas.read_csv("00" + file)
     x, y = data.shape
     count = 0
     aim = round(x * y * percent)
@@ -24,4 +24,4 @@ def mkhole(block):
         if count % 1000 == 0:
             print(count, "(", aim, ")/", x*y, sep="")
     print(count, "(", aim, ")/", x * y," final", sep="")
-    data.to_csv(str(int(percent * 100)) + file, index=False)
+    data.to_csv(folder + str(int(percent * 100)) + file, index=False)
