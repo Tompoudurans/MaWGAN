@@ -2,6 +2,7 @@
 
 import ganrunner
 import multiprocessing as mpg
+import time
 
 def main(
     dataset,
@@ -31,9 +32,11 @@ def main(
     )
     epochs = int(epochs)
     database, details = ganrunner.load_data(parameters[0], filepath, extention)
+    beg = time.time()
     thegan, success = ganrunner.run(
         filename, epochs, parameters, successfully_loaded, database
     )
+    print("time",time.time() - beg)
     fake = None
     if success:
         fake = ganrunner.make_samples(
@@ -99,6 +102,6 @@ def one_dataset(dataname,muti,batch,folder):
     frame.to_csv(folder + "fids" + dataname)
 
 if __name__ == '__main__':
-    datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
-    muti = True
-    one_dataset(datanames[2],muti,300,"./")
+    datanames = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
+    muti = False #True
+    one_dataset(datanames[1],muti,200,"set4/")
