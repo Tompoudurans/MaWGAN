@@ -1,49 +1,42 @@
 from makeholes import mkhole
-from testenv import one_dataset
+#from testenv import one_dataset
 import multiprocessing as mpg
 import subprocess
 
 def poolhole(dataset,folder):
     block = []
-    for i in range(1,6):
-        block.append([i,dataset,folder])
+    for i in dataset:
+        block.append([i,folder])
     p = mpg.Pool(processes=6)
     p.map(mkhole,block)
     p.close()
     p.join()
 
-def nonmutihole(dataset,folder):
-    for i in range(1,6):
-        block = [i,dataset,folder]
+def nonmutihole(datanames,folder):
+    for dataset in datanames:
+        block = [dataset,folder]
         mkhole(block)
 
-def one_exp(folder,datanames,muti,use_pools_for_making_holes):
-    batch = 100
-    for dn in datanames:
-        if use_multiprocessing_for_making_holes:
-            poolhole(dn,folder)
-        else:
-            nonmutihole(dn,folder)
-        one_dataset(dn,muti,batch,folder)
-        batch = batch + 100
+def one_exp(folder,datanames,use_pools_for_making_holes):
+    if use_pools_for_making_holes:
+        poolhole(datanames,folder)
+    else:
+        nonmutihole(datanames,folder)
 
-def folderman(folder,datanames):
-    subprocess.run(["mkdir",folder])
-    for dn in datanames:
-        subprocess.run(["cp","00" + dn,folder])
 
 if __name__ == '__main__':
     folder = input("folder? ")
-    gmutiop = input("use muti for gan? 0/1")
-    hmutiop = input("use muti for holes? 0/1")
-    if hmutiop == "1":
-        hmuti = True
+    mutiop = input("use muti? 0/1")
+    holegan = input("gan/holes?")
+    if mutiop == "1":
+        muti = True
     else:
-        hmuti = False
-    if gmutiop == "1":
-        gmuti = True
-    else:
-        gmuti = False
+        muti = False
     datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
-    folderman(folder,datasets)
-    one_exp(folder,datasets,gmuti,hmuti)
+    if holegan == "gan":
+        batch = 100
+        one_dataset(dn,gmuti,batch,folder)
+    elif holegan == "hole":
+        one_exp(folder,datasets,muti)
+    else:
+        pass
