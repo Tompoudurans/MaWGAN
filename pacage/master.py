@@ -17,12 +17,15 @@ def nonmutihole(datanames,folder):
         block = [dataset,folder]
         mkhole(block)
 
-def one_exp(folder,datanames,use_pools_for_making_holes):
+def one_mkhole(folder,datanames,use_pools_for_making_holes):
     if use_pools_for_making_holes:
         poolhole(datanames,folder)
     else:
         nonmutihole(datanames,folder)
 
+def one_exp(folder,datasets,muti):
+    for i in datasets:
+            one_dataset(i,muti,i*100,folder)
 
 if __name__ == '__main__':
     folder = input("folder? ")
@@ -34,9 +37,8 @@ if __name__ == '__main__':
         muti = False
     datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
     if holegan == "gan":
-        batch = 100
-        one_dataset(dn,gmuti,batch,folder)
-    elif holegan == "hole":
         one_exp(folder,datasets,muti)
+    elif holegan == "hole":
+        one_mkhole(folder,datasets,muti)
     else:
         pass

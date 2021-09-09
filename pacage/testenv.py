@@ -53,7 +53,7 @@ def main(
 
 def fid_run(block):
     per,dataname,batch,folder = block
-    epochs = 20000
+    epochs = 12000
     a, b, c= main(
         None,
         folder + str(per) + "0" + dataname,
@@ -65,7 +65,7 @@ def fid_run(block):
         5,
         10,
         1,
-        0.0004,
+        0.0001,
     )
     full = ganrunner.tools.pd.read_csv("00" + dataname)
     x = ganrunner.tools.get_norm(full)
