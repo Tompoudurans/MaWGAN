@@ -1,5 +1,6 @@
 from makeholes import mkhole
-#from testenv import one_dataset
+from testenv import one_dataset
+from grapher import set_graph
 import multiprocessing as mpg
 import subprocess
 
@@ -17,28 +18,36 @@ def nonmutihole(datanames,folder):
         block = [dataset,folder]
         mkhole(block)
 
-def one_mkhole(folder,datanames,use_pools_for_making_holes):
+def set_mkhole(folder,datanames,use_pools_for_making_holes):
     if use_pools_for_making_holes:
         poolhole(datanames,folder)
     else:
         nonmutihole(datanames,folder)
 
-def one_exp(folder,datasets,muti):
+def set_exp(folder,datasets,muti):
+    batch = 300
     for i in datasets:
-            one_dataset(i,muti,i*100,folder)
+        one_dataset(i,muti,batch,folder)
+        #batch = batch + 100
 
-if __name__ == '__main__':
+def chose(dataset):
     folder = input("folder? ")
     mutiop = input("use muti? 0/1")
-    holegan = input("gan/holes?")
+    op = input("gan/holes/grath")
     if mutiop == "1":
         muti = True
     else:
         muti = False
-    datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
-    if holegan == "gan":
-        one_exp(folder,datasets,muti)
-    elif holegan == "hole":
-        one_mkhole(folder,datasets,muti)
+    if op == "gan":
+        set_exp(folder,datasets,muti)
+    elif op == "hole":
+        set_mkhole(folder,datasets,muti)
+    elif op == "grath":
+        set_graph(folder,datasets)
     else:
         pass
+
+if __name__ == '__main__':
+    datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
+    #set_graph("set2(bigger_fid)/",datasets)
+    set_exp("set3moretrainfrom2/",datasets,False)

@@ -14,13 +14,12 @@ def main(
     batch,
     layers,
     lambdas,
-    sample,
     rate,
 ):
     """
+    this is a custom made "main" funtion copied from src folder it does not have "core" or "samples"
     This code creates and trains a GAN.
     Core elements of this code are sourced directly from the David Foster book 'Deep generative models' and have been modified to work with a numeric database such as the iris datasets taken from the library 'sklearn'.
-    Soon this GAN should work on the DCWW dataset.
     """
     filename, extention = filepath.split(".")
     if extention == "csv":
@@ -38,44 +37,32 @@ def main(
     )
     print("time",time.time() - beg)
     fake = None
-    if success:
-        fake = ganrunner.make_samples(
-            thegan,
-            database,
-            int(parameters[4]),
-            sample,
-            filename,
-            details,
-            extention,
-            False,
-        )
     return thegan, fake, details
 
 def fid_run(block):
+    """
+    run ingore-gan from specified dataset
+    pramters as given in a list fromat
+    this uses a custom made main fuction def above rather that the one in src
+    """
     per,dataname,batch,folder = block
-    epochs = 12000
+    epochs = 15000
+    print(per,"0% ------------------------------------------------------")
     a, b, c= main(
         None,
         folder + str(per) + "0" + dataname,
         epochs,
         "wgangp",
         "adam",
-        batch,
-        batch,
-        5,
-        10,
-        1,
-        0.0001,
+        batch,#noise_size
+        batch,#batch_size
+        5,#number_of_layers
+        10,#lambdas
+        0.0001,#learnig rate
     )
-    full = ganrunner.tools.pd.read_csv("00" + dataname)
+    full = ganrunner.tools.pd.read_csv(folder + "00" + dataname)
     x = ganrunner.tools.get_norm(full)
     original = ganrunner.tools.pd.DataFrame(x[0])
-    fids = []
-    for i in range(20):
-        generated_data = ganrunner.tools.pd.DataFrame(a.create_fake(batch))
-        gendata = ganrunner.decoding(generated_data,c[2])
-        fids.append(ganrunner.tools.calculate_fid(gendata, original.sample(batch)))
-    return fids
 
 def poolrun(dataname,batch,folder):
     block = []
@@ -90,8 +77,10 @@ def poolrun(dataname,batch,folder):
 def singal(dataname,batch,folder):
     set = []
     for i in range(6):
-        set.append(fid_run([i,dataname,batch,folder]))
-    return set
+        if i == 0 and dataname == "_percent_iris.csv":
+            pass
+        else:
+            fid_run([i,dataname,batch,folder])
 
 def one_dataset(dataname,muti,batch,folder):
     if muti:
