@@ -48,18 +48,18 @@ class wGANgp(object):
         """
         self.Generator = nn.Sequential()
         self.Generator.add_module(
-            str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
+            str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, self.net_dim)
         )
-        self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+        #self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
             self.Generator.add_module(
-                str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
+                str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, self.net_dim)
             )
-            self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+            #self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
             number_of_layers -= 1
         self.Generator.add_module(
-            str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.z_dim)
+            str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, self.z_dim)
         )
         # ------------------------------------------------------------------------------------------------------------------
         # nn.ConvTranspose2d(in_channels=100, out_channels=1024, kernel_size=4, stride=1, padding=0),
@@ -73,18 +73,18 @@ class wGANgp(object):
         """
         self.Critic = nn.Sequential()
         self.Critic.add_module(
-            str(number_of_layers) + "layer", nn.GRUCell(self.z_dim, self.net_dim)
+            str(number_of_layers) + "layer", nn.LSTMCell(self.z_dim, self.net_dim)
         )
-        self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
+        #self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
             self.Critic.add_module(
-                str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
+                str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, self.net_dim)
             )
-            self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
+            #self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
             number_of_layers -= 1
         self.Critic.add_module(
-            str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, 1)
+            str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, 1)
         )
 
     def create_fake(self, batch_size):
