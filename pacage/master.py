@@ -48,6 +48,6 @@ def chose(dataset):
         pass
 
 if __name__ == '__main__':
-    datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
+    datasets = ["_Deprivation_percent.csv"] #["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
     #set_graph("set2(bigger_fid)/",datasets)
     set_exp("set3moretrainfrom2/",datasets,False)
