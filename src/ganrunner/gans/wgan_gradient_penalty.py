@@ -23,6 +23,10 @@ class wGANgp(object):
         learning_rate,
         network
     ):
+        if network == "wgangp":
+            network = "linear"
+            print("old model")
+            # backward comblilty with old models
         self.net_dim = noise_size
         self.data_dim = noise_size
         self.z_dim = input_dim
