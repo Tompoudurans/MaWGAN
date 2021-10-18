@@ -224,7 +224,7 @@ def create_model(parameters, no_field):
         number_of_layers=number_of_layers,
         lambdas=float(parameters[6]),
         learning_rate=lr,
-        network=use_model
+        network=use_model,
     )
     mygan.summary()
     return mygan, batch, noise_dim

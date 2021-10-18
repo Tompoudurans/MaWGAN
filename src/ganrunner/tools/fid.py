@@ -19,5 +19,5 @@ def calculate_fid(act1, act2):
         covmean = covmean.real
     # calculate score
     fid = ssdiff + np.trace(sigma1 + sigma2 - covmean)
-   # print("FID:", fid)
+    # print("FID:", fid)
     return fid
