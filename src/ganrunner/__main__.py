@@ -132,7 +132,7 @@ def setup(parameters_list):
     parameters = []
     questions = [
         "table? ",
-        "model? (gan)/(wgan)/(wgangp) ",
+        "model? (linear/RNN/LSNM/GRU/GRUI)",
         "opti? ",
         "noise size? ",
         "batch size? ",
@@ -151,10 +151,6 @@ def setup(parameters_list):
             else:
                 param = input_float(questions[q])
         parameters.append(param)
-        if (q == 5) and (parameters[1] == "gan"):
-            break
-        if (q == 6) and (parameters[1] == "wgan"):
-            break
     return parameters
 
 
@@ -228,6 +224,7 @@ def create_model(parameters, no_field):
         number_of_layers=number_of_layers,
         lambdas=float(parameters[6]),
         learning_rate=lr,
+        network=use_model
     )
     mygan.summary()
     return mygan, batch, noise_dim

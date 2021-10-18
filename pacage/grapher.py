@@ -15,7 +15,8 @@ def load_dataset(dataset):
 
 
 def make_box(data,place):
-    mp.boxplot(data)
+    mp.boxplot(data,labels=["10%","20%","30%","40%","50%","60%","70%","80%","90%"])
+    mp.ylim(0,1)
     mp.savefig(place + ".pdf")
     mp.clf()
 
@@ -26,4 +27,4 @@ def one_grath(filepath):
 
 def set_graph(folder,datasets):
     for file in datasets:
-        one_grath(folder + "fids" + file)
+        one_grath(folder + "ls" + file)

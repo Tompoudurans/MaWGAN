@@ -52,7 +52,7 @@ def fid_run(block):
         None,
         folder + str(per) + "0" + dataname,
         epochs,
-        "wgangp",
+        "linear",
         "adam",
         batch,#noise_size
         batch,#batch_size

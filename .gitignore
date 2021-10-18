@@ -11,3 +11,6 @@ src/ganrunner.egg-info
 *.html
 *.pkl
 *.xlsx
+*.txt
+*ipynb*
+*.ods

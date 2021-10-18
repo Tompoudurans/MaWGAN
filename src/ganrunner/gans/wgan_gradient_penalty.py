@@ -21,12 +21,13 @@ class wGANgp(object):
         number_of_layers,
         lambdas,
         learning_rate,
+        network
     ):
         self.net_dim = noise_size
         self.data_dim = noise_size
         self.z_dim = input_dim
-        self.Make_Generator(number_of_layers)
-        self.Make_Critic(number_of_layers)
+        self.Make_Generator(number_of_layers,network)
+        self.Make_Critic(number_of_layers,network)
         # WGAN values from paper
         self.learning_rate = learning_rate
         self.b1 = 0.5
@@ -41,22 +42,38 @@ class wGANgp(object):
         )
         self.lambda_term = lambdas
 
-    def Make_Generator(self, number_of_layers):
+    def Make_Generator(self, number_of_layers,network):
         """
         This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
         """
+        network = network.lower()
         self.Generator = nn.Sequential()
         self.Generator.add_module(
             str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
         )
-        #self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+        self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
-            self.Generator.add_module(
-                str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
-            )
-            #self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+            if network == "linear":
+                self.Generator.add_module(
+                    str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
+                )
+                self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+            elif network == "rnn":
+                self.Generator.add_module(
+                    str(number_of_layers) + "layer", nn.RNNCell(self.net_dim, self.net_dim)
+                )
+            elif network == "lstm":
+                self.Generator.add_module(
+                    str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, self.net_dim)
+                )
+            elif network == "gru":
+                self.Generator.add_module(
+                    str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
+                )
+            else:
+                raise ValueError "network type not found"
             number_of_layers -= 1
         self.Generator.add_module(
             str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.z_dim)
@@ -75,14 +92,28 @@ class wGANgp(object):
         self.Critic.add_module(
             str(number_of_layers) + "layer", nn.Linear(self.z_dim, self.net_dim)
         )
-        #self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
+        self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
-            self.Critic.add_module(
-                str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
-            )
-            #self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
-            number_of_layers -= 1
+            if network == "linear":
+                self.Critic.add_module(
+                    str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
+                )
+                self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
+            elif network == "rnn":
+                self.Critic.add_module(
+                    str(number_of_layers) + "layer", nn.RNNCell(self.net_dim, self.net_dim)
+                )
+            elif network == "lstm":
+                self.Critic.add_module(
+                    str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, self.net_dim)
+                )
+            elif network == "gru":
+                self.Critic.add_module(
+                    str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
+                )
+            else:
+                raise ValueError "network type not found"
         self.Critic.add_module(
             str(number_of_layers) + "layer", nn.Linear(self.net_dim, 1)
         )
