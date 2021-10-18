@@ -50,72 +50,74 @@ class wGANgp(object):
         network = network.lower()
         self.Generator = nn.Sequential()
         self.Generator.add_module(
-            str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
+            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.net_dim)
         )
         self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
             if network == "linear":
                 self.Generator.add_module(
-                    str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
+                    str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.net_dim)
                 )
                 self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
             elif network == "rnn":
                 self.Generator.add_module(
-                    str(number_of_layers) + "layer", nn.RNNCell(self.net_dim, self.net_dim)
+                    str(number_of_layers) + "Glayer", nn.RNNCell(self.net_dim, self.net_dim)
                 )
             elif network == "lstm":
                 self.Generator.add_module(
-                    str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, self.net_dim)
+                    str(number_of_layers) + "Glayer", nn.LSTMCell(self.net_dim, self.net_dim)
                 )
             elif network == "gru":
                 self.Generator.add_module(
-                    str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
+                    str(number_of_layers) + "Glayer", nn.GRUCell(self.net_dim, self.net_dim)
                 )
             else:
-                raise ValueError "network type not found"
+                raise ValueError("network type not found")
             number_of_layers -= 1
         self.Generator.add_module(
-            str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.z_dim)
+            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.z_dim)
         )
         # ------------------------------------------------------------------------------------------------------------------
         # nn.ConvTranspose2d(in_channels=100, out_channels=1024, kernel_size=4, stride=1, padding=0),
         # nn.BatchNorm2d(num_features=1024),
         # nn.ReLU(True),
 
-    def Make_Critic(self, number_of_layers):
+    def Make_Critic(self, number_of_layers,network):
         """
         This makes a critic network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
         """
+        network = network.lower()
         self.Critic = nn.Sequential()
         self.Critic.add_module(
-            str(number_of_layers) + "layer", nn.Linear(self.z_dim, self.net_dim)
+            str(number_of_layers) + "Clayer", nn.Linear(self.z_dim, self.net_dim)
         )
         self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
             if network == "linear":
                 self.Critic.add_module(
-                    str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
+                    str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, self.net_dim)
                 )
                 self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
             elif network == "rnn":
                 self.Critic.add_module(
-                    str(number_of_layers) + "layer", nn.RNNCell(self.net_dim, self.net_dim)
+                    str(number_of_layers) + "Clayer", nn.RNNCell(self.net_dim, self.net_dim)
                 )
             elif network == "lstm":
                 self.Critic.add_module(
-                    str(number_of_layers) + "layer", nn.LSTMCell(self.net_dim, self.net_dim)
+                    str(number_of_layers) + "Clayer", nn.LSTMCell(self.net_dim, self.net_dim)
                 )
             elif network == "gru":
                 self.Critic.add_module(
-                    str(number_of_layers) + "layer", nn.GRUCell(self.net_dim, self.net_dim)
+                    str(number_of_layers) + "Clayer", nn.GRUCell(self.net_dim, self.net_dim)
                 )
             else:
-                raise ValueError "network type not found"
+                raise ValueError("network type not found")
+            number_of_layers -= 1
         self.Critic.add_module(
-            str(number_of_layers) + "layer", nn.Linear(self.net_dim, 1)
+            str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
         )
 
     def create_fake(self, batch_size):
