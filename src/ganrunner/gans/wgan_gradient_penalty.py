@@ -22,6 +22,7 @@ class wGANgp(object):
         lambdas,
         learning_rate,
         network,
+        usegpu=False,
     ):
         if network == "wgangp":
             self.network = "linear"
@@ -38,6 +39,7 @@ class wGANgp(object):
         self.learning_rate = learning_rate
         self.b1 = 0.5
         self.b2 = 0.999
+        self.usegpu = usegpu
 
         # WGAN_gradient penalty uses ADAM ------------------------ do somthing here
         self.d_optimizer = optim.Adam(
@@ -147,7 +149,7 @@ class wGANgp(object):
         index = range(start_loc, start_loc + self.batch_size)
         return data[index]
 
-    def sample_type(self,data):
+    def sample_type(self, data):
         if self.network == "linear":
             sample = self.pick_sample(data)
         else:
@@ -169,6 +171,9 @@ class wGANgp(object):
         the dataset x_train which has a length of batch_size.
         It will print and record the loss of the generator and critic every_n_batches.
         """
+        if self.usegpu:
+            self.Critic = self.Critic.cuda()
+            self.Generator = self.Generator.cuda()
         if hasmissing:
             print("missing data mode on")
         self.batch_size = batch_size
@@ -185,16 +190,18 @@ class wGANgp(object):
             # Train Dicriminator forward-loss-backward-update n_critic times while 1 Generator forward-loss-backward-update
             for d_iter in range(n_critic):
                 self.Critic.zero_grad()
-                # ---------------------------------------------------sample is usless at least not random
                 sample = self.sample_type(data_tensor)
                 images = Variable(sample)
                 # Train discriminator
                 z = Variable(torch.randn(self.batch_size, self.data_dim))
-                fake_images = self.Generator(z)
-
+                if self.usegpu:
+                    fake_images = self.Generator(z.cuda())
+                else:
+                    fake_images = self.Generator(z)
                 if hasmissing:
                     images, fake_images = copy_format(images, fake_images)
-
+                if self.usegpu:
+                    images = images.cuda()
                 # Train with real images
                 d_loss_real = self.Critic(images)
                 d_loss_real = d_loss_real.mean()
@@ -205,7 +212,6 @@ class wGANgp(object):
                 d_loss_fake = self.Critic(fake_images)
                 d_loss_fake = d_loss_fake.mean()
                 d_loss_fake.backward(one)
-
                 # Train with gradient penalty
                 gradient_penalty = self.calculate_gradient_penalty(
                     images.data, fake_images.data
@@ -223,7 +229,10 @@ class wGANgp(object):
             # train generator
             # compute loss with fake images
             z = Variable(torch.randn(self.batch_size, self.data_dim))
-            fake_images = self.Generator(z)
+            if self.usegpu:
+                fake_images = self.Generator(z.cuda())
+            else:
+                fake_images = self.Generator(z)
             g_loss = self.Critic(fake_images)
             g_loss = g_loss.mean()
             g_loss.backward(mone)
@@ -231,34 +240,43 @@ class wGANgp(object):
             self.g_optimizer.step()
             if g_iter % print_every_n_batches == 0:
                 print(
-                    f"iteration: {g_iter}/{epochs}, g_loss: {g_loss}, loss_fake: {d_loss_fake}, loss_real: {d_loss_real}"
+                    f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
                 )
             assert g_loss > 0 or g_loss < 0
-            # Saving model and sampling images every 1000th generator iterations
+        self.Critic = self.Critic.cpu()
+        self.Generator = self.Generator.cpu()
+        # Saving model and sampling images every 1000th generator iterations
 
     def calculate_gradient_penalty(self, real_images, fake_images):
         """
         Computes gradient penalty based on prediction and weighted real / fake samples
         """
         eta = torch.FloatTensor(self.batch_size, 1).uniform_(0, 1)
+        if self.usegpu:
+            eta = eta.cuda()
         eta = eta.expand(self.batch_size, real_images.size(1))
         interpolated = eta * real_images + ((1 - eta) * fake_images)
-
         # define it to calculate gradient
         interpolated = Variable(interpolated, requires_grad=True)
-
         # calculate probability of interpolated examples
         prob_interpolated = self.Critic(interpolated)
-
         # calculate gradients of probabilities with respect to examples
-        gradients = autograd.grad(
-            outputs=prob_interpolated,
-            inputs=interpolated,
-            grad_outputs=torch.ones(prob_interpolated.size()),
-            create_graph=True,
-            retain_graph=True,
-        )[0]
-
+        if self.usegpu:
+            gradients = autograd.grad(
+                outputs=prob_interpolated,
+                inputs=interpolated,
+                grad_outputs=torch.ones(prob_interpolated.size()).cuda(),
+                create_graph=True,
+                retain_graph=True,
+            )[0]
+        else:
+            gradients = autograd.grad(
+                outputs=prob_interpolated,
+                inputs=interpolated,
+                grad_outputs=torch.ones(prob_interpolated.size()),
+                create_graph=True,
+                retain_graph=True,
+            )[0]
         grad_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * self.lambda_term
         return grad_penalty
 
