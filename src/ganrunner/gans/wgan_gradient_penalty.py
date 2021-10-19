@@ -21,7 +21,14 @@ class wGANgp(object):
         number_of_layers,
         lambdas,
         learning_rate,
+        network,
     ):
+        if network == "wgangp":
+            self.network = "linear"
+            print("old model")
+            # backward comblilty with old models
+        else:
+            self.network = network.lower()
         self.net_dim = noise_size
         self.data_dim = noise_size
         self.z_dim = input_dim
@@ -48,18 +55,37 @@ class wGANgp(object):
         """
         self.Generator = nn.Sequential()
         self.Generator.add_module(
-            str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
+            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.net_dim)
         )
         self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
-            self.Generator.add_module(
-                str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
-            )
-            self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+            if self.network == "linear":
+                self.Generator.add_module(
+                    str(number_of_layers) + "Glayer",
+                    nn.Linear(self.net_dim, self.net_dim),
+                )
+                self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+            elif self.network == "rnn":
+                self.Generator.add_module(
+                    str(number_of_layers) + "Glayer",
+                    nn.RNNCell(self.net_dim, self.net_dim),
+                )
+            elif self.network == "lstm":
+                self.Generator.add_module(
+                    str(number_of_layers) + "Glayer",
+                    nn.LSTMCell(self.net_dim, self.net_dim),
+                )
+            elif self.network == "gru":
+                self.Generator.add_module(
+                    str(number_of_layers) + "Glayer",
+                    nn.GRUCell(self.net_dim, self.net_dim),
+                )
+            else:
+                raise ValueError("network type not found")
             number_of_layers -= 1
         self.Generator.add_module(
-            str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.z_dim)
+            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.z_dim)
         )
         # ------------------------------------------------------------------------------------------------------------------
         # nn.ConvTranspose2d(in_channels=100, out_channels=1024, kernel_size=4, stride=1, padding=0),
@@ -73,18 +99,37 @@ class wGANgp(object):
         """
         self.Critic = nn.Sequential()
         self.Critic.add_module(
-            str(number_of_layers) + "layer", nn.Linear(self.z_dim, self.net_dim)
+            str(number_of_layers) + "Clayer", nn.Linear(self.z_dim, self.net_dim)
         )
         self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
-            self.Critic.add_module(
-                str(number_of_layers) + "layer", nn.Linear(self.net_dim, self.net_dim)
-            )
-            self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
+            if self.network == "linear":
+                self.Critic.add_module(
+                    str(number_of_layers) + "Clayer",
+                    nn.Linear(self.net_dim, self.net_dim),
+                )
+                self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
+            elif self.network == "rnn":
+                self.Critic.add_module(
+                    str(number_of_layers) + "Clayer",
+                    nn.RNNCell(self.net_dim, self.net_dim),
+                )
+            elif self.network == "lstm":
+                self.Critic.add_module(
+                    str(number_of_layers) + "Clayer",
+                    nn.LSTMCell(self.net_dim, self.net_dim),
+                )
+            elif self.network == "gru":
+                self.Critic.add_module(
+                    str(number_of_layers) + "Clayer",
+                    nn.GRUCell(self.net_dim, self.net_dim),
+                )
+            else:
+                raise ValueError("network type not found")
             number_of_layers -= 1
         self.Critic.add_module(
-            str(number_of_layers) + "layer", nn.Linear(self.net_dim, 1)
+            str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
         )
 
     def create_fake(self, batch_size):
@@ -94,6 +139,20 @@ class wGANgp(object):
         z = torch.randn(batch_size, self.data_dim)
         fake_images = self.Generator(z)
         return fake_images.detach().numpy()
+
+    def linear_sample(self, data):
+        "select samples that are linearly dependent"
+        sizes = len(data) - self.batch_size
+        start_loc = torch.randint(0, sizes, (1,))
+        index = range(start_loc, start_loc + self.batch_size)
+        return data[index]
+
+    def sample_type(self,data):
+        if self.network == "linear":
+            sample = self.pick_sample(data)
+        else:
+            sample = self.linear_sample(data)
+        return sample
 
     def train(
         self,
@@ -110,7 +169,6 @@ class wGANgp(object):
         the dataset x_train which has a length of batch_size.
         It will print and record the loss of the generator and critic every_n_batches.
         """
-
         if hasmissing:
             print("missing data mode on")
         self.batch_size = batch_size
@@ -127,7 +185,8 @@ class wGANgp(object):
             # Train Dicriminator forward-loss-backward-update n_critic times while 1 Generator forward-loss-backward-update
             for d_iter in range(n_critic):
                 self.Critic.zero_grad()
-                sample = self.pick_sample(data_tensor)
+                # ---------------------------------------------------sample is usless at least not random
+                sample = self.sample_type(data_tensor)
                 images = Variable(sample)
                 # Train discriminator
                 z = Variable(torch.randn(self.batch_size, self.data_dim))
