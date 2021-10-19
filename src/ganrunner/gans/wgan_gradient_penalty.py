@@ -24,14 +24,16 @@ class wGANgp(object):
         network,
     ):
         if network == "wgangp":
-            network = "linear"
+            self.network = "linear"
             print("old model")
             # backward comblilty with old models
+        else:
+            self.network = network.lower()
         self.net_dim = noise_size
         self.data_dim = noise_size
         self.z_dim = input_dim
-        self.Make_Generator(number_of_layers, network)
-        self.Make_Critic(number_of_layers, network)
+        self.Make_Generator(number_of_layers)
+        self.Make_Critic(number_of_layers)
         # WGAN values from paper
         self.learning_rate = learning_rate
         self.b1 = 0.5
@@ -46,12 +48,11 @@ class wGANgp(object):
         )
         self.lambda_term = lambdas
 
-    def Make_Generator(self, number_of_layers, network):
+    def Make_Generator(self, number_of_layers):
         """
         This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
         """
-        network = network.lower()
         self.Generator = nn.Sequential()
         self.Generator.add_module(
             str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.net_dim)
@@ -59,23 +60,23 @@ class wGANgp(object):
         self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
-            if network == "linear":
+            if self.network == "linear":
                 self.Generator.add_module(
                     str(number_of_layers) + "Glayer",
                     nn.Linear(self.net_dim, self.net_dim),
                 )
                 self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
-            elif network == "rnn":
+            elif self.network == "rnn":
                 self.Generator.add_module(
                     str(number_of_layers) + "Glayer",
                     nn.RNNCell(self.net_dim, self.net_dim),
                 )
-            elif network == "lstm":
+            elif self.network == "lstm":
                 self.Generator.add_module(
                     str(number_of_layers) + "Glayer",
                     nn.LSTMCell(self.net_dim, self.net_dim),
                 )
-            elif network == "gru":
+            elif self.network == "gru":
                 self.Generator.add_module(
                     str(number_of_layers) + "Glayer",
                     nn.GRUCell(self.net_dim, self.net_dim),
@@ -91,12 +92,11 @@ class wGANgp(object):
         # nn.BatchNorm2d(num_features=1024),
         # nn.ReLU(True),
 
-    def Make_Critic(self, number_of_layers, network):
+    def Make_Critic(self, number_of_layers):
         """
         This makes a critic network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
         """
-        network = network.lower()
         self.Critic = nn.Sequential()
         self.Critic.add_module(
             str(number_of_layers) + "Clayer", nn.Linear(self.z_dim, self.net_dim)
@@ -104,23 +104,23 @@ class wGANgp(object):
         self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
-            if network == "linear":
+            if self.network == "linear":
                 self.Critic.add_module(
                     str(number_of_layers) + "Clayer",
                     nn.Linear(self.net_dim, self.net_dim),
                 )
                 self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
-            elif network == "rnn":
+            elif self.network == "rnn":
                 self.Critic.add_module(
                     str(number_of_layers) + "Clayer",
                     nn.RNNCell(self.net_dim, self.net_dim),
                 )
-            elif network == "lstm":
+            elif self.network == "lstm":
                 self.Critic.add_module(
                     str(number_of_layers) + "Clayer",
                     nn.LSTMCell(self.net_dim, self.net_dim),
                 )
-            elif network == "gru":
+            elif self.network == "gru":
                 self.Critic.add_module(
                     str(number_of_layers) + "Clayer",
                     nn.GRUCell(self.net_dim, self.net_dim),
@@ -146,6 +146,13 @@ class wGANgp(object):
         start_loc = torch.randint(0, sizes, (1,))
         index = range(start_loc, start_loc + self.batch_size)
         return data[index]
+
+    def sample_type(self,data):
+        if self.network == "linear":
+            sample = self.pick_sample(data)
+        else:
+            sample = self.linear_sample(data)
+        return sample
 
     def train(
         self,
@@ -179,7 +186,7 @@ class wGANgp(object):
             for d_iter in range(n_critic):
                 self.Critic.zero_grad()
                 # ---------------------------------------------------sample is usless at least not random
-                sample = self.linear_sample(data_tensor)
+                sample = self.sample_type(data_tensor)
                 images = Variable(sample)
                 # Train discriminator
                 z = Variable(torch.randn(self.batch_size, self.data_dim))

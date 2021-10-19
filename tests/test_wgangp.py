@@ -17,7 +17,7 @@ batch_size = 3
 noise_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
-testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
+testgan = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001,"linear")
 
 
 def test_gan_training():
@@ -45,7 +45,7 @@ def test_save_load():
     critic_weight_save = testgan.Critic.state_dict()
     assert os.stat("testing_generator.pkl").st_size > 0
     assert os.stat("testing_critic.pkl").st_size > 0
-    test = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001)
+    test = ganrunner.wGANgp("adam", noise_vector, data, nodes, layers, lambdas, 0.00001,"linear")
     test.load_model("testing")
     assert all(generator_weight_save) == all(test.Generator.state_dict())
     assert all(critic_weight_save) == all(test.Critic.state_dict())
