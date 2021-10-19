@@ -10,3 +10,5 @@ src/ganrunner.egg-info
 *.coverage
 *.html
 *.pkl
+*.xlsx
+.spyproject

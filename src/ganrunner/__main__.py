@@ -51,9 +51,8 @@ import os
 )
 @click.option(
     "--graph",
-    default=True,
-    type=bin,
-    help="compare sythetic and on a grath, not sutable for large dataset",
+    default="True",
+    help="compare sythetic and on a graph, not sutable for large dataset",
 )
 def main(
     dataset,
@@ -76,6 +75,10 @@ def main(
     Soon this GAN should work on the DCWW dataset.
     """
     click.echo("loading...")
+    if graph == "True":
+        graph = True
+    else:
+        graph = False
     if core != 0:
         tools.set_core(core)
     filename, extention = filepath.split(".")
