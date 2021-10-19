@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -21,6 +20,7 @@ class wGANgp(object):
         batch_size,
         number_of_layers,
         lambdas,
+        learning_rate,
         network,
     ):
         if network == "wgangp":
@@ -48,7 +48,6 @@ class wGANgp(object):
             self.Generator.parameters(), lr=self.learning_rate, betas=(self.b1, self.b2)
         )
         self.lambda_term = lambdas
-
 
     def Make_Generator(self, number_of_layers):
         """
@@ -149,7 +148,7 @@ class wGANgp(object):
         index = range(start_loc, start_loc + self.batch_size)
         return data[index]
 
-    def sample_type(self,data):
+    def sample_type(self, data):
         if self.network == "linear":
             sample = self.pick_sample(data)
         else:
@@ -245,7 +244,7 @@ class wGANgp(object):
             assert g_loss > 0 or g_loss < 0
         self.Critic = self.Critic.cpu()
         self.Generator = self.Generator.cpu()
-            # Saving model and sampling images every 1000th generator iterations
+        # Saving model and sampling images every 1000th generator iterations
 
     def calculate_gradient_penalty(self, real_images, fake_images):
         """
