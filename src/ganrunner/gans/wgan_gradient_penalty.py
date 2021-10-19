@@ -22,6 +22,7 @@ class wGANgp(object):
         lambdas,
         learning_rate,
         network,
+        usegpu=False,
     ):
         if network == "wgangp":
             self.network = "linear"
@@ -38,7 +39,7 @@ class wGANgp(object):
         self.learning_rate = learning_rate
         self.b1 = 0.5
         self.b2 = 0.999
-        self.usegpu = True
+        self.usegpu = usegpu
 
         # WGAN_gradient penalty uses ADAM ------------------------ do somthing here
         self.d_optimizer = optim.Adam(
