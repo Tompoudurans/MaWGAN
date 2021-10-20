@@ -223,7 +223,6 @@ def create_model(parameters, no_field):
         optimiser="adam",
         input_dim=no_field,
         noise_size=noise_dim,
-        batch_size=batch,
         number_of_layers=number_of_layers,
         lambdas=float(parameters[6]),
         learning_rate=lr,

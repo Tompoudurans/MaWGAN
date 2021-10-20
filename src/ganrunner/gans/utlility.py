@@ -11,12 +11,12 @@ def make_mask(data):
     return mask, binary_mask
 
 
-def copy_format(template, data):
+def copy_format(template, data, usegpu):
     """
     create a mask from the template and apply it to the data
     """
     mask, binary_mask = make_mask(template)
-    if self.usegpu:
+    if usegpu:
         masked_data = data * mask.cuda()
     else:
         masked_data = data * mask

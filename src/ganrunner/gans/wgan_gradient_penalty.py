@@ -17,7 +17,6 @@ class wGANgp(object):
         optimiser,
         input_dim,
         noise_size,
-        batch_size,
         number_of_layers,
         lambdas,
         learning_rate,
@@ -31,8 +30,7 @@ class wGANgp(object):
         else:
             self.network = network.lower()
         self.net_dim = noise_size
-        self.data_dim = batch_size
-        self.z_dim = input_dim
+        self.data_dim = input_dim
         self.Make_Generator(number_of_layers)
         self.Make_Critic(number_of_layers)
         # WGAN values from paper
@@ -87,7 +85,7 @@ class wGANgp(object):
                 raise ValueError("network type not found")
             number_of_layers -= 1
         self.Generator.add_module(
-            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.z_dim)
+            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.data_dim)
         )
 
     def Make_Critic(self, number_of_layers):
@@ -97,7 +95,7 @@ class wGANgp(object):
         """
         self.Critic = nn.Sequential()
         self.Critic.add_module(
-            str(number_of_layers) + "Clayer", nn.Linear(self.z_dim, self.net_dim)
+            str(number_of_layers) + "Clayer", nn.Linear(self.data_dim, self.net_dim)
         )
         self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
@@ -195,7 +193,7 @@ class wGANgp(object):
                 else:
                     fake_images = self.Generator(z)
                 if hasmissing:
-                    images, fake_images = copy_format(images, fake_images)
+                    images, fake_images = copy_format(images, fake_images,self.usegpu)
                 if self.usegpu:
                     images = images.cuda()
                 # Train with real images

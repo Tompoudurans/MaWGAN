@@ -11,6 +11,7 @@ def main(
     model,
     opti,
     batch,
+    cells,
     layers,
     lambdas,
     rate,
@@ -25,15 +26,14 @@ def main(
         dataset = True
     ganrunner.tools.setup_log(filename + "_progress.log")
     database, details = ganrunner.load_data(dataset, filepath, extention)
-    nocol = 4
-    parameters_list = [dataset, model, opti, batch, nocol, layers, lambdas, rate]
+    parameters_list = [dataset, model, opti, batch, cells, layers, lambdas, rate]
     parameters, successfully_loaded = ganrunner.parameters_handeling(
         filename, parameters_list
     )
     epochs = int(epochs)
     beg = time.time()
     thegan, success = ganrunner.run(
-        filename, epochs, parameters, successfully_loaded, database, 150
+        filename, epochs, parameters, successfully_loaded, database, batch
     )
     print("time",time.time() - beg)
     fake = None
@@ -45,8 +45,9 @@ def fid_run(block):
     pramters as given in a list fromat
     this uses a custom made main fuction def above rather that the one in src
     """
-    per,dataname,batch,folder = block
-    epochs = 0
+    per,dataname,cells,folder = block
+    batch = 150
+    epochs = 5000
     print(per,"0% ------------------------------------------------------")
     a, b, c= main(
         None,
@@ -54,6 +55,7 @@ def fid_run(block):
         epochs,
         "linear",
         "adam",
+        cells,
         batch,#batch_size
         5,#number_of_layers
         10,#lambdas
@@ -91,4 +93,4 @@ def one_dataset(dataname,muti,batch,folder):
     frame.to_csv(folder + "fids" + dataname)
 
 if __name__ == '__main__':
-    gan, det = fid_run([0,"_percent_iris.csv",100,""])
+    gan, det = fid_run([2,"_percent_iris.csv",100,""])
