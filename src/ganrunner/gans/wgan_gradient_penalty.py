@@ -31,7 +31,7 @@ class wGANgp(object):
         else:
             self.network = network.lower()
         self.net_dim = noise_size
-        self.data_dim = noise_size
+        self.data_dim = batch_size
         self.z_dim = input_dim
         self.Make_Generator(number_of_layers)
         self.Make_Critic(number_of_layers)
@@ -57,7 +57,7 @@ class wGANgp(object):
         """
         self.Generator = nn.Sequential()
         self.Generator.add_module(
-            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.net_dim)
+            str(number_of_layers) + "Glayer", nn.Linear(self.data_dim, self.net_dim)
         )
         self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
@@ -89,10 +89,6 @@ class wGANgp(object):
         self.Generator.add_module(
             str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.z_dim)
         )
-        # ------------------------------------------------------------------------------------------------------------------
-        # nn.ConvTranspose2d(in_channels=100, out_channels=1024, kernel_size=4, stride=1, padding=0),
-        # nn.BatchNorm2d(num_features=1024),
-        # nn.ReLU(True),
 
     def Make_Critic(self, number_of_layers):
         """

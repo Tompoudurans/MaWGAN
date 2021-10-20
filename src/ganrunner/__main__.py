@@ -105,7 +105,7 @@ def main(
         print("Data could not be loaded propely see logs for more info")
         logging.exception(e)
         return
-    thegan, success = run(filename, epochs, parameters, successfully_loaded, database)
+    thegan, success = run(filename, epochs, parameters, successfully_loaded, database, batch)
     fake = None
     if success:
         fake = make_samples(
@@ -230,7 +230,7 @@ def create_model(parameters, no_field):
         network=use_model,
     )
     mygan.summary()
-    return mygan, batch, noise_dim
+    return mygan
 
 
 def make_samples(
@@ -306,7 +306,7 @@ def parameters_handeling(filepath, parameters_list):
     return parameters, successfully_loaded
 
 
-def run(filepath, epochs, parameters, successfully_loaded, database):
+def run(filepath, epochs, parameters, successfully_loaded, database, batch):
     """
     Creates and trains a GAN from the parameters provided.
     It will load the weights of the GAN if they exist.
@@ -315,7 +315,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database):
     # select dataset
     no_field = len(database[1])
     try:
-        mygan, batch, noise_dim = create_model(parameters, no_field)
+        mygan = create_model(parameters, no_field)
     except Exception as e:
         print("building failed, check you parameters")
         logging.error("building failed due to" + str(e))
