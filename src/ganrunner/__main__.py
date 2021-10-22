@@ -111,7 +111,6 @@ def main(
         fake = make_samples(
             thegan,
             database,
-            int(parameters[4]),
             sample,
             filename,
             details,
@@ -233,39 +232,33 @@ def create_model(parameters, no_field):
 
 
 def make_samples(
-    mygan, database, batch, samples, filepath, details, extention, show=True
+    mygan, database, batch, filepath, details, extention, show=True
 ):
     """
     Creates a number of samples
     """
-    database = tools.pd.DataFrame(database)
-    database = database.sample(batch)
+    if show:
+        database = tools.pd.DataFrame(database)
+        database = database.sample(batch)
     mean, std, info, col = details
     fullset = None
-    for s in range(int(samples)):
-        generated_data = mygan.create_fake(batch)
-        if s == 0 and show:
-            tools.calculate_fid(generated_data, database.sample(batch))
-        generated_data = tools.unnormalize(generated_data, mean, std)
-        generated_data.columns = col
-        print("unnorm complete gen")
-        if s == 0 and show:
-            database = tools.unnormalize(database, mean, std)
-            database.columns = col
-            print("unnorm complete org")
-        if show:
-            tools.dagplot(generated_data, database, filepath + "_" + str(s))
-            print("plot")
-        values = tools.decoding(generated_data, info)
-        print("sample", s)
-        if s > 0:
-            fullset = tools.pd.merge(fullset, values, "outer")
-        else:
-            fullset = values
+    generated_data = mygan.create_fake(batch)
+    if show:
+        tools.calculate_fid(generated_data, database.sample(batch))
+    generated_data = tools.unnormalize(generated_data, mean, std)
+    generated_data.columns = col
+    if show:
+        database = tools.unnormalize(database, mean, std)
+        database.columns = col
+        tools.dagplot(generated_data, database, filepath + "_" + str(s))
+        print("plot")
+    fullset = tools.decoding(generated_data, info)
     if extention == "db":
         tools.save_sql(fullset, filepath + ".db")
-    else:
+    elif extention == "csv":
         fullset.to_csv(filepath + "_synthetic.csv", index=False)
+    else:
+        print("I",end="")
     return fullset
 
 
@@ -305,7 +298,7 @@ def parameters_handeling(filepath, parameters_list):
     return parameters, successfully_loaded
 
 
-def run(filepath, epochs, parameters, successfully_loaded, database, batch):
+def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegpu=False):
     """
     Creates and trains a GAN from the parameters provided.
     It will load the weights of the GAN if they exist.
@@ -326,7 +319,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch):
         checkI = tools.pd.DataFrame(database)
         checkII = checkI.isnull().sum().sum() > 0
         try:
-            mygan.train(database, batch, epochs, checkII, step)
+            mygan.train(database, batch, epochs, checkII, step, usegpu=False)
         except Exception as e:
             logging.exception(e)
             print("training failed check you parameters")

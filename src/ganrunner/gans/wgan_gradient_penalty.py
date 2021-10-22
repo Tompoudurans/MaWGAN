@@ -21,7 +21,6 @@ class wGANgp(object):
         lambdas,
         learning_rate,
         network,
-        usegpu=False,
     ):
         if network == "wgangp":
             self.network = "linear"
@@ -37,7 +36,6 @@ class wGANgp(object):
         self.learning_rate = learning_rate
         self.b1 = 0.5
         self.b2 = 0.999
-        self.usegpu = usegpu
 
         # WGAN_gradient penalty uses ADAM ------------------------ do somthing here
         self.d_optimizer = optim.Adam(
@@ -158,6 +156,7 @@ class wGANgp(object):
         hasmissing=False,
         print_every_n_batches=10,
         n_critic=5,
+        usegpu=False
     ):
         """
         This trains the GAN by alternating between training the critic 'critic_round' times
@@ -165,6 +164,7 @@ class wGANgp(object):
         the dataset x_train which has a length of batch_size.
         It will print and record the loss of the generator and critic every_n_batches.
         """
+        self.usegpu = usegpu
         if self.usegpu:
             self.Critic = self.Critic.cuda()
             self.Generator = self.Generator.cuda()
