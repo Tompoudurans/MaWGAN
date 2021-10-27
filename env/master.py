@@ -25,10 +25,9 @@ def set_mkhole(folder,datanames,use_pools_for_making_holes):
         nonmutihole(datanames,folder)
 
 def set_exp(folder,datasets,muti):
-    batch = 300
-    for i in datasets:
-        one_dataset(i,muti,batch,folder)
-        #batch = batch + 100
+    batch = [150,952,1250]
+    for i in range(len(datasets)):
+        one_dataset(datasets[i],muti,batch[i],folder)
 
 def chose(dataset):
     folder = input("folder? ")
@@ -48,6 +47,6 @@ def chose(dataset):
         pass
 
 if __name__ == '__main__':
-    datasets = ["_Deprivation_percent.csv"] #["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
+    datasets = ["_percent_iris.csv"]#,"_Deprivation_percent.csv","_letter_percent.csv"]
     #set_graph("set2(bigger_fid)/",datasets)
-    set_exp("set3moretrainfrom2/",datasets,False)
+    set_exp("exp1/",datasets,False)

@@ -33,11 +33,10 @@ def main(
     epochs = int(epochs)
     beg = time.time()
     thegan, success = ganrunner.run(
-        filename, epochs, parameters, successfully_loaded, database, batch
+        filename, epochs, parameters, successfully_loaded, database, batch#, True
     )
     print("time",time.time() - beg)
-    fake = None
-    return thegan, fake, details
+    return thegan, details
 
 def fid_run(block):
     """
@@ -45,26 +44,24 @@ def fid_run(block):
     pramters as given in a list fromat
     this uses a custom made main fuction def above rather that the one in src
     """
-    per,dataname,cells,folder = block
-    batch = 150
-    epochs = 5000
+    per,dataname,batch,folder = block
+    cells = 150
+    epochs = 15000
     print(per,"0% ------------------------------------------------------")
-    a, b, c= main(
+    thegan, details = main(
         None,
         folder + str(per) + "0" + dataname,
         epochs,
         "linear",
         "adam",
-        cells,
         batch,#batch_size
+        cells,
         5,#number_of_layers
         10,#lambdas
         0.0001,#learnig rate
     )
     full = ganrunner.tools.pd.read_csv(folder + "00" + dataname)
-    x = ganrunner.tools.get_norm(full)
-    original = ganrunner.tools.pd.DataFrame(x[0])
-    return a,c
+    pachal = full.sample(batch)
 
 def poolrun(dataname,batch,folder):
     block = []
@@ -77,20 +74,11 @@ def poolrun(dataname,batch,folder):
     return result
 
 def singal(dataname,batch,folder):
-    set = []
     for i in range(10):
-        if i == 0 and dataname == "_percent_iris.csv":
-            pass
-        else:
-            fid_run([i,dataname,batch,folder])
+        fid_run([i,dataname,batch,folder])
 
 def one_dataset(dataname,muti,batch,folder):
     if muti:
         fidata = poolrun(dataname,batch,folder)
     else:
-        fidata = singal(dataname,batch,folder)
-    frame = ganrunner.tools.pd.DataFrame(fidata)
-    frame.to_csv(folder + "fids" + dataname)
-
-if __name__ == '__main__':
-    gan, det = fid_run([2,"_percent_iris.csv",100,""])
+        singal(dataname,batch,folder)
