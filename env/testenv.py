@@ -44,7 +44,7 @@ def fid_run(block):
     pramters as given in a list fromat
     this uses a custom made main fuction def above rather that the one in src
     """
-    per,dataname,batch,folder = block
+    per,dataname,batch,batch2,folder = block
     cells = 150
     epochs = 15000
     print(per,"0% ------------------------------------------------------")
@@ -61,7 +61,19 @@ def fid_run(block):
         0.0001,#learnig rate
     )
     full = ganrunner.tools.pd.read_csv(folder + "00" + dataname)
-    pachal = full.sample(batch)
+    pachal = full.sample(batch2)
+    for i in range(100):
+        fake = ganrunner.make_samples(
+            thegan,
+            None,
+            batch2,
+            None,#filepath
+            details,
+            None,#".csv",#extention
+            False #show?
+        )
+        ls.append(ganrunner.tools.LS(pachal.to_numpy(),syn.to_numpy()))
+    return ls
 
 def poolrun(dataname,batch,folder):
     block = []
@@ -73,12 +85,16 @@ def poolrun(dataname,batch,folder):
     p.join()
     return result
 
-def singal(dataname,batch,folder):
+def singal(dataname,batch,batch2,folder):
+    fls = []
     for i in range(10):
-        fid_run([i,dataname,batch,folder])
+        fls.append(fid_run([i,dataname,batch,batch2,folder]))
+    return fls
 
 def one_dataset(dataname,muti,batch,folder):
     if muti:
         fidata = poolrun(dataname,batch,folder)
     else:
-        singal(dataname,batch,folder)
+        fidata = singal(dataname,batch,folder)
+    frame = ganrunner.tools.pd.DataFrame(fidata)
+    frame.to_csv(folder + "ls_" + dataname,index=False)
