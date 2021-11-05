@@ -91,10 +91,10 @@ def singal(dataname,batch,batch2,folder):
         fls.append(fid_run([i,dataname,batch,batch2,folder]))
     return fls
 
-def one_dataset(dataname,muti,batch,folder):
+def one_dataset(dataname,muti,batch,batch2,folder):
     if muti:
         fidata = poolrun(dataname,batch,folder)
     else:
-        fidata = singal(dataname,batch,folder)
+        fidata = singal(dataname,batch,batch2,folder)
     frame = ganrunner.tools.pd.DataFrame(fidata)
     frame.to_csv(folder + "ls_" + dataname,index=False)

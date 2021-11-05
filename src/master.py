@@ -1,6 +1,5 @@
 from makeholes import mkhole
 from testenv import one_dataset
-from grapher import set_graph
 import multiprocessing as mpg
 import subprocess
 
@@ -25,8 +24,8 @@ def set_mkhole(folder,datanames,use_pools_for_making_holes):
         nonmutihole(datanames,folder)
 
 def set_exp(folder,datasets,muti):
-    batch = [100,200,300]
-    batch2 = [150,952,1250]
+    batch = [100]#,200,300]
+    batch2 = [150]#,952,1250]
     for i in range(len(datasets)):
         one_dataset(datasets[i],muti,batch[i],batch2[i],folder)
 
@@ -42,8 +41,6 @@ def chose(dataset):
         set_exp(folder,datasets,muti)
     elif op == "hole":
         set_mkhole(folder,datasets,muti)
-    elif op == "grath":
-        set_graph(folder,datasets)
     else:
         pass
 
@@ -54,8 +51,8 @@ def set_folder(folder,datanames):
 
 
 if __name__ == '__main__':
-    datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
-    for i in range(90):
+    datasets = ["_percent_iris.csv"]#,"_Deprivation_percent.csv","_letter_percent.csv"]
+    for i in range(1):
         set_folder("expset"+ str(i) + "/",datasets)
         set_mkhole("expset"+ str(i) + "/",datasets,True)
         set_exp("expset"+ str(i) + "/",datasets,False)

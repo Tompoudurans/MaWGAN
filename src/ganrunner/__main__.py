@@ -2,58 +2,9 @@ import math
 import numpy as np
 import ganrunner.tools as tools
 import ganrunner.gans as gans
-import click
 import logging
 import os
 
-
-@click.command()
-@click.option(
-    "--filepath",
-    prompt="filepath? ",
-    help=" enter the file name and location of the database and model",
-)
-@click.option(
-    "--epochs", prompt="epochs? ", help="choose how long that you want to train"
-)
-@click.option(
-    "--dataset",
-    default=None,
-    help="choose the dataset/table that the GAN will train on",
-)
-@click.option("--model", default=None, help="choose which model you what to use")
-@click.option("--opti", default=None, help="choose the optimiser you want to use")
-@click.option("--noise", default=None, help="choose the length of the noise vector")
-@click.option(
-    "--batch", default=None, help="choose how many fake data you want to make in one go"
-)
-@click.option(
-    "--layers", default=None, help="choose the number of layers of each network"
-)
-@click.option("--lambdas", type=float, default=None, help="learning penalty")
-@click.option(
-    "--core",
-    default=0,
-    type=int,
-    help="select the number of cores that you would like to run",
-)
-@click.option(
-    "--sample",
-    default=1,
-    type=int,
-    help="choose the number of generated data you want: (samples*batch)",
-)
-@click.option(
-    "--rate",
-    default=None,
-    type=float,
-    help="choose the learing rate of the model",
-)
-@click.option(
-    "--graph",
-    default="True",
-    help="compare sythetic and on a graph, not sutable for large dataset",
-)
 def main(
     dataset,
     filepath,
@@ -192,10 +143,7 @@ def load_data(sets, filepath, extention):
     """
     Loads a dataset from an sql table
     """
-    if extention == "db":
-        raw_data = tools.load_sql(filepath, sets)
-    else:
-        raw_data = tools.pd.read_csv(filepath)
+    raw_data = tools.pd.read_csv(filepath)
     database, details = tools.procsses_sql(raw_data)
     return database, details
 
@@ -326,9 +274,4 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegp
             return None, False
         else:
             mygan.save_model(filepath)
-            # tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
-
-
-if __name__ == "__main__":
-    main()
