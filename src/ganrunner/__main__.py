@@ -155,7 +155,7 @@ def load_gan_weight(filepath, mygan):
     try:
         mygan.load_model(filepath)  # -----------------------------------
     except OSError:  # as 'Unable to open file':
-        print("file not found, starting from scratch")
+        print(filepath)
     finally:
         return mygan
 
@@ -175,7 +175,6 @@ def create_model(parameters, no_field):
         learning_rate=lr,
         network=use_model,
     )
-    mygan.summary()
     return mygan
 
 

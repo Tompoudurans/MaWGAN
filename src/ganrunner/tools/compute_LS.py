@@ -43,15 +43,11 @@ def dist_btw(a, b):  # compute BCD
 
 def LS(real, gen):  # KS distance btw ICD and BCD
     dist_real = dists(real)
-    print("ICD O", dist_real.mean())
     dist_gen = dists(gen)  # ICD 2
-    print("ICD S", dist_gen.mean())
     distbtw = dist_btw(real, gen)  # BCD
-    print("BCD", distbtw.mean())
 
     D_Sep_1, _ = ks_2samp(dist_real, distbtw)
     D_Sep_2, _ = ks_2samp(dist_gen, distbtw)
-    print("KS")
     return 1 - np.max([D_Sep_1, D_Sep_2])  # LS=1-DSI
 
 

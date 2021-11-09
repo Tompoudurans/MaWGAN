@@ -55,4 +55,4 @@ if __name__ == '__main__':
     for i in range(1):
         set_folder("expset"+ str(i) + "/",datasets)
         set_mkhole("expset"+ str(i) + "/",datasets,True)
-        set_exp("expset"+ str(i) + "/",datasets,False)
+        set_exp("",datasets,False)

@@ -35,8 +35,10 @@ def main(
     thegan, success = ganrunner.run(
         filename, epochs, parameters, successfully_loaded, database, batch#, True
     )
-    print("time",time.time() - beg)
-    return thegan, details
+    totime = time.time() - beg
+    print("time",totime)
+    return thegan, details, totime
+
 
 def fid_run(block):
     """
@@ -47,8 +49,7 @@ def fid_run(block):
     per,dataname,batch,batch2,folder = block
     cells = 150
     epochs = 15000
-    print(per,"0% ------------------------------------------------------")
-    thegan, details = main(
+    thegan, details, totime = main(
         None,
         folder + str(per) + "0" + dataname,
         epochs,
@@ -62,8 +63,9 @@ def fid_run(block):
     )
     full = ganrunner.tools.pd.read_csv(folder + "00" + dataname)
     pachal = full.sample(batch2)
+    ls = [totime]
     for i in range(100):
-        fake = ganrunner.make_samples(
+        syn = ganrunner.make_samples(
             thegan,
             None,
             batch2,
