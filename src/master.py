@@ -53,6 +53,7 @@ def set_folder(folder,datanames):
 if __name__ == '__main__':
     datasets = ["_percent_iris.csv"]#,"_Deprivation_percent.csv","_letter_percent.csv"]
     for i in range(1):
-        set_folder("expset"+ str(i) + "/",datasets)
-        set_mkhole("expset"+ str(i) + "/",datasets,True)
-        set_exp("",datasets,False)
+        wkdir = "expset" + str(i) + "/"
+        set_folder(wkdir,datasets)
+        set_mkhole(wkdir,datasets,True)
+        set_exp(wkdir,datasets,False)

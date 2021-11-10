@@ -225,7 +225,7 @@ def load_parameters(filepath):
     try:
         parameter_array = np.load(filepath + "_parameters.npy", allow_pickle=True)
     except OSError:
-        print("file not found, starting from scratch")
+        print("\n",filepath,"does not exists")
         successfully_loaded = False
         parameter_array = None
     else:
