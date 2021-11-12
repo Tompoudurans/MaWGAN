@@ -99,16 +99,21 @@ def one_dataset(dataname,muti,batch,batch2,folder):
         fidata = poolrun(dataname,batch,folder)
     else:
         fidata, totime = singal(dataname,batch,batch2,folder)
-    frame = ganrunner.tools.pd.DataFrame(fidata)
-    frame.to_csv(folder + "ls_" + dataname,index=False)
-    return totime
+    return fidata, totime
 
 def set_exp(datasets,muti,batch,testname):
     times = []
+    lslis = []
     for i in range(len(batch)):
         folder = set_folder(testname + "/sample" + str(batch[i]),datasets)
-        times.append(one_dataset(datasets,muti,batch[i],150,folder))
+        fidata, totime = one_dataset(datasets,muti,batch[i],150,folder)
+        times.append(totime)
+        lslis.append(fidata)
     frame = pd.DataFrame([batch, times])
+    lstab = pd.DataFrame(lslis)
+    lstab = lstab.transpose()
+    lstab.columns = batch
+    lstab.to_csv(testname + "/acc" + datasets,index=False)
     frame.to_csv(testname + "/times" + datasets,index=False)
 
 def set_folder(folder,datanames):
@@ -117,9 +122,9 @@ def set_folder(folder,datanames):
     return folder + "/"
 
 if __name__ == '__main__':
-    for testno in range(20):
+    for testno in range(10):
         testname = "test" + str(testno)
         subprocess.run(["mkdir",testname])
-        batches = [10,20,30,40,50,60,70,80,90]
-        datanames = ["_percent_iris.csv","","_letter_percent.csv"]
-        set_exp(datanames[0],False,batches,testname)
+        batches = [20,40,60,80,100,120,140,160,180]
+        datanames = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
+        set_exp(datanames[1],False,batches,testname)
