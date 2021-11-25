@@ -252,6 +252,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegp
     An option will be given to create samples.
     """
     # select dataset
+    logging.info(filepath)
     no_field = len(database[1])
     try:
         mygan = create_model(parameters, no_field)

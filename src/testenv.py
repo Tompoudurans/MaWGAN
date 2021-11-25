@@ -33,7 +33,7 @@ def main(
     epochs = int(epochs)
     beg = time.time()
     thegan, success = ganrunner.run(
-        filename, epochs, parameters, successfully_loaded, database, batch#, True
+        filename, epochs, parameters, successfully_loaded, database, batch, True
     )
     totime = time.time() - beg
     print("time",totime)
@@ -74,7 +74,7 @@ def fid_run(block):
             None,#".csv",#extention
             False #show?
         )
-        ls.append(ganrunner.tools.LS(pachal.to_numpy(),syn.to_numpy()))
+        ls.append(ganrunner.tools.gpu_LS(pachal.to_numpy(),syn.to_numpy()))
     return ls
 
 def poolrun(dataname,batch,folder):

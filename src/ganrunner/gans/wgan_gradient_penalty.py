@@ -6,6 +6,7 @@ from torch import autograd
 import time as t
 from .utlility import copy_format
 import os
+import logging
 
 
 class wGANgp(object):
@@ -229,8 +230,8 @@ class wGANgp(object):
             g_loss.backward(mone)
             g_cost = -g_loss
             self.g_optimizer.step()
-            if False:
-                print(
+            if g_iter % print_every_n_batches == 0:
+                logging.info(
                     f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
                 )
             assert g_loss > 0 or g_loss < 0
