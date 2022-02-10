@@ -13,8 +13,41 @@ By:                 Shuyue Guan
 """
 import numpy as np
 from scipy.spatial.distance import minkowski
-from scipy.stats import ks_2samp
+from scipy.stats import ks_2samp,anderson_ksamp
 import torch
+
+
+#####################  LS GPU ver. ##################{
+# To compute Euclidean distances by torch tensors
+
+
+def andy_LS(real, gen):
+    # to torch tensors
+    gen = gen.astype("float32")
+    real = real.astype("float32")
+    t_gen = torch.from_numpy(gen)
+    t_real = torch.from_numpy(real)
+
+    dist_real = torch.cdist(t_real, t_real)  # ICD 1
+    dist_real = torch.flatten(torch.tril(dist_real, diagonal=-1))  # remove repeats
+    dist_real = dist_real[
+        dist_real.nonzero()
+    ].flatten()  # remove distance=0 for distances btw same data points
+
+    dist_gen = torch.cdist(t_gen, t_gen)  # ICD 2
+    dist_gen = torch.flatten(torch.tril(dist_gen, diagonal=-1))  # remove repeats
+    dist_gen = dist_gen[
+        dist_gen.nonzero()
+    ].flatten()  # remove distance=0 for distances btw same data points
+
+    distbtw = torch.cdist(t_gen, t_real)  # BCD
+    distbtw = torch.flatten(distbtw)
+
+    D_Sep_1, _ = anderson_ksamp([dist_real, distbtw])
+    D_Sep_2, _ = anderson_ksamp([dist_gen, distbtw])
+    print("andy",D_Sep_1,D_Sep_2)
+
+    return 1 - np.max([D_Sep_1, D_Sep_2])  # LS=1-DSI
 
 #####################  LS CPU ver. ##################{
 
@@ -81,6 +114,7 @@ def gpu_LS(real, gen):
 
     D_Sep_1, _ = ks_2samp(dist_real, distbtw)
     D_Sep_2, _ = ks_2samp(dist_gen, distbtw)
+    print("kolmo",D_Sep_1,D_Sep_2)
 
     return 1 - np.max([D_Sep_1, D_Sep_2])  # LS=1-DSI
 

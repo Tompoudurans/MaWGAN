@@ -1,8 +1,10 @@
-# -*- coding: utf-8 -*-
-
+import multiprocessing as mpg
+import subprocess
+import pandas
 import ganrunner
 import multiprocessing as mpg
 import time
+from makeholes import mkhole
 
 def main(
     dataset,
@@ -46,12 +48,12 @@ def fid_run(block):
     pramters as given in a list fromat
     this uses a custom made main fuction def above rather that the one in src
     """
-    per,dataname,batch,batch2,folder = block
+    folper,dataname,batch,batch2 = block
     cells = 150
     epochs = 15000
     thegan, details, totime = main(
         None,
-        folder + str(per) + "0" + dataname,
+        folper,
         epochs,
         "linear",
         "adam",
@@ -61,9 +63,9 @@ def fid_run(block):
         10,#lambdas
         0.0001,#learnig rate
     )
-    full = ganrunner.tools.pd.read_csv(folder + "00" + dataname)
+    full = ganrunner.tools.pd.read_csv(dataname)
     pachal = full.sample(batch2)
-    ls = [totime]
+    ls = []
     for i in range(100):
         syn = ganrunner.make_samples(
             thegan,
@@ -77,26 +79,59 @@ def fid_run(block):
         ls.append(ganrunner.tools.gpu_LS(pachal.to_numpy(),syn.to_numpy()))
     return ls
 
-def poolrun(dataname,batch,folder):
-    block = []
-    for i in range(10):
-        block.append([i,dataname,batch,folder])
-    p = mpg.Pool(processes=10)#--------------------------------------------------------------------------?
-    result = p.map(fid_run,block)
-    p.close()
-    p.join()
-    return result
+def set_exp(folder,datasets,set):
+    batch = 30
+    batch2 = [150,952,1250]
+    for i in range(len(datasets)):
+        fidata = linexp(datasets[i],batch,batch2[i],set,folder)
+        frame = ganrunner.tools.pd.DataFrame(fidata)
+        frame.to_csv(folder + "ls_" + datasets[i],index=False)
 
-def singal(dataname,batch,batch2,folder):
+def linexp(dataset,batch,batch2,set,folder):
     fls = []
-    for i in range(10):
-        fls.append(fid_run([i,dataname,batch,batch2,folder]))
+    setname = "base/00" + dataset
+    for per in range(7):
+        dataname = folder + str(per) + "0" + dataset
+        d = pandas.read_csv(dataname)
+        d = d.dropna()
+        no = d.count()[0]
+        print("no:",no)
+        if no <= 1:
+            fls.append([0]*100)
+        else:
+            d.to_csv(dataname,index=False)
+            if no < batch:
+                fls.append(fid_run([dataname,setname,no,batch2]))
+            else:
+                fls.append(fid_run([dataname,setname,batch,batch2]))
     return fls
 
-def one_dataset(dataname,muti,batch,batch2,folder):
-    if muti:
-        fidata = poolrun(dataname,batch,folder)
+def poolhole(dataset,folder):
+    block = []
+    for i in dataset:
+        block.append([i,folder])
+    p = mpg.Pool(processes=6)
+    p.map(mkhole,block)
+    p.close()
+    p.join()
+
+def set_mkhole(folder,datanames,use_pools_for_making_holes):
+    if use_pools_for_making_holes:
+        poolhole(datanames,folder)
     else:
-        fidata = singal(dataname,batch,batch2,folder)
-    frame = ganrunner.tools.pd.DataFrame(fidata)
-    frame.to_csv(folder + "ls_" + dataname,index=False)
+        nonmutihole(datanames,folder)
+
+def set_folder(folder,datanames):
+    subprocess.run(["mkdir",folder])
+    for dn in datanames:
+        subprocess.run(["cp","base/00" + dn,folder])
+
+if __name__ == '__main__':
+    datasets = ["_percent_iris.csv","_Deprivation_percent.csv","_letter_percent.csv"]
+    mi=int(input("starting set: "))
+    ma=int(input("ending set: "))
+    for i in range(mi,ma):
+        wkdir = "lineset" + str(i) + "/"
+        set_folder(wkdir,datasets)
+        set_mkhole(wkdir,datasets,True)
+        set_exp(wkdir,datasets,str(i))
