@@ -258,7 +258,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegp
         mygan = create_model(parameters, no_field)
     except Exception as e:
         print("building failed, check you parameters")
-        logging.error("building failed due to" + str(e))
+        logging.error("building failed due to " + str(e))
         return None, False
     if successfully_loaded:
         mygan = load_gan_weight(filepath, mygan)
@@ -267,7 +267,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegp
         checkI = tools.pd.DataFrame(database)
         checkII = checkI.isnull().sum().sum() > 0
         try:
-            mygan.train(database, batch, epochs, checkII, step, usegpu=False)
+            mygan.train(database, batch, epochs, checkII, step, 15, usegpu)
         except Exception as e:
             logging.exception(e)
             print("training failed check you parameters")

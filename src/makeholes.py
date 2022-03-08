@@ -11,7 +11,8 @@ import numpy
 
 def mkhole(block):
     file,folder = block
-    for i in range(1,7):
+    print(file,folder)
+    for i in range(1,10):
         percent = i/10
         if i > 1:
             name = folder + str(i*10-10) + file

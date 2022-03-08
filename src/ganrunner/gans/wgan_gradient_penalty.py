@@ -153,7 +153,7 @@ class wGANgp(object):
         epochs,
         hasmissing=False,
         print_every_n_batches=10,
-        n_critic=15,
+        n_critic=5,
         usegpu=False
     ):
         """
@@ -163,6 +163,7 @@ class wGANgp(object):
         It will print and record the loss of the generator and critic every_n_batches.
         """
         print("critc train =",n_critic)
+        print("gpu =",usegpu)
         self.usegpu = usegpu
         if self.usegpu:
             self.Critic = self.Critic.cuda()
@@ -199,6 +200,8 @@ class wGANgp(object):
                 d_loss_real = self.Critic(images)
                 d_loss_real = d_loss_real.mean()
                 d_loss_real.backward(mone)
+                #if torch.cuda.device_count() > 1:
+                #  model = nn.DataParallel(model)
 
                 # Train with fake images
 
