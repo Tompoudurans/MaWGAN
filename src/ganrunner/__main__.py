@@ -5,6 +5,7 @@ import ganrunner.gans as gans
 import logging
 import os
 
+
 def main(
     dataset,
     filepath,
@@ -56,17 +57,13 @@ def main(
         print("Data could not be loaded propely see logs for more info")
         logging.exception(e)
         return
-    thegan, success = run(filename, epochs, parameters, successfully_loaded, database, batch)
+    thegan, success = run(
+        filename, epochs, parameters, successfully_loaded, database, batch
+    )
     fake = None
     if success:
         fake = make_samples(
-            thegan,
-            database,
-            sample,
-            filename,
-            details,
-            extention,
-            graph,
+            thegan, database, sample, filename, details, extention, graph,
         )
     return thegan, fake
 
@@ -166,21 +163,36 @@ def create_model(parameters, no_field):
     """
     lr = float(parameters[7])
     use_model, opti, noise_dim, batch, number_of_layers = unpack(parameters)
-    mygan = gans.wGANgp(
-        optimiser="adam",
-        input_dim=no_field,
-        noise_size=noise_dim,
-        number_of_layers=number_of_layers,
-        lambdas=float(parameters[6]),
-        learning_rate=lr,
-        network=use_model,
-    )
+    try:
+        base, network = use_model.split("-")
+    except Exception:
+        network = use_model
+        base = "None"
+    print("network:", network, "| base:", base)
+    if base == "vgan":
+        mygan = gans.vgan(
+            optimiser="adam",
+            input_dim=no_field,
+            noise_size=noise_dim,
+            number_of_layers=number_of_layers,
+            lambdas=float(parameters[6]),
+            learning_rate=lr,
+            network=network,
+        )
+    else:
+        mygan = gans.wGANgp(
+            optimiser="adam",
+            input_dim=no_field,
+            noise_size=noise_dim,
+            number_of_layers=number_of_layers,
+            lambdas=float(parameters[6]),
+            learning_rate=lr,
+            network=network,
+        )
     return mygan
 
 
-def make_samples(
-    mygan, database, batch, filepath, details, extention, show=True
-):
+def make_samples(mygan, database, batch, filepath, details, extention, show=True):
     """
     Creates a number of samples
     """
@@ -205,7 +217,7 @@ def make_samples(
     elif extention == "csv":
         fullset.to_csv(filepath + "_synthetic.csv", index=False)
     else:
-        print("I",end="")
+        print("I", end="")
     return fullset
 
 
@@ -225,7 +237,7 @@ def load_parameters(filepath):
     try:
         parameter_array = np.load(filepath + "_parameters.npy", allow_pickle=True)
     except OSError:
-        print("\n",filepath,"does not exists")
+        print("\n", filepath, "does not exists")
         successfully_loaded = False
         parameter_array = None
     else:
@@ -245,7 +257,9 @@ def parameters_handeling(filepath, parameters_list):
     return parameters, successfully_loaded
 
 
-def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegpu=False):
+def run(
+    filepath, epochs, parameters, successfully_loaded, database, batch, usegpu=False
+):
     """
     Creates and trains a GAN from the parameters provided.
     It will load the weights of the GAN if they exist.

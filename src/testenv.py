@@ -4,17 +4,9 @@ import ganrunner
 import multiprocessing as mpg
 import time
 
+
 def main(
-    dataset,
-    filepath,
-    epochs,
-    model,
-    opti,
-    batch,
-    cells,
-    layers,
-    lambdas,
-    rate,
+    dataset, filepath, epochs, model, opti, batch, cells, layers, lambdas, rate,
 ):
     """
     this is a custom made "main" funtion copied from src folder it does not have "core" or "samples"
@@ -22,10 +14,8 @@ def main(
     Core elements of this code are sourced directly from the David Foster book 'Deep generative models' and have been modified to work with a numeric database such as the iris datasets taken from the library 'sklearn'.
     """
     filename, extention = filepath.split(".")
-    if extention == "csv":
-        dataset = True
     ganrunner.tools.setup_log(filename + "_progress.log")
-    database, details = ganrunner.load_data(dataset, filepath, extention)
+    database, details = ganrunner.load_data(filepath, extention)
     parameters_list = [dataset, model, opti, batch, cells, layers, lambdas, rate]
     parameters, successfully_loaded = ganrunner.parameters_handeling(
         filename, parameters_list
@@ -45,7 +35,7 @@ def fid_run(block):
     pramters as given in a list fromat
     this uses a custom made main fuction def above rather that the one in src
     """
-    per,dataname,batch,batch2,folder = block
+    per, dataname, batch, batch2, folder = block
     cells = 150
     epochs = 15000
     thegan, details, totime = main(
@@ -54,11 +44,11 @@ def fid_run(block):
         epochs,
         "linear",
         "adam",
-        batch,#batch_size
+        batch,  # batch_size
         cells,
-        5,#number_of_layers
-        10,#lambdas
-        0.0001,#learnig rate
+        5,  # number_of_layers
+        10,  # lambdas
+        0.0001,  # learnig rate
     )
     full = ganrunner.tools.pd.read_csv(folder + "00" + dataname)
     pachal = full.sample(batch2)
@@ -68,34 +58,39 @@ def fid_run(block):
             thegan,
             None,
             batch2,
-            None,#folder + "60" + dataname,
+            None,  # folder + "60" + dataname,
             details,
-            None,#".csv",#extention
-            False #show?
+            None,  # ".csv",#extention
+            False,  # show?
         )
-        ls.append(ganrunner.tools.gpu_LS(pachal.to_numpy(),syn.to_numpy()))
+        ls.append(ganrunner.tools.gpu_LS(pachal.to_numpy(), syn.to_numpy()))
     return ls
 
-def poolrun(dataname,batch,batch2,folder):
+
+def poolrun(dataname, batch, batch2, folder):
     block = []
     for i in range(10):
-        block.append([i,dataname,batch,batch2,folder])
-    p = mpg.Pool(processes=10)#--------------------------------------------------------------------------?
-    result = p.map(fid_run,block)
+        block.append([i, dataname, batch, batch2, folder])
+    p = mpg.Pool(
+        processes=10
+    )  # --------------------------------------------------------------------------?
+    result = p.map(fid_run, block)
     p.close()
     p.join()
     return result
 
-def singal(dataname,batch,batch2,folder):
+
+def singal(dataname, batch, batch2, folder):
     fls = []
-    for i in [5]:#range(1,10):
-        fls.append(fid_run([i,dataname,batch,batch2,folder]))
+    for i in [5]:  # range(1,10):
+        fls.append(fid_run([i, dataname, batch, batch2, folder]))
     return fls
 
-def one_dataset(dataname,muti,batch,batch2,folder):
+
+def one_dataset(dataname, muti, batch, batch2, folder):
     if muti:
-        fidata = poolrun(dataname,batch,batch2,folder)
+        fidata = poolrun(dataname, batch, batch2, folder)
     else:
-        fidata = singal(dataname,batch,batch2,folder)
+        fidata = singal(dataname, batch, batch2, folder)
     frame = ganrunner.tools.pd.DataFrame(fidata)
-    frame.to_csv(folder + "ls_" + dataname,index=False)
+    frame.to_csv(folder + "ls_" + dataname, index=False)

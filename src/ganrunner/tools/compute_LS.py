@@ -13,7 +13,7 @@ By:                 Shuyue Guan
 """
 import numpy as np
 from scipy.spatial.distance import minkowski
-from scipy.stats import ks_2samp,anderson_ksamp
+from scipy.stats import ks_2samp, anderson_ksamp
 import torch
 
 
@@ -43,11 +43,11 @@ def andy_LS(real, gen):
     distbtw = torch.cdist(t_gen, t_real)  # BCD
     distbtw = torch.flatten(distbtw)
 
-    D_Sep_1, _ = anderson_ksamp([dist_real, distbtw])
-    D_Sep_2, _ = anderson_ksamp([dist_gen, distbtw])
-    print("andy",D_Sep_1,D_Sep_2)
+    D_Sep_1, _, _ = anderson_ksamp([dist_real, distbtw])
+    D_Sep_2, _, _ = anderson_ksamp([dist_gen, distbtw])
 
-    return 1 - np.max([D_Sep_1, D_Sep_2])  # LS=1-DSI
+    return 1 - np.max([D_Sep_1 / 10000, D_Sep_2 / 10000])  # LS=1-DSI
+
 
 #####################  LS CPU ver. ##################{
 
@@ -114,7 +114,6 @@ def gpu_LS(real, gen):
 
     D_Sep_1, _ = ks_2samp(dist_real, distbtw)
     D_Sep_2, _ = ks_2samp(dist_gen, distbtw)
-    print("kolmo",D_Sep_1,D_Sep_2)
 
     return 1 - np.max([D_Sep_1, D_Sep_2])  # LS=1-DSI
 

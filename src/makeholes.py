@@ -9,16 +9,17 @@ import pandas
 import random
 import numpy
 
+
 def mkhole(block):
-    file,folder = block
-    print(file,folder)
-    for i in range(1,10):
-        percent = i/10
+    file, folder = block
+    print(file, folder)
+    for i in range(1, 10):
+        percent = i / 10
         if i > 1:
-            name = folder + str(i*10-10) + file
+            name = folder + str(i * 10 - 10) + file
         else:
             name = folder + "00" + file
-        print("opening:",name)
+        print("opening:", name)
         data = pandas.read_csv(name)
         x, y = data.shape
         count = 0
@@ -28,5 +29,5 @@ def mkhole(block):
             col = random.randint(0, y - 1)
             data.iloc[row, col] = numpy.nan
             count = data.isna().sum().sum()
-        print(count, "(", aim, ")/", x * y," final", sep="")
+        print(count, "(", aim, ")/", x * y, " final", sep="")
         data.to_csv(folder + str(int(percent * 100)) + file, index=False)

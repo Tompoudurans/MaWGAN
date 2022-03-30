@@ -7,33 +7,55 @@ import time as t
 from .utlility import copy_format
 import os
 import logging
+import pandas
 
 
-class wGANgp(object):
+def normalize(dataset, mean, std):
     """
-
+    Normalises the dataset by mean and standard deviation
     """
+    mid = dataset - mean
+    new_data = mid / std
+    return new_data
 
+
+def unnormalize(dataset, mean, std):
+    """
+    Reverts the normalised dataset to original format
+    """
+    df = pandas.DataFrame(dataset)
+    mid = df * std
+    original = mid + mean
+    return original
+
+
+def get_norm(data):
+    """
+    Provides the mean and standard deviation for the dataset so it can be normalised.
+    """
+    mean = data.mean()
+    std = data.std()
+    data = normalize(data, mean, std)
+    return data.to_numpy("float"), mean.to_numpy("float"), std.to_numpy("float")
+
+
+class vgan(object):
     def __init__(
         self,
         optimiser,
         input_dim,
-        net_dim,
+        noise_size,
         number_of_layers,
         lambdas,
         learning_rate,
-        network="linear",
+        network,
     ):
-        if network == "wgangp":
-            self.network = "linear"
-            print("old model")
-            # backward comblilty with old models
-        else:
-            self.network = network.lower()
-        self.net_dim = net_dim
-        self.input_dim = input_dim
+        self.network = network.lower()
+        self.net_dim = noise_size
+        self.data_dim = input_dim
         self.Make_Generator(number_of_layers)
         self.Make_Critic(number_of_layers)
+        self.adversarial_loss = torch.nn.BCELoss()
         # WGAN values from paper
         self.learning_rate = learning_rate
         self.b1 = 0.5
@@ -51,13 +73,12 @@ class wGANgp(object):
     def Make_Generator(self, number_of_layers):
         """
         This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
-        It takes in a vector of 'batch_size' length and outputs a vector of data that is 'input_dim' long.
+        It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
         """
         self.Generator = nn.Sequential()
         self.Generator.add_module(
-            str(number_of_layers) + "Glayer", nn.Linear(self.input_dim, self.net_dim)
+            str(number_of_layers) + "Glayer", nn.Linear(self.data_dim, self.net_dim)
         )
-        self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
         while number_of_layers > 1:
             if self.network == "linear":
@@ -65,7 +86,6 @@ class wGANgp(object):
                     str(number_of_layers) + "Glayer",
                     nn.Linear(self.net_dim, self.net_dim),
                 )
-                self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
             elif self.network == "rnn":
                 self.Generator.add_module(
                     str(number_of_layers) + "Glayer",
@@ -82,20 +102,20 @@ class wGANgp(object):
                     nn.GRUCell(self.net_dim, self.net_dim),
                 )
             else:
-                raise ValueError("network type not found")
+                raise ValueError("network type not found", self.network)
             number_of_layers -= 1
         self.Generator.add_module(
-            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.input_dim)
+            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.data_dim)
         )
 
     def Make_Critic(self, number_of_layers):
         """
         This makes a critic network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
-        It takes in a vector of data that is 'input_dim' long and outputs a probability of the data being real or fake.
+        It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
         """
         self.Critic = nn.Sequential()
         self.Critic.add_module(
-            str(number_of_layers) + "Clayer", nn.Linear(self.input_dim, self.net_dim)
+            str(number_of_layers) + "Clayer", nn.Linear(self.data_dim, self.net_dim)
         )
         self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
         number_of_layers -= 1
@@ -124,15 +144,13 @@ class wGANgp(object):
             else:
                 raise ValueError("network type not found")
             number_of_layers -= 1
-        self.Critic.add_module(
-            str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
-        )
+        self.Critic.add_module(str(number_of_layers) + "Clayer", nn.Sigmoid())
 
     def create_fake(self, batch_size):
         """
         this creates a batch of fake data
         """
-        z = torch.randn(batch_size, self.input_dim)
+        z = torch.randn(batch_size, self.data_dim)
         fake_images = self.Generator(z)
         return fake_images.detach().numpy()
 
@@ -150,6 +168,13 @@ class wGANgp(object):
             sample = self.linear_sample(data)
         return sample
 
+    def exctract(self, timedata, alpha=0.3):
+        timedata = pandas.DataFrame(timedata)
+        trend = timedata.ewm(alpha=alpha, adjust=False).mean()
+        trendless = trend[::5]
+        noise = timedata / trend
+        return trendless, noise  # ,trendless
+
     def train(
         self,
         data,
@@ -157,7 +182,7 @@ class wGANgp(object):
         epochs,
         hasmissing=False,
         print_every_n_batches=10,
-        n_critic=5,
+        n_critic=10,
         usegpu=False,
     ):
         """
@@ -167,121 +192,75 @@ class wGANgp(object):
         It will print and record the loss of the generator and critic every_n_batches.
         """
         print("critc train =", n_critic)
-        print("gpu =", usegpu)
+        self.summary()
         self.usegpu = usegpu
-        if self.usegpu:  # put the Neural network to gpu
+        if self.usegpu:
             self.Critic = self.Critic.cuda()
             self.Generator = self.Generator.cuda()
         if hasmissing:
             print("missing data mode on")
         self.batch_size = batch_size
-        data_tensor = torch.Tensor(data)  # convert format
-        one = torch.tensor(1, dtype=torch.float)  # creates
-        mone = one * -1
+        trend, noise = self.exctract(data, 0.3)
+        signal, mean, std = get_norm(trend)
+        data_tensor = torch.Tensor(signal)
+        valid = Variable(
+            torch.Tensor(batch_size, self.net_dim).fill_(1.0), requires_grad=False
+        )
+        fake = Variable(
+            torch.Tensor(batch_size, self.net_dim).fill_(0.0), requires_grad=False
+        )
         for g_iter in range(epochs):
             # Requires grad, Generator requires_grad = False
             for p in self.Critic.parameters():
-                p.requires_grad = True  # telling working on the critic
+                p.requires_grad = True
             d_loss_real = 0
             d_loss_fake = 0
             Wasserstein_D = 0
             # Train Dicriminator forward-loss-backward-update n_critic times while 1 Generator forward-loss-backward-update
             for d_iter in range(n_critic):
-                self.Critic.zero_grad()  # chec
-                images = self.sample_type(
-                    data_tensor
-                )  # randomly sample data equal to batck so [batch_size*input_dim]
-                # images = Variable(sample)#convert format
-                # Train discriminator
-                z = torch.randn(
-                    self.batch_size, self.input_dim
-                )  # creates the noise matix [batch_size*input_dim]
+                self.Critic.zero_grad()
+                sample = self.sample_type(data_tensor)
+                images = Variable(sample)
+                # Train self.Critic
+                z = Variable(torch.randn(self.batch_size, self.data_dim))
                 if self.usegpu:
                     fake_images = self.Generator(z.cuda())
                 else:
                     fake_images = self.Generator(z)
                 if hasmissing:
-                    images, fake_images = copy_format(
-                        images, fake_images, self.usegpu
-                    )  # creates the mask
+                    images, fake_images = copy_format(images, fake_images, self.usegpu)
                 if self.usegpu:
                     images = images.cuda()
                 # Train with real images
-                d_loss_real = self.Critic(images)  # look at batch_test.ipynb
-                d_loss_real = d_loss_real.mean()
-                d_loss_real.backward(mone)  # calculate grads(C(x))*-1
-                # if torch.cuda.device_count() > 1:
-                #  model = nn.DataParallel(model)
-
-                # Train with fake images
-
-                d_loss_fake = self.Critic(fake_images)
-                d_loss_fake = d_loss_fake.mean()
-                d_loss_fake.backward(one)  # calculate Grads(C(G(z)))
-                # Train with gradient penalty
-                gradient_penalty = self.calculate_gradient_penalty(
-                    images.data, fake_images.data
+                real_loss = self.adversarial_loss(self.Critic(images), valid)
+                fake_loss = self.adversarial_loss(
+                    self.Critic(fake_images.detach()), fake
                 )
-                gradient_penalty.backward()  # calculate grads(gradient_penalty)
-
-                d_loss = (
-                    d_loss_fake - d_loss_real + gradient_penalty
-                )  # add the grad terms together
-
-                self.d_optimizer.step()  # update the weights
-            # Generator update
-            for p in self.Critic.parameters():
-                p.requires_grad = False  # #telling working on the generator
+                d_loss = (real_loss + fake_loss) / 2
+                d_loss.backward()
+                self.d_optimizer.step()
+                # Generator update
             self.Generator.zero_grad()
             # train generator
             # compute loss with fake images
-            z = Variable(torch.randn(self.batch_size, self.input_dim))
+            z = Variable(torch.randn(self.batch_size, self.data_dim))
             if self.usegpu:
                 fake_images = self.Generator(z.cuda())
             else:
                 fake_images = self.Generator(z)
-            g_loss = self.Critic(fake_images)
+            g_loss = self.adversarial_loss(self.Critic(fake_images), valid)
             g_loss = g_loss.mean()
-            g_loss.backward(mone)
-            g_cost = -g_loss
+            g_loss.backward()
             self.g_optimizer.step()
             if g_iter % print_every_n_batches == 0:
                 logging.info(
-                    f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
+                    f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, d_loss: {d_loss:.2f}"
                 )
-
-    def calculate_gradient_penalty(self, real_images, fake_images):
-        """
-        Computes gradient penalty based on prediction and weighted real / fake samples
-        """
-        eta = torch.FloatTensor(self.batch_size, 1).uniform_(0, 1)
-        if self.usegpu:
-            eta = eta.cuda()
-        eta = eta.expand(self.batch_size, real_images.size(1))
-        interpolated = eta * real_images + ((1 - eta) * fake_images)
-        # define it to calculate gradient
-        interpolated = Variable(interpolated, requires_grad=True)
-        # calculate probability of interpolated examples
-        prob_interpolated = self.Critic(interpolated)
-        # calculate gradients of probabilities with respect to examples
-        if self.usegpu:
-            gradients = autograd.grad(
-                outputs=prob_interpolated,
-                inputs=interpolated,
-                grad_outputs=torch.ones(prob_interpolated.size()).cuda(),
-                create_graph=True,
-                retain_graph=True,
-            )[0]
-        else:
-            gradients = autograd.grad(
-                outputs=prob_interpolated,
-                inputs=interpolated,
-                grad_outputs=torch.ones(prob_interpolated.size()),
-                create_graph=True,
-                retain_graph=True,
-            )[0]
-        grad_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * self.lambda_term
-        return grad_penalty
+            assert g_loss > 0 or g_loss < 0
+        # self.Critic = self.Critic.cpu()
+        # self.Generator = self.Generator.cpu()
+        return unnormalize(trend, mean, std)
+        # Saving model and sampling images every 1000th generator iterations
 
     def summary(self):
         """
