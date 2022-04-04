@@ -143,10 +143,9 @@ class OwGAN(object):
     def fcast(self, w):
         b = torch.randn(self.batch_size, self.input_dim)
         end = self.data_dim - self.input_dim
-        # print("W",w.shape,"b",b.shape)
         w[:, end:] = b
+        w = w.clone().detach()
         predic = self.forcaster(w)
-        # print(predic.shape,w.shape,b.shape)
         w[:, end:] = predic
         return w
 
@@ -155,31 +154,10 @@ class OwGAN(object):
         data_dim is the number
         """
         # torch.autograd.set_detect_anomaly(True)
-        data = torch.Tensor(data)
-        bimask, nummask = make_mask(data)
+        #data = torch.Tensor(data)
+        #bimask, nummask = make_mask(data)
         for s in range(tf):
-            if s >= tsf:
-                flag = True
-                for p in self.Critic.parameters():
-                    p.requires_grad = True
-                for t in range(tc):
-                    self.Critic.zero_grad()
-                    ubar = Variable(self.sample_type(data))
-                    # for i in range(mc):
-                    ubar[bimask] = 0
-                    initw = self.create_fake(self.batch_size)
-                    w = self.fcast(initw)
-                    wbar = w * nummask[self.index]
-                    d_loss_real, d_loss_fake = self.critic_update(
-                        ubar, wbar
-                    )  # include calculate_gradient_penalty,loss calculation, critic weights opti
-                # end for
-            else:
-                flag = False
-            # end if
             # for i in range(mf):
-            for p in self.Critic.parameters():
-                p.requires_grad = False
             self.forcaster.zero_grad()
             intw = self.create_fake(self.batch_size)
             w = self.fcast(intw)
@@ -187,10 +165,6 @@ class OwGAN(object):
             # end = self.data_dim - self.input_dim
             # floss2 = floss[:,end:]
             floss2 = floss2.mean()
-            if s % print_every_n_batches == 0:
-                logging.info(
-                    f"iteration: {s}/{tf}({flag}), f_loss: {floss2:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
-                )
             floss2.backward(
                 self.mone
             )  # this funtions needs more info which i am going to add later

@@ -9,6 +9,88 @@ import os
 import logging
 import pandas
 
+class supGenerator(torch.nn.Module):
+    def __init__(self,number_of_layers,net_dim,data_dim,emb_dim):
+        """
+        This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
+        It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
+        """
+        super(supGenerator,self).__init__()
+        self.net_dim = net_dim
+        self.data_dim = data_dim
+        self.emb_dim = emb_dim
+        self.emb()
+        self.center(number_of_layers)
+
+
+    def emb(self):
+        self.emb_output = nn.Sequential(
+            nn.Embedding(self.emb_dim, self.net_dim), nn.Linear(self.net_dim, self.data_dim)
+        )
+
+    def center(self,number_of_layers):
+        self.model = nn.Sequential()
+        self.model.add_module(
+            str(number_of_layers) + "Glayer", nn.Linear(self.data_dim*2, self.net_dim)
+        )
+        self.model.add_module(str(number_of_layers) + "active", nn.Tanh())
+        number_of_layers -= 1
+        while number_of_layers > 1:
+            self.model.add_module(
+                str(number_of_layers) + "Glayer",
+                nn.Linear(self.net_dim, self.net_dim),
+            )
+            self.model.add_module(str(number_of_layers) + "active", nn.Tanh())
+            number_of_layers -= 1
+        self.model.add_module(
+            str(number_of_layers) + "rec_Glayer",nn.GRUCell(self.net_dim, self.net_dim),
+        )
+
+    def forward(self,data,label):
+        concat = torch.cat((data, self.emb_output(label)), dim=1)
+        end = concat.float()
+        return self.model(end)
+
+
+class supCritic(torch.nn.Module):
+    def __init__(self,number_of_layers,net_dim,data_dim,emb_dim):
+        """
+        This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
+        It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
+        """
+        super(supCritic,self).__init__()
+        self.net_dim = net_dim
+        self.data_dim = data_dim
+        self.emb(emb_dim)
+        self.center(number_of_layers)
+
+    def emb(self,emb_dim):
+        self.emb_output = nn.Sequential(
+            nn.Embedding(emb_dim, self.net_dim), nn.Linear(self.net_dim, self.data_dim)
+        )
+
+    def center(self,number_of_layers):
+        self.model = nn.Sequential()
+        self.model.add_module(
+            str(number_of_layers) + "Clayer", nn.Linear(self.data_dim*2, self.net_dim)
+        )
+        self.model.add_module(str(number_of_layers) + "active", nn.Tanh())
+        number_of_layers -= 1
+        while number_of_layers > 1:
+            self.model.add_module(
+                str(number_of_layers) + "rec_Clayer",
+                nn.GRUCell(self.net_dim, self.net_dim),,
+            )
+            self.model.add_module(str(number_of_layers) + "active", nn.Tanh())
+            number_of_layers -= 1
+        self.model.add_module(
+            str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
+        )
+
+    def forward(self,data,label):
+        concat = torch.cat((data, self.emb_output(label)), dim=1)
+        end = concat.float()
+        return self.model(end)
 
 class decompGAN(object):
     def __init__(
@@ -20,12 +102,12 @@ class decompGAN(object):
         lambdas,
         learning_rate,
         network,
+        emb_dim
     ):
         self.network = network.lower()
-        self.net_dim = noise_size
         self.data_dim = input_dim
-        self.Make_Generator(number_of_layers)
-        self.Make_Critic(number_of_layers)
+        self.Generator = supGenerator(number_of_layers,noise_size,input_dim,emb_dim)
+        self.Critic = supCritic(number_of_layers,noise_size,input_dim,emb_dim)
         # WGAN values from paper
         self.learning_rate = learning_rate
         self.b1 = 0.5
@@ -40,102 +122,44 @@ class decompGAN(object):
         )
         self.lambda_term = lambdas
 
-    def Make_Generator(self, number_of_layers):
-        """
-        This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
-        It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
-        """
-        latent_output = nn.Sequential()
-        latent_output.add_module(
-            str(number_of_layers) + "Clayer", nn.Linear(self.data_dim, self.net_dim)
-        )
-        latent_output.add_module(str(number_of_layers) + "active", nn.Tanh())
-        label_output = nn.Sequential(
-            nn.Embedding(n_classes, embedding_dim), nn.Linear(embedding_dim, 16)
-        )
-        concat = torch.cat((latent_output, label_output), dim=1)
-        self.Generator = nn.Sequential(concat)
-        self.Generator = nn.Sequential()
-        self.Generator.add_module(
-            str(number_of_layers) + "Glayer", nn.Linear(self.data_dim, self.net_dim)
-        )
-        self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
-        number_of_layers -= 1
-        while number_of_layers > 1:
-            self.Generator.add_module(
-                str(number_of_layers) + "Glayer",
-                nn.GRUCell(self.net_dim, self.net_dim),
-            )
-            self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
-            number_of_layers -= 1
-        self.Generator.add_module(
-            str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.data_dim)
-        )
 
-    def Make_Critic(self, number_of_layers):
-        """
-        This makes a critic network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
-        It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
-        """
-        latent_output = nn.Sequential()
-        latent_output.add_module(
-            str(number_of_layers) + "Clayer", nn.Linear(self.data_dim, self.net_dim)
-        )
-        latent_output.add_module(str(number_of_layers) + "active", nn.Tanh())
-        label_output = nn.Sequential(
-            nn.Embedding(n_classes, embedding_dim), nn.Linear(embedding_dim, 16)
-        )
-        concat = torch.cat((latent_output, label_output), dim=1)
-        self.Critic = nn.Sequential(concat)
-        self.Critic.add_module(
-            str(number_of_layers) + "Clayer", nn.Linear(self.data_dim, self.net_dim)
-        )
-        self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
-        number_of_layers -= 1
-        while number_of_layers > 1:
-            self.Critic.add_module(
-                str(number_of_layers) + "Clayer",
-                nn.GRUCell(self.net_dim, self.net_dim),
-            )
-            self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
-            number_of_layers -= 1
-        self.Critic.add_module(
-            str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
-        )
-
-    def create_fake(self, batch_size):
+    def create_fake(self, batch_size, label):
         """
         this creates a batch of fake data
         """
+        labels_tensor = torch.tensor([label]*batch_size)
         z = torch.randn(batch_size, self.data_dim)
-        fake_images = self.Generator(z)
-        return fake_images.detach().numpy()
+        fake_datas = self.Generator(z,labels_tensor)
+        return fake_datas.detach().numpy()
 
-    def linear_sample(self, data):
+    def linear_sample(self, data, label):
         """
         select samples that are linearly dependent
         """
         sizes = len(data) - self.batch_size
         start_loc = torch.randint(0, sizes, (1,))
         index = range(start_loc, start_loc + self.batch_size)
-        return data[index]
+        return data[index], label[index]
 
-    def sample_type(self, data):
+    def pick_sample(self, data, label):
+        """
+        pick a smaple of the data of size of the batch
+        """
+        perm = torch.randperm(len(data))
+        index = perm[: self.batch_size]
+        return data[index], label[index]
+
+    def sample_type(self, data, label):
         if self.network == "linear":
-            sample = self.pick_sample(data)
+            sample, self.tar = self.pick_sample(data,label)
         else:
-            sample = self.linear_sample(data)
-        return sample
-
-    def exctract(self, timedata, alpha=0.3):
-        timedata = pandas.DataFrame(timedata)
-        trend = timedata.ewm(alpha=alpha, adjust=False).mean()
-        noise = timedata / trend
-        return trend, noise
+            sample, self.tar = self.linear_sample(data,label)
+        return sample, self.tar
 
     def train(
         self,
         data,
+        label,
         batch_size,
         epochs,
         hasmissing=False,
@@ -158,6 +182,7 @@ class decompGAN(object):
         if hasmissing:
             print("missing data mode on")
         self.batch_size = batch_size
+        data_tensor = torch.Tensor(data)
         one = torch.tensor(1, dtype=torch.float)
         mone = one * -1
         for g_iter in range(epochs):
@@ -169,35 +194,34 @@ class decompGAN(object):
             Wasserstein_D = 0
             # Train Dicriminator forward-loss-backward-update n_critic times while 1 Generator forward-loss-backward-update
             for d_iter in range(n_critic):
-                sample = self.sample_type(data)
-                noise_tensor = torch.Tensor(noise.to_numpy())
+                sample,self.tar = self.sample_type(data_tensor,label)
                 self.Critic.zero_grad()
-                images = Variable(noise_tensor)
+                datas = Variable(sample)
                 # Train discriminator
                 z = Variable(torch.randn(self.batch_size, self.data_dim))
                 if self.usegpu:
-                    fake_images = self.Generator(z.cuda())
+                    fake_datas = self.Generator(z.cuda())
                 else:
-                    fake_images = self.Generator(z)
+                    fake_datas = self.Generator(z,self.tar)
                 if hasmissing:
-                    images, fake_images = copy_format(images, fake_images, self.usegpu)
+                    datas, fake_datas = copy_format(datas, fake_datas, self.usegpu)
                 if self.usegpu:
-                    images = images.cuda()
-                # Train with real images
-                d_loss_real = self.Critic(images)
+                    datas = datas.cuda()
+                # Train with real datas
+                d_loss_real = self.Critic(datas,self.tar)
                 d_loss_real = d_loss_real.mean()
                 d_loss_real.backward(mone)
                 # if torch.cuda.device_count() > 1:
                 #  model = nn.DataParallel(model)
 
-                # Train with fake images
+                # Train with fake datas
 
-                d_loss_fake = self.Critic(fake_images)
+                d_loss_fake = self.Critic(fake_datas,self.tar)
                 d_loss_fake = d_loss_fake.mean()
                 d_loss_fake.backward(one)
                 # Train with gradient penalty
                 gradient_penalty = self.calculate_gradient_penalty(
-                    images.data, fake_images.data
+                    datas.data, fake_datas.data
                 )
                 gradient_penalty.backward()
 
@@ -210,13 +234,13 @@ class decompGAN(object):
 
             self.Generator.zero_grad()
             # train generator
-            # compute loss with fake images
+            # compute loss with fake datas
             z = Variable(torch.randn(self.batch_size, self.data_dim))
             if self.usegpu:
-                fake_images = self.Generator(z.cuda())
+                fake_datas = self.Generator(z.cuda())
             else:
-                fake_images = self.Generator(z)
-            g_loss = self.Critic(fake_images)
+                fake_datas = self.Generator(z,self.tar)
+            g_loss = self.Critic(fake_datas,self.tar)
             g_loss = g_loss.mean()
             g_loss.backward(mone)
             g_cost = -g_loss
@@ -228,21 +252,21 @@ class decompGAN(object):
             assert g_loss > 0 or g_loss < 0
         self.Critic = self.Critic.cpu()
         self.Generator = self.Generator.cpu()
-        # Saving model and sampling images every 1000th generator iterations
+        # Saving model and sampling datas every 1000th generator iterations
 
-    def calculate_gradient_penalty(self, real_images, fake_images):
+    def calculate_gradient_penalty(self, real_datas, fake_datas):
         """
         Computes gradient penalty based on prediction and weighted real / fake samples
         """
         eta = torch.FloatTensor(self.batch_size, 1).uniform_(0, 1)
         if self.usegpu:
             eta = eta.cuda()
-        eta = eta.expand(self.batch_size, real_images.size(1))
-        interpolated = eta * real_images + ((1 - eta) * fake_images)
+        eta = eta.expand(self.batch_size, real_datas.size(1))
+        interpolated = eta * real_datas + ((1 - eta) * fake_datas)
         # define it to calculate gradient
         interpolated = Variable(interpolated, requires_grad=True)
         # calculate probability of interpolated examples
-        prob_interpolated = self.Critic(interpolated)
+        prob_interpolated = self.Critic(interpolated,self.tar)
         # calculate gradients of probabilities with respect to examples
         if self.usegpu:
             gradients = autograd.grad(
@@ -269,14 +293,6 @@ class decompGAN(object):
         """
         print(self.Critic)
         print(self.Generator)
-
-    def pick_sample(self, data):
-        """
-        pick a smaple of the data of size of the batch
-        """
-        perm = torch.randperm(len(data))
-        index = perm[: self.batch_size]
-        return data[index]
 
     def save_model(self, filepath):
         """

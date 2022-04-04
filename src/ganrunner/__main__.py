@@ -41,7 +41,7 @@ def main(
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     epochs = int(epochs)
     try:
-        database, details = load_data(parameters[0], filepath, extention)
+        database, details = load_data(filepath, extention)
     except tools.sqlman.sa.exc.OperationalError as oe:
         logging.exception(oe)
         try:
@@ -136,7 +136,7 @@ def input_float(question):
             return answer
 
 
-def load_data(sets, filepath, extention):
+def load_data(filepath, extention):
     """
     Loads a dataset from an sql table
     """

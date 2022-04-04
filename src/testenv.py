@@ -3,7 +3,9 @@
 import ganrunner
 import multiprocessing as mpg
 import time
-
+import logging
+from torch import tensor
+import pandas
 
 def main(
     dataset, filepath, epochs, model, opti, batch, cells, layers, lambdas, rate,
@@ -22,12 +24,36 @@ def main(
     )
     epochs = int(epochs)
     beg = time.time()
-    thegan, success = ganrunner.run(
-        filename, epochs, parameters, successfully_loaded, database, batch, True
+    thegan, success = letgo(
+        filename, epochs, parameters, successfully_loaded, database,False
     )
     totime = time.time() - beg
     return thegan, details, totime
 
+def letgo(filepath, epochs, parameters, successfully_loaded, database,usegpu=False):
+    """
+    Creates and trains a GAN from the parameters provided.
+    """
+    # select datase
+    metadata, network, optimiser, noise_size, batch, number_of_layers, lambdas, learning_rate = parameters
+    logging.info(filepath)
+    input_dim = 4
+    mygan = ganrunner.gans.decompGAN(
+        optimiser,
+        input_dim,
+        int(noise_size),
+        int(number_of_layers),
+        int(lambdas),
+        float(learning_rate),
+        "linear")
+    #mygan = ganrunner.load_gan_weight(filepath, mygan)
+    if epochs > 0:
+        #step = int(math.ceil(epochs * 0.1))
+        step = 100
+        tals = tensor([[0]*50,[1]*50,[2]*50]).reshape(1,150)
+        mygan.train(database, tals[0], int(batch), int(epochs), False, step, 10, usegpu)
+        mygan.save_model(filepath)
+    return mygan, True
 
 def fid_run(block):
     """
@@ -36,7 +62,7 @@ def fid_run(block):
     this uses a custom made main fuction def above rather that the one in src
     """
     per, dataname, batch, batch2, folder = block
-    cells = 150
+    cells = 100
     epochs = 15000
     thegan, details, totime = main(
         None,
@@ -50,21 +76,11 @@ def fid_run(block):
         10,  # lambdas
         0.0001,  # learnig rate
     )
-    full = ganrunner.tools.pd.read_csv(folder + "00" + dataname)
-    pachal = full.sample(batch2)
-    ls = [totime]
-    for i in range(100):
-        syn = ganrunner.make_samples(
-            thegan,
-            None,
-            batch2,
-            None,  # folder + "60" + dataname,
-            details,
-            None,  # ".csv",#extention
-            False,  # show?
-        )
-        ls.append(ganrunner.tools.gpu_LS(pachal.to_numpy(), syn.to_numpy()))
-    return ls
+    set0 = pandas.DataFrame(thegan.create_fake(50,0))
+    set2 = pandas.DataFrame(thegan.create_fake(50,2))
+    set0.to_csv(folder + "set0_" + dataname, index=False)
+    set2.to_csv(folder + "set2_" + dataname, index=False)
+    return None
 
 
 def poolrun(dataname, batch, batch2, folder):
@@ -82,7 +98,7 @@ def poolrun(dataname, batch, batch2, folder):
 
 def singal(dataname, batch, batch2, folder):
     fls = []
-    for i in [5]:  # range(1,10):
+    for i in [0]:  # range(1,10):
         fls.append(fid_run([i, dataname, batch, batch2, folder]))
     return fls
 
@@ -92,5 +108,3 @@ def one_dataset(dataname, muti, batch, batch2, folder):
         fidata = poolrun(dataname, batch, batch2, folder)
     else:
         fidata = singal(dataname, batch, batch2, folder)
-    frame = ganrunner.tools.pd.DataFrame(fidata)
-    frame.to_csv(folder + "ls_" + dataname, index=False)
