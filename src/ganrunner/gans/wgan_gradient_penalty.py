@@ -6,7 +6,7 @@ from torch import autograd
 import time as t
 import matplotlib.pyplot as plt
 from .utlility import copy_format
-
+import logging
 plt.switch_backend("agg")
 import os
 
@@ -171,6 +171,7 @@ class wGANgp(object):
         if hasmissing:
             print("missing data mode on")
         self.batch_size = batch_size
+        logging.info(self.batch_size,batch_size)
         data_tensor = torch.Tensor(data)
         one = torch.tensor(1, dtype=torch.float)
         mone = one * -1
@@ -233,7 +234,7 @@ class wGANgp(object):
             g_cost = -g_loss
             self.g_optimizer.step()
             if g_iter % print_every_n_batches == 0:
-                print(
+                logging.info(
                     f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
                 )
             assert g_loss > 0 or g_loss < 0

@@ -18,7 +18,7 @@ noise_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
 testgan = ganrunner.wGANgp(
-    "adam", noise_vector, data, nodes, layers, lambdas, 0.00001, "linear"
+    "adam", noise_vector, nodes, layers, lambdas, 0.00001, "linear"
 )
 
 
@@ -31,12 +31,11 @@ def test_gan_training():
     """
     noise = torch.randn(batch_size, noise_vector)
     untrained_fake = testgan.Generator(noise).detach().numpy()
-    testgan.train(dataset, batch_size, 20)
+    testgan.train(dataset, 2, 20)
     trained_fake = testgan.Generator(noise).detach().numpy()
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
     assert any(untrained != trained)
-
 
 def test_save_load():
     """
@@ -48,7 +47,7 @@ def test_save_load():
     assert os.stat("testing_generator.pkl").st_size > 0
     assert os.stat("testing_critic.pkl").st_size > 0
     test = ganrunner.wGANgp(
-        "adam", noise_vector, data, nodes, layers, lambdas, 0.00001, "linear"
+        "adam", noise_vector, nodes, layers, lambdas, 0.00001, "linear"
     )
     test.load_model("testing")
     assert all(generator_weight_save) == all(test.Generator.state_dict())
