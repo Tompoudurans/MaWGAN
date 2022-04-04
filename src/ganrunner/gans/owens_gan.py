@@ -148,7 +148,7 @@ class OwGAN(object):
         predic = self.forcaster(w)
         # print(predic.shape,w.shape,b.shape)
         w[:, end:] = predic
-        return w.clone().detach()
+        return w
 
     def psudo_training(self, data, tf, tsf, tc, mc, mf, print_every_n_batches):
         """
@@ -156,8 +156,6 @@ class OwGAN(object):
         """
         # torch.autograd.set_detect_anomaly(True)
         data = torch.Tensor(data)
-        bk = 25
-        d_loss_real, d_loss_fake = [0, 0]
         bimask, nummask = make_mask(data)
         for s in range(tf):
             if s >= tsf:
