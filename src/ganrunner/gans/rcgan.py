@@ -79,7 +79,7 @@ class supCritic(torch.nn.Module):
         while number_of_layers > 1:
             self.model.add_module(
                 str(number_of_layers) + "rec_Clayer",
-                nn.GRUCell(self.net_dim, self.net_dim),,
+                nn.GRUCell(self.net_dim, self.net_dim)
             )
             self.model.add_module(str(number_of_layers) + "active", nn.Tanh())
             number_of_layers -= 1
@@ -88,9 +88,15 @@ class supCritic(torch.nn.Module):
         )
 
     def forward(self,data,label):
-        concat = torch.cat((data, self.emb_output(label)), dim=1)
-        end = concat.float()
-        return self.model(end)
+        try:
+            concat = torch.cat((data, self.emb_output(label)), dim=1)
+            end = concat.float()
+            return self.model(end)
+        except Exception as e:
+            print(data.shape)
+            print(label.shape)
+            print(concat.shape)
+            raise RuntimeError(e)
 
 class decompGAN(object):
     def __init__(
