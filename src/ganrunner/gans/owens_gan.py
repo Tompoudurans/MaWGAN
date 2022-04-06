@@ -143,11 +143,13 @@ class OwGAN(object):
     def fcast(self, w):
         b = torch.randn(self.batch_size, self.input_dim)
         end = self.data_dim - self.input_dim
-        w[:, end:] = b
-        w = w.clone().detach()
-        predic = self.forcaster(w)
-        w[:, end:] = predic
-        return w
+        fac = torch.tensor([[1]*end + [0]*self.input_dim]*self.batch_size)
+        invfac = torch.tensor([[0]*end]*self.batch_size)
+        wfac = w*fac
+        to_forcat = wfac + torch.cat((invfac, b), dim=1)
+        predic = self.forcaster(to_forcat)
+        together = wfac + torch.cat((invfac, predic), dim=1)
+        return together
 
     def psudo_training(self, data, tf, tsf, tc, mc, mf, print_every_n_batches):
         """
@@ -163,7 +165,6 @@ class OwGAN(object):
             w = self.fcast(intw)
             floss2 = self.Critic(w)  # wk is not used
             # end = self.data_dim - self.input_dim
-            # floss2 = floss[:,end:]
             floss2 = floss2.mean()
             floss2.backward(
                 self.mone
