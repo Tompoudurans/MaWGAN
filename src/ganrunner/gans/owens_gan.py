@@ -126,6 +126,21 @@ class OwGAN(object):
         fake_images = self.Generator(z)
         return fake_images  # .detach().numpy()
 
+    def create_series(self,length_of_series):
+        batch_size = 1
+        w = self.create_fake(batch_size)
+        end = self.data_dim - self.input_dim
+        wfac = w[:end]
+        series = [w[:self.input_dim],w[self.input_dim:end]]
+        for i in range(length_of_series):
+            b = torch.randn(batch_size, self.input_dim)
+            to_forcat = torch.cat((wfac, b), dim=1)
+            predic = self.forcaster(to_forcat)
+            middle = wfac[self.input_dim:]
+            wfac = torch.cat((middel, predic), dim=1)
+            series.append.detach().numpy()
+        return series
+
     def linear_sample(self, data):
         "select samples that are linearly dependent"
         sizes = len(data) - self.batch_size
@@ -156,16 +171,43 @@ class OwGAN(object):
         data_dim is the number
         """
         # torch.autograd.set_detect_anomaly(True)
-        #data = torch.Tensor(data)
-        #bimask, nummask = make_mask(data)
+        d_loss_real, d_loss_fake = [0,0]
+        data = torch.Tensor(data)
+        nummask,bimask = make_mask(data)
         for s in range(tf):
+            if s >= tsf:
+                flag = True
+                for p in self.Critic.parameters():
+                    p.requires_grad = True
+                for t in range(tc):
+                    self.Critic.zero_grad()
+                    ubar = Variable(self.sample_type(data))
+                    # for i in range(mc):
+                    ubar[bimask[self.index]] = 0
+                    initw = self.create_fake(self.batch_size)
+                    w = self.fcast(initw)
+                    wbar = w * nummask[self.index]
+                    d_loss_real, d_loss_fake = self.critic_update(
+                        ubar, wbar
+                    )  # include calculate_gradient_penalty,loss calculation, critic weights opti
+                # end for
+            else:
+                flag = False
+            # end if
             # for i in range(mf):
+            for p in self.Critic.parameters():
+                p.requires_grad = False
             self.forcaster.zero_grad()
             intw = self.create_fake(self.batch_size)
             w = self.fcast(intw)
             floss2 = self.Critic(w)  # wk is not used
             # end = self.data_dim - self.input_dim
+            # floss2 = floss[:,end:]
             floss2 = floss2.mean()
+            if s % print_every_n_batches == 0:
+                logging.info(
+                    f"iteration: {s}/{tf}({flag}), f_loss: {floss2:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
+                )
             floss2.backward(
                 self.mone
             )  # this funtions needs more info which i am going to add later
