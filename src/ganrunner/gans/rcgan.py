@@ -37,19 +37,19 @@ class supGenerator(torch.nn.Module):
         number_of_layers -= 1
         while number_of_layers > 1:
             self.model.add_module(
-                str(number_of_layers) + "Glayer",
-                nn.Linear(self.net_dim, self.net_dim),
+                str(number_of_layers) + "rec_Glayer",
+                nn.GRUCell(self.net_dim, self.net_dim),
             )
-            self.model.add_module(str(number_of_layers) + "active", nn.Tanh())
             number_of_layers -= 1
         self.model.add_module(
-            str(number_of_layers) + "rec_Glayer",nn.GRUCell(self.net_dim, self.net_dim),
+            str(number_of_layers) + "Glayer",nn.Linear(self.net_dim, self.data_dim),
         )
 
     def forward(self,data,label):
         concat = torch.cat((data, self.emb_output(label)), dim=1)
         end = concat.float()
         return self.model(end)
+
 
 
 class supCritic(torch.nn.Module):
@@ -81,7 +81,6 @@ class supCritic(torch.nn.Module):
                 str(number_of_layers) + "rec_Clayer",
                 nn.GRUCell(self.net_dim, self.net_dim)
             )
-            self.model.add_module(str(number_of_layers) + "active", nn.Tanh())
             number_of_layers -= 1
         self.model.add_module(
             str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
@@ -93,7 +92,8 @@ class supCritic(torch.nn.Module):
             end = concat.float()
             return self.model(end)
         except Exception as e:
-            print(data.shape)
+            print("critic")
+            print(data)#.shape)
             print(label.shape)
             print(concat.shape)
             raise RuntimeError(e)
@@ -133,7 +133,7 @@ class decompGAN(object):
         """
         this creates a batch of fake data
         """
-        labels_tensor = torch.tensor([label]*batch_size)
+        labels_tensor = torch.tensor(label)
         z = torch.randn(batch_size, self.data_dim)
         fake_datas = self.Generator(z,labels_tensor)
         return fake_datas.detach().numpy()
@@ -189,6 +189,7 @@ class decompGAN(object):
             print("missing data mode on")
         self.batch_size = batch_size
         data_tensor = torch.Tensor(data)
+        labels_tensor = torch.LongTensor(label)
         one = torch.tensor(1, dtype=torch.float)
         mone = one * -1
         for g_iter in range(epochs):
@@ -200,7 +201,7 @@ class decompGAN(object):
             Wasserstein_D = 0
             # Train Dicriminator forward-loss-backward-update n_critic times while 1 Generator forward-loss-backward-update
             for d_iter in range(n_critic):
-                sample,self.tar = self.sample_type(data_tensor,label)
+                sample,self.tar = self.sample_type(data_tensor,labels_tensor)
                 self.Critic.zero_grad()
                 datas = Variable(sample)
                 # Train discriminator
@@ -219,7 +220,6 @@ class decompGAN(object):
                 d_loss_real.backward(mone)
                 # if torch.cuda.device_count() > 1:
                 #  model = nn.DataParallel(model)
-
                 # Train with fake datas
 
                 d_loss_fake = self.Critic(fake_datas,self.tar)
