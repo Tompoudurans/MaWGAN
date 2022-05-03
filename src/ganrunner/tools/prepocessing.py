@@ -24,7 +24,7 @@ def get_norm(data):
     """
     Provides the mean and standard deviation for the dataset so it can be normalised.
     """
-    mean = data.mean()
+    mean = data.min()
     std = data.std()
     data = normalize(data, mean, std)
     return data.to_numpy("float"), mean, std

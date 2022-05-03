@@ -85,6 +85,7 @@ class supCritic(torch.nn.Module):
         self.model.add_module(
             str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
         )
+        #self.model.add_module(str(number_of_layers) + "active", nn.Tanh())
 
     def forward(self,data,label):
         try:
@@ -147,20 +148,10 @@ class decompGAN(object):
         index = range(start_loc, start_loc + self.batch_size)
         return data[index], label[index]
 
-    def pick_sample(self, data, label):
-        """
-        pick a smaple of the data of size of the batch
-        """
-        perm = torch.randperm(len(data))
-        index = perm[: self.batch_size]
-        return data[index], label[index]
+
 
     def sample_type(self, data, label):
-        if self.network == "linear":
-            sample, self.tar = self.pick_sample(data,label)
-        else:
-            sample, self.tar = self.linear_sample(data,label)
-        return sample, self.tar
+        sample, self.tar = self.linear_sample(data,label)
 
     def train(
         self,
