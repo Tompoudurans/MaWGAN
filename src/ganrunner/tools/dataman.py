@@ -12,15 +12,6 @@ import matplotlib.pyplot as mp
 import logging
 
 
-def simplesplit(x, fac=10):
-    """
-    Randomly splits the dataset into 2 parts
-    """
-    size = len(x)
-    z = np.split(rd.sample(range(size), size), [int(size * (1 - fac / 100))])
-    return x[z[0]], x[z[1]]
-
-
 def dagplot(synthetic, original, filepath, extention=".pdf"):
     """
     plots original data vs the synthetic data then saves

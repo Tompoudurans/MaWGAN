@@ -21,6 +21,8 @@ class wGANgp(object):
         lambdas,
         learning_rate,
         network,
+        #b1=0.5,
+        #b2=0.999
     ):
         if network == "wgangp":
             self.network = "linear"
@@ -34,17 +36,29 @@ class wGANgp(object):
         self.Make_Critic(number_of_layers)
         # WGAN values from paper
         self.learning_rate = learning_rate
-        self.b1 = 0.5
-        self.b2 = 0.999
-
-        # WGAN_gradient penalty uses ADAM ------------------------ do somthing here
-        self.d_optimizer = optim.Adam(
-            self.Critic.parameters(), lr=self.learning_rate, betas=(self.b1, self.b2)
-        )
-        self.g_optimizer = optim.Adam(
-            self.Generator.parameters(), lr=self.learning_rate, betas=(self.b1, self.b2)
-        )
+        #self.b1 = b1
+        #self.b2 = b2
         self.lambda_term = lambdas
+        self.make_optimize(optimiser.lower())
+
+    def make_optimize(self,opt):
+        if opt == "adam":
+            self.d_optimizer = optim.Adam(
+                self.Critic.parameters(), lr=self.learning_rate)#, betas=(self.b1, self.b2)
+            )
+            self.g_optimizer = optim.Adam(
+                self.Generator.parameters(), lr=self.learning_rate)#, betas=(self.b1, self.b2)
+            )
+        if opt == "adadelta":
+            self.d_optimizer = optim.Adadelta(self.Critic.parameters(), lr=self.learning_rate)
+            self.g_optimizer = optim.Adadelta(self.Generator.parameters(), lr=self.learning_rate)
+        if opt == "adagrad":
+            self.d_optimizer = optim.Adagrad(self.Critic.parameters(), lr=self.learning_rate)
+            self.g_optimizer = optim.Adagrad(self.Generator.parameters(), lr=self.learning_rate)
+        if opt == "rmsprop":
+            self.d_optimizer = optim.RMSprop(self.Critic.parameters(), lr=self.learning_rate)
+            self.g_optimizer = optim.RMSprop(self.Generator.parameters(), lr=self.learning_rate)
+
 
     def Make_Generator(self, number_of_layers):
         """

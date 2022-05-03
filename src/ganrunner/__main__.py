@@ -71,7 +71,6 @@ def main(
 ):
     """
     This code creates and trains a GAN.
-    Core elements of this code are sourced directly from the David Foster book 'Deep generative models' and have been modified to work with a numeric database such as the iris datasets taken from the library 'sklearn'.
     Soon this GAN should work on the DCWW dataset.
     """
     click.echo("loading...")
