@@ -40,18 +40,16 @@ class OwGAN(object):
         print("forcaster")
         # WGAN values from paper
         self.learning_rate = learning_rate
-        self.b1 = 0.5
-        self.b2 = 0.999
 
         # WGAN_gradient penalty uses ADAM ------------------------ do somthing here
         self.d_optimizer = optim.Adam(
-            self.Critic.parameters(), lr=self.learning_rate, betas=(self.b1, self.b2)
+            self.Critic.parameters(), lr=self.learning_rate#, betas=(self.b1, self.b2)
         )
         self.g_optimizer = optim.Adam(
-            self.Generator.parameters(), lr=self.learning_rate, betas=(self.b1, self.b2)
+            self.Generator.parameters(), lr=self.learning_rate#, betas=(self.b1, self.b2)
         )
         self.f_optimizer = optim.Adam(
-            self.forcaster.parameters(), lr=self.learning_rate, betas=(self.b1, self.b2)
+            self.forcaster.parameters(), lr=self.learning_rate#, betas=(self.b1, self.b2)
         )
         self.lambda_term = lambdas
 
@@ -128,17 +126,18 @@ class OwGAN(object):
 
     def create_series(self,length_of_series):
         batch_size = 1
-        w = self.create_fake(batch_size)
+        w = self.create_fake(batch_size)[0]
         end = self.data_dim - self.input_dim
         wfac = w[:end]
-        series = [w[:self.input_dim],w[self.input_dim:end]]
+        series = [w[:self.input_dim].detach().numpy()]
         for i in range(length_of_series):
-            b = torch.randn(batch_size, self.input_dim)
-            to_forcat = torch.cat((wfac, b), dim=1)
+            b = torch.randn(self.input_dim)
+            to_forcat = torch.cat((wfac, b))
             predic = self.forcaster(to_forcat)
             middle = wfac[self.input_dim:]
-            wfac = torch.cat((middel, predic), dim=1)
-            series.append.detach().numpy()
+            wfac = torch.cat((middle, predic))
+            series.append(middle[:self.input_dim].detach().numpy())
+        series.append(predic.detach().numpy())
         return series
 
     def linear_sample(self, data):
@@ -347,8 +346,8 @@ class OwGAN(object):
         forcast_batch,
         tsf,
         usegpu,
+        lag
     ):
-        lag = 3
         u_matrix = numpy.array(self.extend_data(lag, data, len(data)))
         self.one = torch.tensor(1, dtype=torch.float)
         self.mone = self.one * -1
