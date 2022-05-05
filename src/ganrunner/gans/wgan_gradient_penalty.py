@@ -5,7 +5,7 @@ from torch.autograd import Variable
 from torch import autograd
 import time as t
 import matplotlib.pyplot as plt
-from .utlility import copy_format
+from .masker import copy_format
 import logging
 plt.switch_backend("agg")
 import os

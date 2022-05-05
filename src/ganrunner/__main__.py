@@ -64,7 +64,6 @@ def main(
     batch,
     layers,
     lambdas,
-    core,
     sample,
     rate,
     graph,
