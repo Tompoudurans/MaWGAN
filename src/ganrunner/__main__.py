@@ -243,7 +243,7 @@ def make_samples(
     generated_data = mygan.create_fake(batch)
     if show:
         tools.calculate_fid(generated_data, database.sample(batch))
-    generated_data = tools.unnormalize(generated_data, mean, std)
+    generated_data = tools.unnormalize(tools.pd.DataFrame(generated_data), mean, std)
     generated_data.columns = col
     if show:
         database = tools.unnormalize(database, mean, std)

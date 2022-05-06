@@ -17,7 +17,7 @@ from torch import tensor
 #____#Description
 #____#this script is part of MaWGAN core mecanic this create a mask from dataset
 #____#which indicates where the missing data is, then applies it to another dataset
-#____#which is most likely to be the generated data
+#____#which is most likely to be the generated data.
 #___#
 #___#---------------------------------------------------------------------------
 
@@ -29,6 +29,7 @@ from torch import tensor
 #_#
 #_#Author Notes\
 #_#this funtion make mask that indicates where the missing data is,
+#_# outputs the numeral and binary mask.
 #_#Reviewer Notes\
 
 def make_mask(data):
@@ -54,7 +55,7 @@ def make_mask(data):
 #_#
 #_#Author Notes\
 #_#create a mask from the template and apply it to the data
-#_#this operation made in the gpu if the the usegpu flag is set to True
+#_#this operation made in the gpu if the the usegpu flag is set to True.
 #_#Reviewer Notes\
 #_#
 #_#
