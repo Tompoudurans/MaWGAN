@@ -11,9 +11,8 @@ import logging
 
 class wGANgp(object):
     """
-
+    makes a gan
     """
-
     def __init__(
         self,
         optimiser,
@@ -133,7 +132,11 @@ class wGANgp(object):
         this creates a batch of fake data
         """
         z = torch.randn(batch_size, self.input_dim)
+        if self.usegpu:
+            z = z.cuda()
         fake_images = self.Generator(z)
+        if self.usegpu:
+            fake_images = fake_images.cpu()
         return fake_images.detach().numpy()
 
     def linear_sample(self, data):

@@ -8,7 +8,7 @@ from .utlility import copy_format
 import os
 import logging
 import pandas
-
+from ganrunner.tools import exctract
 
 class decompGAN(object):
     def __init__(
@@ -106,12 +106,6 @@ class decompGAN(object):
             sample = self.linear_sample(data)
         return sample
 
-    def exctract(self, timedata, alpha=0.3):
-        timedata = pandas.DataFrame(timedata)
-        trend = timedata.ewm(alpha=alpha, adjust=False).mean()
-        noise = timedata / trend
-        return trend, noise
-
     def train(
         self,
         data,
@@ -149,7 +143,7 @@ class decompGAN(object):
             # Train Dicriminator forward-loss-backward-update n_critic times while 1 Generator forward-loss-backward-update
             for d_iter in range(n_critic):
                 sample = self.sample_type(data)
-                trend, noise = self.exctract(sample)
+                trend, noise, compacs = exctract(sample,60)
                 noise_tensor = torch.Tensor(noise.to_numpy())
                 self.Critic.zero_grad()
                 images = Variable(noise_tensor)

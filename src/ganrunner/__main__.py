@@ -173,7 +173,7 @@ def create_model(parameters, no_field):
         mygan = gans.vgan(
             optimiser="adam",
             input_dim=no_field,
-            noise_size=noise_dim,
+            net_dim=noise_dim,
             number_of_layers=number_of_layers,
             lambdas=float(parameters[6]),
             learning_rate=lr,
@@ -183,7 +183,7 @@ def create_model(parameters, no_field):
         mygan = gans.wGANgp(
             optimiser="adam",
             input_dim=no_field,
-            noise_size=noise_dim,
+            net_dim=noise_dim,
             number_of_layers=number_of_layers,
             lambdas=float(parameters[6]),
             learning_rate=lr,

@@ -5,3 +5,4 @@ from ganrunner.tools.core import set_core
 from ganrunner.tools.sqlman import *
 from ganrunner.tools.categorical import encoding, decoding
 from ganrunner.tools.compute_LS import *
+from ganrunner.tools.etrac import *

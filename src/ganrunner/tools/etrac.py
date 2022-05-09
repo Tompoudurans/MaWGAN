@@ -27,7 +27,7 @@ def exctract(timedata, fac=20):
             noises = numpy.append(noises,[noise],axis=0)
             compacs = numpy.append(compacs,[compac],axis=0)
     return trends.transpose(), noises.transpose(), compacs.transpose()
-    
+
 def smoother(timedata,fac):
     """
     takes a fonier trasform of timedata and keeps fac trems before inverse trasform
@@ -44,3 +44,9 @@ def expand(compac,lenght):
     for i in tran:
         smooth.append(scipy.fft.irfft(i,lenght))
     return smooth
+
+def movingav(self, timedata, alpha=0.3):
+        timedata = pandas.DataFrame(timedata)
+        trend = timedata.ewm(alpha=alpha, adjust=False).mean()
+        noise = timedata / trend
+        return trend, noise
