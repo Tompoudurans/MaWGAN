@@ -7,160 +7,223 @@ import time as t
 import matplotlib.pyplot as plt
 from .masker import copy_format
 import logging
-plt.switch_backend("agg")
 import os
+
+#___#---------------------------------------------------------------------------
+#___#
+#___#**Project:**         Masked Wasterstin generative adviersal network\
+#___#**Script:**          wgan_gradient_penalty.py\
+#___#**Author:**          Thomas Poudevigne\
+#___#**Date Created:**    ‎21 ‎July ‎2021\
+#___#**Reviewer:**        TBC\
+#___#**Devops Feature:**  #[don't know]\
+#___#**Devops Backlog:**  #[don't know]\
+#___#**Devops Task:**     #[don't know]\
+#___#**Devops Repo:**     ganrunner\gans\
+#___#**MARS:**            "S:\..."
+#___#
+#___#
+#____#Description
+#____#This script is the main part of the GAN network code. It builds, trains
+#____#and creates sythetic data
+#____#This is done by using a class object
+#___#
+#___#---------------------------------------------------------------------------
 
 
 class wGANgp(object):
+#-------------------------------------------------------------------------------
+#_#
+#__#1.Creates the GAN according to the parameters given
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#This function creates the class object
+#_#
+#_#Reviewer Notes\
+#_#
+#_#
+
     def __init__(
         self,
         optimiser,
-        input_dim,
-        noise_size,
+        number_of_variables,
+        number_of_nodes,
         number_of_layers,
         lambdas,
         learning_rate,
         network,
-        #b1=0.5,
-        #b2=0.999
     ):
-        if network == "wgangp":
-            self.network = "linear"
-            print("old model")
-            # backward comblilty with old models
-        else:
-            self.network = network.lower()
-        self.net_dim = noise_size
-        self.data_dim = input_dim
+    #_#Steps\
+    #_# Save the number of nodes in a layer to the class object
+        self.net_dim = number_of_nodes
+    #_# Save the number of variables to the class object
+        self.data_dim = number_of_variables
+    #_# Create the generator and save it in the class object
         self.Make_Generator(number_of_layers)
+    #_# Create the critic and save it in the class object
         self.Make_Critic(number_of_layers)
-        # WGAN values from paper
-        self.learning_rate = learning_rate
-        #self.b1 = b1
-        #self.b2 = b2
+    #_# Save the lambda_term to the class object
         self.lambda_term = lambdas
+    #_# Save the learning rate to the class object
+        self.learning_rate = learning_rate
+    #_# Create the optimzers used for training the networks
         self.make_optimize(optimiser.lower())
 
+#-------------------------------------------------------------------------------
+#_#
+#__#2. Create the optimzers used for training the networks
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#This function creates the optimers for the critic and the generator
+#_#that are used for training the networks. There is a choice of five optimsers
+#_#(adam, adadelta, adagrad, rmsprop).
+#_#Reviewer Notes\
+#_#
+#_#
+
     def make_optimize(self,opt):
+        #_#Steps\
+        #_# Check if the optimser 'adam' has been selected
         if opt == "adam":
-            self.d_optimizer = optim.Adam(
-                self.Critic.parameters(), lr=self.learning_rate)#, betas=(self.b1, self.b2)
-            )
-            self.g_optimizer = optim.Adam(
-                self.Generator.parameters(), lr=self.learning_rate)#, betas=(self.b1, self.b2)
-            )
+        #_# Assign the optimser 'adam' to the Critic parameters using the saved learning rate
+            self.d_optimizer = optim.Adam(self.Critic.parameters(), lr=self.learning_rate))
+        #_# Assign the optimser 'adam' to the Generator parameters using the saved learning rate
+            self.g_optimizer = optim.Adam(self.Generator.parameters(), lr=self.learning_rate))
+        #_# Check if the optimser 'adadelta' has been selected
         if opt == "adadelta":
+        #_# Assign the optimser 'adelta' to the Critic parameters using the saved learning rate
             self.d_optimizer = optim.Adadelta(self.Critic.parameters(), lr=self.learning_rate)
+        #_# Assign the optimser 'adam' to the Generator parameters using the saved learning rate
             self.g_optimizer = optim.Adadelta(self.Generator.parameters(), lr=self.learning_rate)
+        #_# Check if the optimser 'adagrad' has been selected
         if opt == "adagrad":
+        #_# Assign the optimser 'adagrad' to the Critic parameters using the saved learning rate
             self.d_optimizer = optim.Adagrad(self.Critic.parameters(), lr=self.learning_rate)
+                #_# Assign the optimser 'adagrad' to the Generator parameters using the saved learning rate
             self.g_optimizer = optim.Adagrad(self.Generator.parameters(), lr=self.learning_rate)
+        #_# Check if the optimser 'rmsprop' has been selected
         if opt == "rmsprop":
+        #_# Assign the optimser 'rmsprop' to the Critic parameters using the saved learning rate
             self.d_optimizer = optim.RMSprop(self.Critic.parameters(), lr=self.learning_rate)
+        #_# Assign the optimser 'rmsprop' to the Generator parameters using the saved learning rate
             self.g_optimizer = optim.RMSprop(self.Generator.parameters(), lr=self.learning_rate)
+        #_# Check if the optimser 'SGD' has been selected
+        if opt == "sgd":
+        #_# Assign the optimser 'sgd' to the Critic parameters using the saved learning rate
+            self.d_optimizer = optim.SGD(self.Critic.parameters(), lr=self.learning_rate)
+        #_# Assign the optimser 'sgd' to the Generator parameters using the saved learning rate
+            self.g_optimizer = optim.SGD(self.Generator.parameters(), lr=self.learning_rate)
 
-
+#-------------------------------------------------------------------------------
+#_#
+#__#2. Bulid generator
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#
+#_#Reviewer Notes\
+#_#
+#_#
     def Make_Generator(self, number_of_layers):
         """
         This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
         """
+        #_#steps/
+        #_#create empty neural network object
         self.Generator = nn.Sequential()
+        #_# add the input layers
         self.Generator.add_module(
             str(number_of_layers) + "Glayer", nn.Linear(self.data_dim, self.net_dim)
         )
+        #_# adds an activation function
         self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+        #_# reduce the number of layer counter by 1
         number_of_layers -= 1
+        #_# loops until number layers counter = 0
         while number_of_layers > 1:
-            if self.network == "linear":
-                self.Generator.add_module(
-                    str(number_of_layers) + "Glayer",
-                    nn.Linear(self.net_dim, self.net_dim),
-                )
-                self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
-            elif self.network == "rnn":
-                self.Generator.add_module(
-                    str(number_of_layers) + "Glayer",
-                    nn.RNNCell(self.net_dim, self.net_dim),
-                )
-            elif self.network == "lstm":
-                self.Generator.add_module(
-                    str(number_of_layers) + "Glayer",
-                    nn.LSTMCell(self.net_dim, self.net_dim),
-                )
-            elif self.network == "gru":
-                self.Generator.add_module(
-                    str(number_of_layers) + "Glayer",
-                    nn.GRUCell(self.net_dim, self.net_dim),
-                )
-            else:
-                raise ValueError("network type not found")
+        #_# creates a hidden layer
+            self.Generator.add_module(
+                str(number_of_layers) + "Glayer",
+                nn.Linear(self.net_dim, self.net_dim),
+            )
+            #_# adds an activation function
+            self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
+            #_# reduce the number of layer counter by 1
             number_of_layers -= 1
+        #_# creates the ouput layer
         self.Generator.add_module(
             str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.data_dim)
         )
-
+#-------------------------------------------------------------------------------
+#_#
+#__#2. Bulid the critic
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#
+#_#Reviewer Notes\
+#_#
+#_#
     def Make_Critic(self, number_of_layers):
         """
         This makes a critic network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
-        It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or fake.
+        It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or synthetic.
         """
+        #_#steps/
+        #_#create empty neural network object
         self.Critic = nn.Sequential()
+        #_# add the input layers
         self.Critic.add_module(
             str(number_of_layers) + "Clayer", nn.Linear(self.data_dim, self.net_dim)
         )
+        #_# adds an activation function
         self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
+        #_# reduce the number of layer counter by 1
         number_of_layers -= 1
+        #_# loops until number layers counter = 0
         while number_of_layers > 1:
-            if self.network == "linear":
-                self.Critic.add_module(
-                    str(number_of_layers) + "Clayer",
-                    nn.Linear(self.net_dim, self.net_dim),
-                )
-                self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
-            elif self.network == "rnn":
-                self.Critic.add_module(
-                    str(number_of_layers) + "Clayer",
-                    nn.RNNCell(self.net_dim, self.net_dim),
-                )
-            elif self.network == "lstm":
-                self.Critic.add_module(
-                    str(number_of_layers) + "Clayer",
-                    nn.LSTMCell(self.net_dim, self.net_dim),
-                )
-            elif self.network == "gru":
-                self.Critic.add_module(
-                    str(number_of_layers) + "Clayer",
-                    nn.GRUCell(self.net_dim, self.net_dim),
-                )
-            else:
-                raise ValueError("network type not found")
+        #_# creates a hidden layer
+            self.Critic.add_module(
+                str(number_of_layers) + "Clayer",
+                nn.Linear(self.net_dim, self.net_dim),
+            )
+            #_# adds an activation function
+            self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
             number_of_layers -= 1
+        #_# creates the ouput layer
         self.Critic.add_module(
             str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
         )
+#-------------------------------------------------------------------------------
+#_#
+#__#2. Create sythetic data
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#this creates a batch of synthetic data use outside training
+#_#Reviewer Notes\
+#_#
+#_#
 
-    def create_fake(self, batch_size):
+    def create_synthetic(self, batch_size):
         """
-        this creates a batch of fake data
+        this creates a batch of synthetic data
         """
+        #_#steps\
+        #_#creates a random matrix with dimtions batch_size * data_dim
         z = torch.randn(batch_size, self.data_dim)
-        fake_images = self.Generator(z)
-        return fake_images.detach().numpy()
-
-    def linear_sample(self, data):
-        "select samples that are linearly dependent"
-        sizes = len(data) - self.batch_size
-        start_loc = torch.randint(0, sizes, (1,))
-        index = range(start_loc, start_loc + self.batch_size)
-        return data[index]
-
-    def sample_type(self, data):
-        if self.network == "linear":
-            sample = self.pick_sample(data)
-        else:
-            sample = self.linear_sample(data)
-        return sample
+        #_# feed the random matix into the gentrator
+        synthetic_data = self.Generator(z)
+        #_# outputs the synthetic dataset without the gradient metadata
+        return synthetic_data.detach().numpy()
 
     def train(
         self,
@@ -190,45 +253,43 @@ class wGANgp(object):
         one = torch.tensor(1, dtype=torch.float)
         mone = one * -1
         for g_iter in range(epochs):
-            # Requires grad, Generator requires_grad = False
             for p in self.Critic.parameters():
                 p.requires_grad = True
             d_loss_real = 0
-            d_loss_fake = 0
+            d_loss_synthetic = 0
             Wasserstein_D = 0
-            # Train Dicriminator forward-loss-backward-update n_critic times while 1 Generator forward-loss-backward-update
             for d_iter in range(n_critic):
                 self.Critic.zero_grad()
-                sample = self.sample_type(data_tensor)
-                images = Variable(sample)
+                sample = self.pick_sample(data_tensor)
+                org_data = Variable(sample)
                 # Train discriminator
                 z = Variable(torch.randn(self.batch_size, self.data_dim))
                 if self.usegpu:
-                    fake_images = self.Generator(z.cuda())
+                    synthetic_data = self.Generator(z.cuda())
                 else:
-                    fake_images = self.Generator(z)
+                    synthetic_data = self.Generator(z)
                 if hasmissing:
-                    images, fake_images = copy_format(images, fake_images,self.usegpu)
+                    org_data, synthetic_data = copy_format(org_data, synthetic_data,self.usegpu)
                 if self.usegpu:
-                    images = images.cuda()
-                # Train with real images
-                d_loss_real = self.Critic(images)
+                    org_data = org_data.cuda()
+                # Train with real org_data
+                d_loss_real = self.Critic(org_data)
                 d_loss_real = d_loss_real.mean()
                 d_loss_real.backward(mone)
 
-                # Train with fake images
+                # Train with synthetic org_data
 
-                d_loss_fake = self.Critic(fake_images)
-                d_loss_fake = d_loss_fake.mean()
-                d_loss_fake.backward(one)
+                d_loss_synthetic = self.Critic(synthetic_data)
+                d_loss_synthetic = d_loss_synthetic.mean()
+                d_loss_synthetic.backward(one)
                 # Train with gradient penalty
                 gradient_penalty = self.calculate_gradient_penalty(
-                    images.data, fake_images.data
+                    org_data.data, synthetic_data.data
                 )
                 gradient_penalty.backward()
 
-                d_loss = d_loss_fake - d_loss_real + gradient_penalty
-                Wasserstein_D = d_loss_real - d_loss_fake
+                d_loss = d_loss_synthetic - d_loss_real + gradient_penalty
+                Wasserstein_D = d_loss_real - d_loss_synthetic
                 self.d_optimizer.step()
             # Generator update
             for p in self.Critic.parameters():
@@ -236,35 +297,35 @@ class wGANgp(object):
 
             self.Generator.zero_grad()
             # train generator
-            # compute loss with fake images
+            # compute loss with synthetic data
             z = Variable(torch.randn(self.batch_size, self.data_dim))
             if self.usegpu:
-                fake_images = self.Generator(z.cuda())
+                synthetic_data = self.Generator(z.cuda())
             else:
-                fake_images = self.Generator(z)
-            g_loss = self.Critic(fake_images)
+                synthetic_data = self.Generator(z)
+            g_loss = self.Critic(synthetic_data)
             g_loss = g_loss.mean()
             g_loss.backward(mone)
             g_cost = -g_loss
             self.g_optimizer.step()
             if g_iter % print_every_n_batches == 0:
                 logging.info(
-                    f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
+                    f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_synthetic: {d_loss_synthetic:.2f}, loss_real: {d_loss_real:.2f}"
                 )
             assert g_loss > 0 or g_loss < 0
         self.Critic = self.Critic.cpu()
         self.Generator = self.Generator.cpu()
-        # Saving model and sampling images every 1000th generator iterations
+        # Saving model and sampling data every 1000th generator iterations
 
-    def calculate_gradient_penalty(self, real_images, fake_images):
+    def calculate_gradient_penalty(self, real_data, synthetic_data):
         """
-        Computes gradient penalty based on prediction and weighted real / fake samples
+        Computes gradient penalty based on prediction and weighted real / synthetic samples
         """
         eta = torch.FloatTensor(self.batch_size, 1).uniform_(0, 1)
         if self.usegpu:
             eta = eta.cuda()
-        eta = eta.expand(self.batch_size, real_images.size(1))
-        interpolated = eta * real_images + ((1 - eta) * fake_images)
+        eta = eta.expand(self.batch_size, real_data.size(1))
+        interpolated = eta * real_data + ((1 - eta) * synthetic_data)
         # define it to calculate gradient
         interpolated = Variable(interpolated, requires_grad=True)
         # calculate probability of interpolated examples
