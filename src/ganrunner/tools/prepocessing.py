@@ -14,48 +14,49 @@ import pandas
 #___#
 #___#
 #____#Description
-#____#This script is for normalizing dataset before training and unnormailzing it
+#____#This script is for normalizing the dataset before training and
+#____# un-normalizing it afterwards
 #____#
-#___#
 #___#---------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 #_#
-#__#1. normalizing
+#__#1. Normalizing
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#Normalises the dataset by mean and standard deviation
+#_#This function normalises the dataset using mean and standard deviation
 #_#Reviewer Notes\
 
 def normalize(dataset, mean, std):
     """
-    Normalises the dataset by mean and standard deviation
+    This function normalises the dataset by mean and standard deviation
     """
     #_#Steps\
-    #_# substract the mean from the values of the dataset
+    #_# Substract the mean from the values of the dataset
     mid = dataset - mean
-    #_# then divied by the standard deviation.
+    #_# Then divide by the standard deviation
     return mid / std
 
 #-------------------------------------------------------------------------------
 #_#
-#__#2. unnormalizing
+#__#2. Un-normalizing
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#Reverts the normalised dataset to original format, the inverse of the normalize function (1)
+#_#This function reverts the normalised dataset to its original format,
+#_#by using the inverse of the normalize function (1)
 #_#Reviewer Notes\
 def unnormalize(dataset, mean, std):
     """
-    Reverts the normalised dataset to original format
+    Reverts the normalised dataset to the original format
     """
     #_#Steps\
-    #_# mutiply the dataset by the standard deviation.
+    #_# Mutiply the dataset by the standard deviation.
     mid = df * std
-    #_# then adds the mean
+    #_# Then add the mean
     return mid + mean
 
 #-------------------------------------------------------------------------------
@@ -65,21 +66,22 @@ def unnormalize(dataset, mean, std):
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#Provides the mean and standard deviation for the dataset so it can be normalised.
-#_#Then send to the normalize function (1)
-#_# outputs the normalize dataset, the mean and the standard deviation
-#_# in a numpy format as it can be used in torch libary
+#_#This function provides the mean and standard deviation for the dataset
+#_#so it can be normalised.
+#_#It then sends the mean and standard deviation to the normalize function (1)
+#_# It outputs the normalized dataset, the mean and the standard deviation
+#_# in a numpy format so it can be used in torch library
 #_#Reviewer Notes\
 def get_norm(data):
     """
-    Provides the mean and standard deviation for the dataset and then normalising it
+    Provides the mean and standard deviation for the dataset and then normalises it
     """
     #_#Steps\
-    #_#find the mean
+    #_#Find the mean
     mean = data.mean()
-    #_# find the standard divation
+    #_# Find the standard deviation
     std = data.std()
-    #_# send to the normalize function (1)
+    #_# Send the above to the normalize function (1)
     data = normalize(data, mean, std)
-    #_# outputs the normalize dataset, the mean and the standard deviation
+    #_# Outputs the normalize dataset, the mean and the standard deviation
     return data.to_numpy("float"), mean.to_numpy("float"), std.to_numpy("float")

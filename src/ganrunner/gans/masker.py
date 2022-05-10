@@ -15,65 +15,66 @@ from torch import tensor
 #___#
 #___#
 #____#Description
-#____#this script is part of MaWGAN core mecanic this create a mask from dataset
+#____#This script is part of the MaWGAN core mechanic.
+#____#This script creates a mask from an 'template' dataset
 #____#which indicates where the missing data is, then applies it to another dataset
-#____#which is most likely to be the generated data.
+#____#which is usually the generated data.
 #___#
 #___#---------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 #_#
-#__#1. make mask
+#__#1. Make mask
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#this funtion make mask that indicates where the missing data is,
-#_# outputs the numeral and binary mask.
+#_#This function makes a mask that indicates where the missing data is, it
+#_# outputs a numeral and binary mask.
 #_#Reviewer Notes\
 
 def make_mask(data):
     """
-    this funtion make mask that indicates where the missing data is
+    This function makes a mask that indicates where the missing data is
     """
     #_#Steps\
     #_#The first step is to create a binary matrix which flags True
     #_#if there is data missing in this location
     binary_mask = data.isnan()
-    #_# convert the binary mask to a numeral mask
+    #_# Convert the binary mask to a numeral mask
     inverse_mask = tensor(binary_mask, dtype=int)
-    #_# inverse the 0s and 1s so 0 is where the data is missing
+    #_# Inverse the 0s and 1s so 0 is where the data is missing
     mask = 1 - inverse_mask
-    #_# outputs the numeral and binary mask
+    #_# Outputs the numeral and binary mask
     return mask, binary_mask
 
 #-------------------------------------------------------------------------------
 #_#
-#__#2. apply the mask
+#__#2. Apply the mask
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#create a mask from the template and apply it to the data
-#_#this operation made in the gpu if the the usegpu flag is set to True.
+#_#This function creates a mask from the template and applies it to the data.
+#_#This operation can be used in the gpu if the the usegpu flag is set to True.
 #_#Reviewer Notes\
 #_#
 #_#
 
 def copy_format(template, data, usegpu):
     """
-    create a mask from the template and apply it to the data
+    This function creates a mask from the template and applies it to the data.
     """
     #_#Steps\
-    #_# create a mask see section 1
+    #_# Create a mask see section 1
     mask, binary_mask = make_mask(template)
-    #_# applys the mask to the generated data
-    #_# the usegpu flag allows this operation made in the gpu
+    #_# Applies the mask to the generated data
+    #_# The usegpu flag allows this operation to be made in the gpu
     if usegpu:
         masked_data = data * mask.cuda()
     else:
         masked_data = data * mask
-    #_# replace missing values in the oringal dataset to 0
+    #_# Replace missing values in the original dataset to 0
     template[binary_mask] = 0
-    #_# outputs both datasets
+    #_# Outputs both datasets
     return template, masked_data
