@@ -27,4 +27,4 @@ def get_norm(data):
     mean = data.min()
     std = data.std()
     data = normalize(data, mean, std)
-    return data.to_numpy("float"), mean, std
+    return data, mean, std

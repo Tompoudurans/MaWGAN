@@ -6,7 +6,7 @@ This is a temporary script file.
 """
 
 import pandas
-import scipy
+import scipy.fftpack as sff
 import matplotlib.pyplot as mp
 import numpy
 
@@ -33,16 +33,16 @@ def smoother(timedata,fac):
     takes a fonier trasform of timedata and keeps fac trems before inverse trasform
     """
     lenght = len(timedata)
-    wav = scipy.fft.rfft(timedata)
+    wav = sff.rfft(timedata)
     compac = wav[0:fac]
-    smooth = scipy.fft.irfft(compac,lenght)
+    smooth = sff.irfft(compac,lenght)
     return smooth, compac
 
 def expand(compac,lenght):
     tran = compac.transpose()
     smooth = []
     for i in tran:
-        smooth.append(scipy.fft.irfft(i,lenght))
+        smooth.append(sff.irfft(i,lenght))
     return smooth
 
 def movingav(self, timedata, alpha=0.3):
