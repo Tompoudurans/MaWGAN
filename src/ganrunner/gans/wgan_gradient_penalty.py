@@ -120,7 +120,7 @@ class wGANgp(object):
 
 #-------------------------------------------------------------------------------
 #_#
-#__#2. Bulid generator
+#__#3. Bulid generator
 #_#
 #__#Review Decision:
 #_#
@@ -162,7 +162,7 @@ class wGANgp(object):
         )
 #-------------------------------------------------------------------------------
 #_#
-#__#2. Bulid the critic
+#__#4. Bulid the critic
 #_#
 #__#Review Decision:
 #_#
@@ -203,7 +203,7 @@ class wGANgp(object):
         )
 #-------------------------------------------------------------------------------
 #_#
-#__#2. Create sythetic data
+#__#5. Create sythetic data
 #_#
 #__#Review Decision:
 #_#
@@ -224,6 +224,20 @@ class wGANgp(object):
         synthetic_data = self.Generator(z)
         #_# outputs the synthetic dataset without the gradient metadata
         return synthetic_data.detach().numpy()
+#-------------------------------------------------------------------------------
+#_#
+#__#6. training the gan
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#This trains the GAN by alternating between training the critic 'critic_round' times
+#_#and training the generator once in each epoch on
+#_#the dataset x_train which has a length of batch_size.
+#_#It will print and record the loss of the generator and critic every_n_batches.
+#_#Reviewer Notes\
+#_#
+#_#
 
     def train(
         self,
@@ -241,55 +255,71 @@ class wGANgp(object):
         the dataset x_train which has a length of batch_size.
         It will print and record the loss of the generator and critic every_n_batches.
         """
+        #_#Steps\
+        #_#save usegpu flag to the class object
         self.usegpu = usegpu
+        #_#if usegpu flag is true then move to the gan to the gpu
         if self.usegpu:
             self.Critic = self.Critic.cuda()
             self.Generator = self.Generator.cuda()
-        if hasmissing:
-            print("missing data mode on")
+        #if hasmissing:
+        #    print("missing data mode on")
+        #_#save the batch size to the class object
         self.batch_size = batch_size
-        logging.info(self.batch_size,batch_size)
+        #logging.info(self.batch_size,batch_size)
+        #_# convert data format so it can be porcessed (from numpy.array to torch.tensor)
         data_tensor = torch.Tensor(data)
+        #_# create a matrix of ones
         one = torch.tensor(1, dtype=torch.float)
+        #_# create a matrix of minus ones
         mone = one * -1
+        #_#main traing loop
         for g_iter in range(epochs):
+            #_# allows the critic to be trained
             for p in self.Critic.parameters():
                 p.requires_grad = True
-            d_loss_real = 0
-            d_loss_synthetic = 0
-            Wasserstein_D = 0
+            #d_loss_real = 0
+            #d_loss_synthetic = 0
             for d_iter in range(n_critic):
+                #_# reset Critic gardent
                 self.Critic.zero_grad()
+                #_# sample dataset
                 sample = self.pick_sample(data_tensor)
                 org_data = Variable(sample)
-                # Train discriminator
+                #_#creates a random matrix with dimtions batch_size * data_dim
                 z = Variable(torch.randn(self.batch_size, self.data_dim))
+                #_# feed the random matix into the gentrator, tranfer to gpu if needed
                 if self.usegpu:
                     synthetic_data = self.Generator(z.cuda())
                 else:
                     synthetic_data = self.Generator(z)
+                #_# mask the data
                 if hasmissing:
                     org_data, synthetic_data = copy_format(org_data, synthetic_data,self.usegpu)
+                #_# tranfer the mask data to gpu if needed
                 if self.usegpu:
                     org_data = org_data.cuda()
-                # Train with real org_data
+                #_# feed the original data to the critic
                 d_loss_real = self.Critic(org_data)
+                #_# calculate the mean of the outputs of the critic
                 d_loss_real = d_loss_real.mean()
+                #_# calculate negative gradient
                 d_loss_real.backward(mone)
-
-                # Train with synthetic org_data
-
+                #_# feed the synthetic data to the critic
                 d_loss_synthetic = self.Critic(synthetic_data)
+                #_# calculate the mean of the outputs of the critic
                 d_loss_synthetic = d_loss_synthetic.mean()
+                #_# calculate positive gradient
                 d_loss_synthetic.backward(one)
-                # Train with gradient penalty
+                #_#calculate the gradent plenalty
                 gradient_penalty = self.calculate_gradient_penalty(
                     org_data.data, synthetic_data.data
                 )
+                #_# calculate the gradent of the gradent plenalty
                 gradient_penalty.backward()
-
+                #_# add all the loss
                 d_loss = d_loss_synthetic - d_loss_real + gradient_penalty
-                Wasserstein_D = d_loss_real - d_loss_synthetic
+                #_#adjust the weight of the crtic
                 self.d_optimizer.step()
             # Generator update
             for p in self.Critic.parameters():
@@ -299,23 +329,26 @@ class wGANgp(object):
             # train generator
             # compute loss with synthetic data
             z = Variable(torch.randn(self.batch_size, self.data_dim))
+            #_# feed the random matix into the gentrator, tranfer to gpu if needed
             if self.usegpu:
                 synthetic_data = self.Generator(z.cuda())
             else:
                 synthetic_data = self.Generator(z)
+            #_# feed the synthetic data to the critic
             g_loss = self.Critic(synthetic_data)
+            #_# calculate the mean of the outputs of the critic
             g_loss = g_loss.mean()
+            #_# calculate negative gradient
             g_loss.backward(mone)
-            g_cost = -g_loss
+            #_#adjust the weight of the gentrator
             self.g_optimizer.step()
+            #_# send progess to the log file
             if g_iter % print_every_n_batches == 0:
                 logging.info(
                     f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_synthetic: {d_loss_synthetic:.2f}, loss_real: {d_loss_real:.2f}"
                 )
-            assert g_loss > 0 or g_loss < 0
         self.Critic = self.Critic.cpu()
         self.Generator = self.Generator.cpu()
-        # Saving model and sampling data every 1000th generator iterations
 
     def calculate_gradient_penalty(self, real_data, synthetic_data):
         """
