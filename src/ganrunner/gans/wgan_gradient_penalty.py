@@ -120,12 +120,15 @@ class wGANgp(object):
 
 #-------------------------------------------------------------------------------
 #_#
-#__#3. Bulid generator
+#__#3. Build generator
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#
+#_#This makes a Generator network with a given number of layers (number_of_layers) and
+#_# a given number of nodes per layer (net_dim).
+#_#The input to the generator is a random matrix where the dimensions are the batch size and
+#_#the number of variables (data_dim) . The outputs are synthetic data with the same size as the input matrix.
 #_#Reviewer Notes\
 #_#
 #_#
@@ -134,40 +137,44 @@ class wGANgp(object):
         This makes a generator network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of 'batch_size' length and outputs a vector of data that is 'data_dim' long.
         """
-        #_#steps/
-        #_#create empty neural network object
+        #_#Steps/
+        #_#Create empty neural network object
         self.Generator = nn.Sequential()
-        #_# add the input layers
+        #_# Add the input layers
         self.Generator.add_module(
             str(number_of_layers) + "Glayer", nn.Linear(self.data_dim, self.net_dim)
         )
-        #_# adds an activation function
+        #_# Add an activation function
         self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
-        #_# reduce the number of layer counter by 1
+        #_# Reduce the number of layer count by 1
         number_of_layers -= 1
-        #_# loops until number layers counter = 0
+        #_# Loops until number layer count = 0
         while number_of_layers > 1:
-        #_# creates a hidden layer
+        #_# Create a hidden layer
             self.Generator.add_module(
                 str(number_of_layers) + "Glayer",
                 nn.Linear(self.net_dim, self.net_dim),
             )
-            #_# adds an activation function
+            #_# Add an activation function
             self.Generator.add_module(str(number_of_layers) + "active", nn.Tanh())
-            #_# reduce the number of layer counter by 1
+            #_# Reduce the number of layer count by 1
             number_of_layers -= 1
-        #_# creates the ouput layer
+        #_# Create the ouput layer
         self.Generator.add_module(
             str(number_of_layers) + "Glayer", nn.Linear(self.net_dim, self.data_dim)
         )
 #-------------------------------------------------------------------------------
 #_#
-#__#4. Bulid the critic
+#__#4. Build the Critic
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#
+#_#This makes a Critic network with a given number of layers (number_of_layers) and
+#_# a given number of nodes per layer (net_dim).
+#_#It takes in a dataset that has a given number of variables (data_dim)
+#_#and outputs a vector that deduces whether or not each
+#_#observation is  real or synthetic.
 #_#Reviewer Notes\
 #_#
 #_#
@@ -176,65 +183,66 @@ class wGANgp(object):
         This makes a critic network with 'number_of_layers' layers and 'net_dim' of nodes per layer.
         It takes in a vector of data that is 'data_dim' long and outputs a probability of the data being real or synthetic.
         """
-        #_#steps/
-        #_#create empty neural network object
+        #_#Steps/
+        #_#Create empty neural network object
         self.Critic = nn.Sequential()
         #_# add the input layers
         self.Critic.add_module(
             str(number_of_layers) + "Clayer", nn.Linear(self.data_dim, self.net_dim)
         )
-        #_# adds an activation function
+        #_# Add an activation function
         self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
-        #_# reduce the number of layer counter by 1
+        #_# Reduce the number of layer count by 1
         number_of_layers -= 1
-        #_# loops until number layers counter = 0
+        #_# Loop until number layer count = 0
         while number_of_layers > 1:
-        #_# creates a hidden layer
+        #_# Create a hidden layer
             self.Critic.add_module(
                 str(number_of_layers) + "Clayer",
                 nn.Linear(self.net_dim, self.net_dim),
             )
-            #_# adds an activation function
+            #_# Add an activation function
             self.Critic.add_module(str(number_of_layers) + "active", nn.Tanh())
             number_of_layers -= 1
-        #_# creates the ouput layer
+        #_# Create the ouput layer
         self.Critic.add_module(
             str(number_of_layers) + "Clayer", nn.Linear(self.net_dim, 1)
         )
 #-------------------------------------------------------------------------------
 #_#
-#__#5. Create sythetic data
+#__#5. Create synthetic data
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#this creates a batch of synthetic data use outside training
+#_#This function creates a batch of synthetic data to use outside training
 #_#Reviewer Notes\
 #_#
 #_#
 
     def create_synthetic(self, batch_size):
         """
-        this creates a batch of synthetic data
+        This creates a batch of synthetic data
         """
-        #_#steps\
-        #_#creates a random matrix with dimtions batch_size * data_dim
+        #_#Steps\
+        #_#Create a random matrix with dimensions batch_size * data_dim
         z = torch.randn(batch_size, self.data_dim)
-        #_# feed the random matix into the gentrator
+        #_# Feed the random matrix into the Generator
         synthetic_data = self.Generator(z)
-        #_# outputs the synthetic dataset without the gradient metadata
+        #_# Output the synthetic dataset without the gradient metadata
         return synthetic_data.detach().numpy()
 #-------------------------------------------------------------------------------
 #_#
-#__#6. training the gan
+#__#6. Training the GAN
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#This trains the GAN by alternating between training the critic 'critic_round' times
-#_#and training the generator once in each epoch on
-#_#the dataset x_train which has a length of batch_size.
-#_#It will print and record the loss of the generator and critic every_n_batches.
+#_#This function trains the GAN by alternating between training the Critic a number of times (critic_round)
+#_#and training the Generator once in each epoch on
+#_#a given dataset (data). If the given dataset has a 'hasmissing flag' set to TRUE,
+#_#the MAWGAN code is run, otherwise the WGAN-GP code is run.
+#_#This function will record the Loss of the Generator and Critic on a given schedule (record_every_n_batches)
 #_#Reviewer Notes\
 #_#
 #_#
@@ -245,50 +253,48 @@ class wGANgp(object):
         batch_size,
         epochs,
         hasmissing=False,
-        print_every_n_batches=10,
+        record_every_n_batches=10,
         n_critic=5,
         usegpu=False
     ):
         """
         This trains the GAN by alternating between training the critic 'critic_round' times
-        and training the generator once in each epoch on
-        the dataset x_train which has a length of batch_size.
-        It will print and record the loss of the generator and critic every_n_batches.
+        and training the generator once in each epoch
         """
         #_#Steps\
-        #_#save usegpu flag to the class object
+        #_#Save usegpu flag to the class object
         self.usegpu = usegpu
-        #_#if usegpu flag is true then move to the gan to the gpu
+        #_#If the usegpu flag is true then move the gan to the gpu
         if self.usegpu:
             self.Critic = self.Critic.cuda()
             self.Generator = self.Generator.cuda()
-        #if hasmissing:
-        #    print("missing data mode on")
-        #_#save the batch size to the class object
+        #_#States if the 'hasmissing' flag in true
+        If hasmissing:
+            print("missing data mode on")
+        #_#Save the batch size to the class object
         self.batch_size = batch_size
-        #logging.info(self.batch_size,batch_size)
-        #_# convert data format so it can be porcessed (from numpy.array to torch.tensor)
+        #_# Convert data format so it can be processed (from numpy.array to torch.tensor)
         data_tensor = torch.Tensor(data)
-        #_# create a matrix of ones
+        #_# Create a matrix of ones
         one = torch.tensor(1, dtype=torch.float)
-        #_# create a matrix of minus ones
+        #_# Create a matrix of minus ones
         mone = one * -1
-        #_#main traing loop
+        #_#Main traing loop
         for g_iter in range(epochs):
-            #_# allows the critic to be trained
+            #_# Allow the critic to be trained
             for p in self.Critic.parameters():
                 p.requires_grad = True
             #d_loss_real = 0
             #d_loss_synthetic = 0
             for d_iter in range(n_critic):
-                #_# reset Critic gardent
+                #_# reset Critic calculate_gradient_penaltyent
                 self.Critic.zero_grad()
                 #_# sample dataset
                 sample = self.pick_sample(data_tensor)
                 org_data = Variable(sample)
-                #_#creates a random matrix with dimtions batch_size * data_dim
+                #_#create a random matrix with dimensions batch_size * data_dim
                 z = Variable(torch.randn(self.batch_size, self.data_dim))
-                #_# feed the random matix into the gentrator, tranfer to gpu if needed
+                #_# feed the random matrix into the generator, tranfer to gpu if needed
                 if self.usegpu:
                     synthetic_data = self.Generator(z.cuda())
                 else:
@@ -299,89 +305,85 @@ class wGANgp(object):
                 #_# tranfer the mask data to gpu if needed
                 if self.usegpu:
                     org_data = org_data.cuda()
-                #_# feed the original data to the critic
+                #_# feed the original data to the Critic
                 d_loss_real = self.Critic(org_data)
-                #_# calculate the mean of the outputs of the critic
+                #_# calculate the mean of the outputs of the Critic
                 d_loss_real = d_loss_real.mean()
                 #_# calculate negative gradient
                 d_loss_real.backward(mone)
-                #_# feed the synthetic data to the critic
+                #_# feed the synthetic data to the Critic
                 d_loss_synthetic = self.Critic(synthetic_data)
-                #_# calculate the mean of the outputs of the critic
+                #_# calculate the mean of the outputs of the Critic
                 d_loss_synthetic = d_loss_synthetic.mean()
                 #_# calculate positive gradient
                 d_loss_synthetic.backward(one)
-                #_#calculate the gradent plenalty
+                #_#calculate the gradient penalty
                 gradient_penalty = self.calculate_gradient_penalty(
                     org_data.data, synthetic_data.data
                 )
-                #_# calculate the gradent of the gradent plenalty
+                #_# calculate the gradient of the gradient penalty
                 gradient_penalty.backward()
                 #_# add all the loss
                 d_loss = d_loss_synthetic - d_loss_real + gradient_penalty
-                #_#adjust the weight of the crtic
+                #_#adjust the weight of the Critic
                 self.d_optimizer.step()
-            # Generator update
+            #_# Forbid the critic to be trained
             for p in self.Critic.parameters():
                 p.requires_grad = False  # to avoid computation
-
             self.Generator.zero_grad()
-            # train generator
-            # compute loss with synthetic data
+            #_#create a random matrix with dimensions batch_size * data_dim
             z = Variable(torch.randn(self.batch_size, self.data_dim))
-            #_# feed the random matix into the gentrator, tranfer to gpu if needed
+            #_# feed the random matrix into the generator, tranfer to gpu if needed
             if self.usegpu:
                 synthetic_data = self.Generator(z.cuda())
             else:
                 synthetic_data = self.Generator(z)
-            #_# feed the synthetic data to the critic
+            #_# feed the synthetic data to the Critic
             g_loss = self.Critic(synthetic_data)
-            #_# calculate the mean of the outputs of the critic
+            #_# calculate the mean of the outputs of the Critic
             g_loss = g_loss.mean()
             #_# calculate negative gradient
             g_loss.backward(mone)
-            #_#adjust the weight of the gentrator
+            #_#adjust the weight of the generator
             self.g_optimizer.step()
-            #_# send progess to the log file
-            if g_iter % print_every_n_batches == 0:
+            #_# send progress to the log file
+            if g_iter % record_every_n_batches == 0:
                 logging.info(
                     f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_synthetic: {d_loss_synthetic:.2f}, loss_real: {d_loss_real:.2f}"
                 )
         if usegpu:
-            #_# move the networks back to the cpu if there where alredy not
+            #_# move the networks back to the cpu unless they were alredy there
             self.Critic = self.Critic.cpu()
             self.Generator = self.Generator.cpu()
 #-------------------------------------------------------------------------------
 #_#
-#__#7. calculate_gradient_penalty
+#__#7. Calculate the gradient penalty
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#Computes gradient penalty based on prediction and weighted real / synthetic sample
+#_#This function computes a gradient penalty based on the randomly weighted mean of the real and synthetic sample
 #_#Reviewer Notes\
 #_#
     def calculate_gradient_penalty(self, real_data, synthetic_data):
         """
-        Computes gradient penalty based on prediction and weighted real / synthetic samples
+        This function computes a gradient penalty based on the randomly weighted mean of the real and synthetic sample
         """
-        #_#steps\
-        #_#create eta a random value beteween 0 and 1
+        #_#Steps\
+        #_#Create eta: a random value beteween 0 and 1
         eta = torch.FloatTensor(self.batch_size, 1).uniform_(0, 1)
-        #_# move eta to gpu if the gpu flag is True
+        #_# Move eta to gpu if the gpu flag is True
         if self.usegpu:
             eta = eta.cuda()
-        #_# match eta shape to original and synthetic shape
+        #_# Match the eta shape to the original and synthetic shape
         eta = eta.expand(self.batch_size, real_data.size(1))
-        #_# calculate eta*real_data + (1-eta)*synthetic_data term
+        #_# Calculate eta*real_data + (1-eta)*synthetic_data term
         interpolated = eta * real_data + ((1 - eta) * synthetic_data)
-        #_#define it to calculate gradient
+        #_# Convert the interpolated variable to a format required by the library
         interpolated = Variable(interpolated, requires_grad=True)
-        #_#critic(eta*real_data + (1-eta)*synthetic_data)
-        #calculate probability of interpolated examples
+        #_# Feed the interpolated data to the Critic
         prob_interpolated = self.Critic(interpolated)
-        #calculate gradients of probabilities with respect to examples
-        #_# calculate grad(critic(eta*real_data + (1-eta)*synthetic_data))
+        #_# Calculate gradients of the above output
         if self.usegpu:
             gradients = autograd.grad(
                 outputs=prob_interpolated,
@@ -398,81 +400,81 @@ class wGANgp(object):
                 create_graph=True,
                 retain_graph=True,
             )[0]
-        #_# calculate lambda*\\grad(critic(eta*real_data + (1-eta)*synthetic_data))^2\\
+        #_# Calculate gradient penalty
         grad_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * self.lambda_term
-        #_# outputs gradent penalty
+        #_# outputs gradient penalty
         return grad_penalty
 
 #-------------------------------------------------------------------------------
 #_#
-#__#8. summary
+#__#8. Summary
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#prints the composition of the gan
+#_#Prints the composition of the GAN
 #_#Reviewer Notes\
 #_#
     def summary(self):
 
         """
-        prints the composition of the gan
+        prints the composition of the GAN
         """
-        #_# steps\
-        #_# prints the composition of the critic
+        #_# Steps\
+        #_# Prints the composition of the Critic
         print(self.Critic)
-        #_# prints the composition of the gentrator
+        #_# Prints the composition of the Generator
         print(self.Generator)
 #-------------------------------------------------------------------------------
 #_#
-#__#9. pick_sample
+#__#9. Pick a sample
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#pick a smaple of the data of size of the batch
+#_#This function picks a sample of the data the size of a batch
 #_#Reviewer Notes\
 #_#
     def pick_sample(self, data):
         """
-        pick a smaple of the data of size of the batch
+        This function picks a sample of the data the size of a batch
         """
-        #_# steps\
-        #_# reorder the index randomly
+        #_# Steps\
+        #_# Reorder the index randomly
         perm = torch.randperm(len(data))
-        #_# crop to be batch size long
+        #_# Crop the index to the lentgh of the batch size
         index = perm[: self.batch_size]
-        #_# outputs the data selected by the random index
+        #_# Output the data selected by the random index
         return data[index]
 #-------------------------------------------------------------------------------
 #_#
-#__#10. save_model
+#__#10. Save the model
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#This saves the weights of the two networks that are used in the GAN on the 'filepath'.
+#_#This function saves the weights of the two networks that are used in the GAN on the 'filepath'.
 #_#Reviewer Notes\
 #_#
     def save_model(self, filepath):
         """
         This saves the weights of the two networks that are used in the GAN on the 'filepath'.
         """
-        #_#steps\
-        #_# save generator weights
+        #_#Steps\
+        #_# Save Generator weights
         torch.save(self.Generator.state_dict(), filepath + "_generator.pkl")
-        #_# save critic weights
+        #_# Save Critic weights
         torch.save(self.Critic.state_dict(), filepath + "_critic.pkl")
-        #_# print that the process as been complete
+        #_# Print that the process is complete
         print("Models saved ")
 #-------------------------------------------------------------------------------
 #_#
-#__#10. load_model
+#__#10. Model loading
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#This loads the weights of the two networks that are used in the GAN on the 'filepath'.
+#_#This function loads the weights of the two networks that are used in the GAN on the 'filepath'.
 #_#Reviewer Notes\
 #_#
     def load_model(self, filepath):
@@ -480,11 +482,11 @@ class wGANgp(object):
         This loads the weights of the two networks that are used in the GAN on the 'filepath'.
         """
         #_#Steps\
-        #_# load Critic weights
+        #_# Load Critic weights
         self.Critic.load_state_dict(torch.load(filepath + "_critic.pkl"))
-        #_# print that loading Critic weights as been complete
+        #_# Print that loading Critic weights is complete
         print("Critic model loaded from {}-".format(filepath + "_critic.pkl"))
-        #_# load generator weights
+        #_# Load generator weights
         self.Generator.load_state_dict(torch.load(filepath + "_generator.pkl"))
-        #_# print that loading generator weights as been complete 
+        #_# Print that loading generator weights is complete
         print("Generator model loaded from {}.".format(filepath + "_generator.pkl"))

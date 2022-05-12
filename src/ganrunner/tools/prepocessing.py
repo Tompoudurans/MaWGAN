@@ -88,62 +88,112 @@ def get_norm(data):
 
 #-------------------------------------------------------------------------------
 #_#
-#__#4.Normalize a dataset
+#__#5.Data processing
 #_#
 #__#Review Decision:
 #_#
 #_#Author Notes\
-#_#This function process data ready for gan training
+#_#This function processes data ready for GAN training
 #_#Reviewer Notes\
 
 def procsses_data(database):
     """
-    pre-procsses the table, ready to be trained
+    pre-processes the table, ready to be trained
     """
-    #_#steps/
+    #_#Steps/
+    #_#Encode categorical data
     database, details = encoding(database)
+    #_# Save the variable names
     col = database.columns
+    #_# Normalize the dataset
     database, mean, std = get_norm(database)
+    #_# Ouput the preprocessed dataset and its details
     return database, [mean, std, details, col]
-
+#-------------------------------------------------------------------------------
+#_#
+#__#6.Encoding
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#This function transforms categorical data into numerical data, and saves mapping on a list.
+#_#Reviewer Notes\
 def encoding(data):
     """
-    Transforms categorical data into numerical, saves maping on a list.
+    Transforms categorical data into numerical, saves mapping on a list.
     """
+#_# Steps
+#_# Create the detail list which will save the mappings.
+#_# This saves the current number of variables to the list.
     details = [len(data.columns)]
+#_# Create a counter to count the ampount of avariables in the dataset
     count_o = 0
+#_# Loop through each variable
     for name in data.columns:
+        #_#If a variable is categorical
         if "O" == data[name].dtype:
+            #_# encode the variable
             new = pandas.get_dummies(data[name])
+            #_# Add the coded variable to the dataset
             data[new.columns] = new
+            #_# Drop the old variable
             data = data.drop(columns=name)
+            #_# Save the mapping to the list
             details.append([name, len(new.columns)])
+            #_# Add one to the counter
             count_o = +1
+    #_# Print the number of categorical variables
     print("there are", count_o, "categorical data variables")
+    #_# Output the new dataset and the mapping.
     return data, details
-
+#-------------------------------------------------------------------------------
+#_#
+#__#6.Decoding
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#This function transforms numerical data into categorical data using the saved mapping (details)
+#_#Reviewer Notes\
 
 def decoding(data, details):
     """
     Transforms numerical data into categorical data using the saved mapping (details)
     """
+#_# Steps
+#_# Save the current number of variables
     col_len = len(data.columns)
+    #_# Initialise position counter which is the old number of variables minus
+    #_# the number of categorical variables
     position = details[0] - len(details) + 1
-    start = position
+    #_# Initialise the position in the detail list
     current = 1
-    while position < col_len:
+    #_# Loop until the position counter is equal to the number of variables
+    while position < col_len
+    #_# Record the end position of the encoded group of variables.
         try:
             end = position + details[current][1]
+    #_# If the position does not exist exit the loop.
         except IndexError:
             break
+    #_# Grab the encoded group of variables
         set_of_cat = data.iloc[:, position:end]
+    #_# Create an empty list
         restore = []
+        #_# If the group of encoded variables is binary:
         if set_of_cat.shape[1] == 1:
+            #_# then round the data values to the categorical equivalent
             data[details[current][0]] = set_of_cat.round()
         else:
+            #_# If not, then loop through each variable in the group
             for value in range(set_of_cat.shape[0]):
+            #_# to check which one is closest to the categorical equivalent
                 restore.append(set_of_cat.iloc[value].idxmax())
+            #_# Save to the dataset
             data[details[current][0]] = restore
+        #_# Move the detail list counter by one
         current = current + 1
+        #_# Move the position counter to the end of the group of variables
         position = end
+    #_# Return the restored dataset
     return data
