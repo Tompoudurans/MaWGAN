@@ -347,23 +347,41 @@ class wGANgp(object):
                 logging.info(
                     f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_synthetic: {d_loss_synthetic:.2f}, loss_real: {d_loss_real:.2f}"
                 )
-        self.Critic = self.Critic.cpu()
-        self.Generator = self.Generator.cpu()
-
+        if usegpu:
+            #_# move the networks back to the cpu if there where alredy not
+            self.Critic = self.Critic.cpu()
+            self.Generator = self.Generator.cpu()
+#-------------------------------------------------------------------------------
+#_#
+#__#7. calculate_gradient_penalty
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#Computes gradient penalty based on prediction and weighted real / synthetic sample
+#_#Reviewer Notes\
+#_#
     def calculate_gradient_penalty(self, real_data, synthetic_data):
         """
         Computes gradient penalty based on prediction and weighted real / synthetic samples
         """
+        #_#steps\
+        #_#create eta a random value beteween 0 and 1
         eta = torch.FloatTensor(self.batch_size, 1).uniform_(0, 1)
+        #_# move eta to gpu if the gpu flag is True
         if self.usegpu:
             eta = eta.cuda()
+        #_# match eta shape to original and synthetic shape
         eta = eta.expand(self.batch_size, real_data.size(1))
+        #_# calculate eta*real_data + (1-eta)*synthetic_data term
         interpolated = eta * real_data + ((1 - eta) * synthetic_data)
-        # define it to calculate gradient
+        #_#define it to calculate gradient
         interpolated = Variable(interpolated, requires_grad=True)
-        # calculate probability of interpolated examples
+        #_#critic(eta*real_data + (1-eta)*synthetic_data)
+        #calculate probability of interpolated examples
         prob_interpolated = self.Critic(interpolated)
-        # calculate gradients of probabilities with respect to examples
+        #calculate gradients of probabilities with respect to examples
+        #_# calculate grad(critic(eta*real_data + (1-eta)*synthetic_data))
         if self.usegpu:
             gradients = autograd.grad(
                 outputs=prob_interpolated,
@@ -380,41 +398,93 @@ class wGANgp(object):
                 create_graph=True,
                 retain_graph=True,
             )[0]
+        #_# calculate lambda*\\grad(critic(eta*real_data + (1-eta)*synthetic_data))^2\\
         grad_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * self.lambda_term
+        #_# outputs gradent penalty
         return grad_penalty
 
+#-------------------------------------------------------------------------------
+#_#
+#__#8. summary
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#prints the composition of the gan
+#_#Reviewer Notes\
+#_#
     def summary(self):
+
         """
         prints the composition of the gan
         """
+        #_# steps\
+        #_# prints the composition of the critic
         print(self.Critic)
+        #_# prints the composition of the gentrator
         print(self.Generator)
-
+#-------------------------------------------------------------------------------
+#_#
+#__#9. pick_sample
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#pick a smaple of the data of size of the batch
+#_#Reviewer Notes\
+#_#
     def pick_sample(self, data):
         """
         pick a smaple of the data of size of the batch
         """
+        #_# steps\
+        #_# reorder the index randomly
         perm = torch.randperm(len(data))
+        #_# crop to be batch size long
         index = perm[: self.batch_size]
+        #_# outputs the data selected by the random index
         return data[index]
-
+#-------------------------------------------------------------------------------
+#_#
+#__#10. save_model
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#This saves the weights of the two networks that are used in the GAN on the 'filepath'.
+#_#Reviewer Notes\
+#_#
     def save_model(self, filepath):
         """
         This saves the weights of the two networks that are used in the GAN on the 'filepath'.
         """
+        #_#steps\
+        #_# save generator weights
         torch.save(self.Generator.state_dict(), filepath + "_generator.pkl")
+        #_# save critic weights
         torch.save(self.Critic.state_dict(), filepath + "_critic.pkl")
+        #_# print that the process as been complete
         print("Models saved ")
-
+#-------------------------------------------------------------------------------
+#_#
+#__#10. load_model
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#This loads the weights of the two networks that are used in the GAN on the 'filepath'.
+#_#Reviewer Notes\
+#_#
     def load_model(self, filepath):
         """
         This loads the weights of the two networks that are used in the GAN on the 'filepath'.
         """
-        G_model_filename = filepath + "_generator.pkl"
-        D_model_filename = filepath + "_critic.pkl"
-        D_model_path = os.path.join(os.getcwd(), D_model_filename)
-        G_model_path = os.path.join(os.getcwd(), G_model_filename)
-        self.Critic.load_state_dict(torch.load(D_model_path))
-        self.Generator.load_state_dict(torch.load(G_model_path))
-        print("Generator model loaded from {}.".format(G_model_path))
-        print("Critic model loaded from {}-".format(D_model_path))
+        #_#Steps\
+        #_# load Critic weights
+        self.Critic.load_state_dict(torch.load(filepath + "_critic.pkl"))
+        #_# print that loading Critic weights as been complete
+        print("Critic model loaded from {}-".format(filepath + "_critic.pkl"))
+        #_# load generator weights
+        self.Generator.load_state_dict(torch.load(filepath + "_generator.pkl"))
+        #_# print that loading generator weights as been complete 
+        print("Generator model loaded from {}.".format(filepath + "_generator.pkl"))

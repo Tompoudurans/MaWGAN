@@ -1,8 +1,5 @@
 import sqlalchemy as sa
-from .prepocessing import get_norm
 import pandas as pd
-from .categorical import encoding
-
 
 def load_sql(file, table):
     """
@@ -15,17 +12,6 @@ def load_sql(file, table):
         return database.drop(columns="index")
     except KeyError:
         return database
-
-
-def procsses_sql(database):
-    """
-    pre-procsses the table, ready to be trained
-    """
-    # atabase = binary_in(database)
-    database, details = encoding(database)
-    col = database.columns
-    database, mean, std = get_norm(database)
-    return database, [mean, std, details, col]
 
 
 def save_sql(df, file, exists="append"):

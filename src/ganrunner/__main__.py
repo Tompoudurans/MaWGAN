@@ -194,7 +194,7 @@ def load_data(sets, filepath, extention):
         raw_data = tools.load_sql(filepath, sets)
     else:
         raw_data = tools.pd.read_csv(filepath)
-    database, details = tools.procsses_sql(raw_data)
+    database, details = tools.procsses_data(raw_data)
     return database, details
 
 
@@ -324,7 +324,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegp
             return None, False
         else:
             mygan.save_model(filepath)
-            # tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
+            tools.show_loss_progress(mygan.d_losses, mygan.g_losses, filepath)
     return mygan, True
 
 

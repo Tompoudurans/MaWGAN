@@ -14,8 +14,8 @@ import pandas
 #___#
 #___#
 #____#Description
-#____#This script is for normalizing the dataset before training and
-#____# un-normalizing it afterwards
+#____#This script is for pre-process the dataset before training and
+#____# post-process it afterwards
 #____#
 #___#---------------------------------------------------------------------------
 
@@ -85,3 +85,65 @@ def get_norm(data):
     data = normalize(data, mean, std)
     #_# Outputs the normalize dataset, the mean and the standard deviation
     return data.to_numpy("float"), mean.to_numpy("float"), std.to_numpy("float")
+
+#-------------------------------------------------------------------------------
+#_#
+#__#4.Normalize a dataset
+#_#
+#__#Review Decision:
+#_#
+#_#Author Notes\
+#_#This function process data ready for gan training
+#_#Reviewer Notes\
+
+def procsses_data(database):
+    """
+    pre-procsses the table, ready to be trained
+    """
+    #_#steps/
+    database, details = encoding(database)
+    col = database.columns
+    database, mean, std = get_norm(database)
+    return database, [mean, std, details, col]
+
+def encoding(data):
+    """
+    Transforms categorical data into numerical, saves maping on a list.
+    """
+    details = [len(data.columns)]
+    count_o = 0
+    for name in data.columns:
+        if "O" == data[name].dtype:
+            new = pandas.get_dummies(data[name])
+            data[new.columns] = new
+            data = data.drop(columns=name)
+            details.append([name, len(new.columns)])
+            count_o = +1
+    print("there are", count_o, "categorical data variables")
+    return data, details
+
+
+def decoding(data, details):
+    """
+    Transforms numerical data into categorical data using the saved mapping (details)
+    """
+    col_len = len(data.columns)
+    position = details[0] - len(details) + 1
+    start = position
+    current = 1
+    while position < col_len:
+        try:
+            end = position + details[current][1]
+        except IndexError:
+            break
+        set_of_cat = data.iloc[:, position:end]
+        restore = []
+        if set_of_cat.shape[1] == 1:
+            data[details[current][0]] = set_of_cat.round()
+        else:
+            for value in range(set_of_cat.shape[0]):
+                restore.append(set_of_cat.iloc[value].idxmax())
+            data[details[current][0]] = restore
+        current = current + 1
+        position = end
+    return data
