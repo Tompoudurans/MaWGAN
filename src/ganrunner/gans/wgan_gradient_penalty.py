@@ -52,8 +52,7 @@ class wGANgp(object):
         number_of_nodes,
         number_of_layers,
         lambdas,
-        learning_rate,
-        network,
+        learning_rate
     ):
     #_#Steps\
     #_# Save the number of nodes in a layer to the class object
@@ -90,9 +89,9 @@ class wGANgp(object):
         #_# Check if the optimser 'adam' has been selected
         if opt == "adam":
         #_# Assign the optimser 'adam' to the Critic parameters using the saved learning rate
-            self.d_optimizer = optim.Adam(self.Critic.parameters(), lr=self.learning_rate))
+            self.d_optimizer = optim.Adam(self.Critic.parameters(), lr=self.learning_rate)
         #_# Assign the optimser 'adam' to the Generator parameters using the saved learning rate
-            self.g_optimizer = optim.Adam(self.Generator.parameters(), lr=self.learning_rate))
+            self.g_optimizer = optim.Adam(self.Generator.parameters(), lr=self.learning_rate)
         #_# Check if the optimser 'adadelta' has been selected
         if opt == "adadelta":
         #_# Assign the optimser 'adelta' to the Critic parameters using the saved learning rate
@@ -269,7 +268,7 @@ class wGANgp(object):
             self.Critic = self.Critic.cuda()
             self.Generator = self.Generator.cuda()
         #_#States if the 'hasmissing' flag in true
-        If hasmissing:
+        if hasmissing:
             print("missing data mode on")
         #_#Save the batch size to the class object
         self.batch_size = batch_size

@@ -55,7 +55,7 @@ def unnormalize(dataset, mean, std):
     """
     #_#Steps\
     #_# Mutiply the dataset by the standard deviation.
-    mid = df * std
+    mid = dataset * std
     #_# Then add the mean
     return mid + mean
 
@@ -169,7 +169,7 @@ def decoding(data, details):
     #_# Initialise the position in the detail list
     current = 1
     #_# Loop until the position counter is equal to the number of variables
-    while position < col_len
+    while position < col_len:
     #_# Record the end position of the encoded group of variables.
         try:
             end = position + details[current][1]

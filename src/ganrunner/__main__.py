@@ -52,7 +52,6 @@ import os
     default=None,
     help="choose the dataset/table that the GAN will train on",
 )
-@click.option("--model", default=None, help="choose which model you what to use")
 @click.option("--opti", default=None, help="choose the optimiser you want to use")
 @click.option("--noise", default=None, help="choose the length of the noise vector")
 @click.option(
@@ -78,7 +77,6 @@ def main(
     dataset,
     filepath,
     epochs,
-    model,
     opti,
     noise,
     batch,
@@ -356,12 +354,11 @@ def create_model(parameters, no_field):
     #_# Create the GAN class modelusing the list of parameters
     mygan = gans.wGANgp(
         optimiser=opti,
-        input_dim=no_field,
-        noise_size=noise_dim,
+        number_of_variables=no_field,
+        number_of_nodes=noise_dim,
         number_of_layers=number_of_layers,
         lambdas=float(parameters[5]),
         learning_rate=lr,
-        network=use_model,
     )
     #_# Print the configuration
     mygan.summary()
@@ -391,7 +388,7 @@ def make_samples(
     #_# Create an empty variable called fullset
     fullset = None
     #_# Create a batch of synthetic data
-    generated_data = mygan.create_fake(batch)
+    generated_data = mygan.create_synthetic(batch)
     #_# Un-normalise the batch of synthetic data
     generated_data = tools.unnormalize(tools.pd.DataFrame(generated_data), mean, std)
     #_# Relabel the variables as the previous format could not label them
@@ -537,7 +534,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegp
         checkII = checkI.isnull().sum().sum() > 0
         #_# Attempt to train the GAN
         try:
-            mygan.train(database, batch, epochs, checkII, step, usegpu=False)
+            mygan.train(database, int(batch), epochs, checkII, step, usegpu=False)
             #_# State that the training has failed to check parameters if the training failed
         except Exception as e:
             logging.exception(e)
