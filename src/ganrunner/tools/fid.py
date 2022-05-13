@@ -3,7 +3,7 @@ from scipy.linalg import sqrtm
 #___#---------------------------------------------------------------------------
 #___#
 #___#**Project:**         Masked Wasterstin generative adviersal network\
-#___#**Script:**          preporcessing.py\
+#___#**Script:**          fid.py\
 #___#**Author:**          Thomas Poudevigne\
 #___#**Date Created:**    ‎21 ‎July ‎2021\
 #___#**Reviewer:**        TBC\

@@ -9,14 +9,14 @@ import os
 #___#---------------------------------------------------------------------------
 #___#
 #___#**Project:**         Masked Wasterstin generative adviersal network\
-#___#**Script:**          preporcessing.py\
+#___#**Script:**          __main__.py\
 #___#**Author:**          Thomas Poudevigne\
 #___#**Date Created:**    ‎21 ‎July ‎2021\
 #___#**Reviewer:**        TBC\
 #___#**Devops Feature:**  #[don't know]\
 #___#**Devops Backlog:**  #[don't know]\
 #___#**Devops Task:**     #[don't know]\
-#___#**Devops Repo:**     ganrunner\tools\
+#___#**Devops Repo:**     ganrunner\
 #___#**MARS:**            "[don't know]"
 #___#
 #___#
