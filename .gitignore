@@ -14,3 +14,5 @@ src/ganrunner.egg-info
 *.txt
 *ipynb*
 *.ods
+qdb/
+pacage/

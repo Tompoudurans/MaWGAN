@@ -1,9 +1,8 @@
 # About
 
-This code creates and trains a GAN. Core elements of this code are sourced
-directly from Green9's version of code from Improved Training of Wasserstein GANs" (https://arxiv.org/abs/1704.00028) and have been
-modified to work with a numeric database such as the iris datasets taken
-from the library 'sklearn'. Soon this GAN should work on the DCWW dataset.
+This is the code for "MaWGAN: a Generative Adversarial Network to create synthetic
+data from datasets with missing data"
+https://orca.cardiff.ac.uk/id/eprint/148018/1/electronics-11-00837.pdf
 
 ## Installation
 
@@ -11,7 +10,7 @@ from the library 'sklearn'. Soon this GAN should work on the DCWW dataset.
 
 To install, the following is assumed to be available:
 
-- Python 3.7 (the software might work on other versions but it is only tested on 3.7 or 3.8).
+- Python 3.8+
 - A recent version of git.
 
 If those are not available please get in touch with the maintainer for alternative ways of installing
@@ -48,37 +47,23 @@ filepath and epochs are maninitory, put the epochs to 0 to just read the the mod
 
 ### Options
 
-  --filepath   enter the file name and location of the database and model
-
-  --epochs     choose how long that you want to train
-
-  --dataset    choose the dataset/table that the GAN will train on
-
-  --model      choose which model you what to use
-
-  --opti       choose the optimiser you want to use
-
-  --noise      choose the length of the noise vector
-
-  --batch      choose how many fake data you want to make in one go
-
-  --layers     choose the number of layers of each network
-
-  --clip       if using WGAN choose the clipping threshold
-
-  --core      select the number of cores that you would like to run
-
-  --sample    choose the number of generated data you want:(samples*batch)
-
-  --rate     choose the learning rate of the model
-
-  --graph    compare synthetic and on a graph, not suitable for large dataset"
+      --filepath TEXT   enter the file name and location of the database and model
+      --epochs TEXT     choose how long that you want to train
+      --dataset TEXT    choose the dataset/table that the GAN will train on
+      --opti TEXT       choose the optimiser you want to use
+      --node TEXT      choose the number nodes per layer
+      --batch TEXT      choose how many fake data you want to make in one go
+      --layers TEXT     choose the number of layers of each network
+      --lambdas FLOAT   learning penalty
+      --sample INTEGER  choose the number of generated data you want
+      --rate FLOAT      choose the learing rate of the model
+      --help            Show this message and exit.
 
 examples:
 .db file without data missing, and displaying a compare graph
 
-  $ python -m ganrunner --model=wgangp --filepath=iris.db --opti=adam --noise=100 --batch=100 --layers=5 --epochs=1000 --dataset=all --rate=0.0001 --lambdas=10 --sample=3 --graph=True
+    $ python -m ganrunner --model=wgangp --filepath=iris.db --opti=adam --nodes=100 --batch=100 --layers=5 --epochs=1000 --dataset=all --rate=0.0001 --lambdas=10 --sample=300
 
 .csv file with data missing
 
-  $ python -m ganrunner --model=wgangp --filepath=10_Deprivation_percent.csv --opti=adam --noise=300 --batch=300 --layers=5 --epochs=1000 --rate=0.0001 --lambdas=10 --sample=2 --graph=False
+    $ python -m ganrunner --model=wgangp --filepath=10_Deprivation_percent.csv --opti=adam --nodes=200 --batch=300 --layers=5 --epochs=1000 --rate=0.0001 --lambdas=10 --sample=200

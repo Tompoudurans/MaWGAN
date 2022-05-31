@@ -16,10 +16,9 @@ def test_break_set():
             "python",
             "-m",
             "ganrunner",
-            "--model=linear",
             "--filepath=flight.db",
             "--opti=adam",
-            "--noise=60",
+            "--nodes=60",
             "--batch=60",
             "--layers=2",
             "--epochs=10",
@@ -29,7 +28,7 @@ def test_break_set():
         ]
     )
     assert status.returncode == 0
-    # os.remove("flight_parameters.npy")
+    os.remove("flight_parameters.npy")
 
 
 def test_break_bulid():
@@ -38,10 +37,9 @@ def test_break_bulid():
             "python",
             "-m",
             "ganrunner",
-            "--model=linear",
             "--filepath=flight.db",
             "--opti=adam",
-            "--noise=60",
+            "--nodes=60",
             "--batch=sixty",
             "--layers=3",
             "--epochs=10",
@@ -61,24 +59,22 @@ def test_normal_run():
             "python",
             "-m",
             "ganrunner",
-            "--model=linear",
             "--filepath=flight.db",
             "--opti=adam",
-            "--noise=30",
-            "--batch=30",
+            "--nodes=30",
+            "--batch=20",
             "--layers=3",
             "--epochs=10",
             "--dataset=readings",
-            "--rate=000.1",
+            "--rate=0.001",
             "--lambdas=10",
-            "--sample=2",
+            "--sample=20",
         ]
     )
     assert status.returncode == 0
     assert os.path.isfile("flight_generator.pkl")
     assert os.path.isfile("flight_critic.pkl")
     assert os.path.isfile("flight_parameters.npy")
-    assert file_size < os.stat("flight.db").st_size and (file_size > 0)
 
 
 def test_reload():
@@ -87,7 +83,6 @@ def test_reload():
             "python",
             "-m",
             "ganrunner",
-            "--model=wgangp",
             "--epochs=10",
             "--filepath=flight.db",
         ]
