@@ -53,7 +53,7 @@ import os
     help="choose the dataset/table that the GAN will train on",
 )
 @click.option("--opti", default=None, help="choose the optimiser you want to use")
-@click.option("--noise", default=None, help="choose the length of the noise vector")
+@click.option("--nodes", default=None, help="choose the number nodes per layer")
 @click.option(
     "--batch", default=None, help="choose how many fake data you want to make in one go"
 )
@@ -65,7 +65,7 @@ import os
     "--sample",
     default=1,
     type=int,
-    help="choose the number of generated data you want: (samples*batch)",
+    help="choose the number of generated data you want",
 )
 @click.option(
     "--rate",
@@ -78,7 +78,7 @@ def main(
     filepath,
     epochs,
     opti,
-    noise,
+    nodes,
     batch,
     layers,
     lambdas,
@@ -86,8 +86,9 @@ def main(
     rate,
 ):
     """
-    This code creates and trains a GAN.
-    Soon this GAN should work on the DCWW dataset.
+    This is the code for "MaWGAN: a Generative Adversarial Network to create synthetic
+    data from datasets with missing data", this script is the interface of the MaGAN
+    It pre-processes data, trains gan and creates synthetic datasets.
     """
 #_# Tell user that the computer is processing the request
     click.echo("loading...")
@@ -98,7 +99,7 @@ def main(
     #_# Create the log file
     tools.setup_log(filename + "_progress.log")
     #_# Save the parameters to the parameters list
-    parameters_list = [dataset, opti, noise, batch, layers, lambdas, rate]
+    parameters_list = [dataset, opti, nodes, batch, layers, lambdas, rate]
     #_# Load the previous parameters and check if any is missing
     parameters, successfully_loaded = parameters_handeling(filename, parameters_list)
     #_# Convert the epochs into an integer variable
@@ -175,7 +176,7 @@ def setup(parameters_list):
     questions = [
         "table? ",
         "opti? ",
-        "noise size? ",
+        "nodes size? ",
         "batch size? ",
         "layers? ",
         "learning constiction? ",
@@ -350,12 +351,12 @@ def create_model(parameters, no_field):
 #_# Take the learning rate (lr) from the parameter list
     lr = float(parameters[6])
     #_# Umpack the rest of the parameters
-    opti, noise_dim, batch, number_of_layers = unpack(parameters)
+    opti, nodes_dim, batch, number_of_layers = unpack(parameters)
     #_# Create the GAN class modelusing the list of parameters
     mygan = gans.wGANgp(
         optimiser=opti,
         number_of_variables=no_field,
-        number_of_nodes=noise_dim,
+        number_of_nodes=nodes_dim,
         number_of_layers=number_of_layers,
         lambdas=float(parameters[5]),
         learning_rate=lr,

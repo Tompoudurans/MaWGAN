@@ -14,11 +14,11 @@ layers = 5
 nodes = 3
 data = 3
 batch_size = 3
-noise_vector = 3
+nodes_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
 testgan = ganrunner.wGANgp(
-    "adam", noise_vector, nodes, layers, lambdas, 0.00001
+    "adam", nodes_vector, nodes, layers, lambdas, 0.00001
 )
 
 def test_gan_training():
@@ -28,10 +28,10 @@ def test_gan_training():
     and comparing the untrained sample and trained sample.
     The trained sample should provide a better result
     """
-    noise = torch.randn(batch_size, noise_vector)
-    untrained_fake = testgan.Generator(noise).detach().numpy()
+    nodes = torch.randn(batch_size, nodes_vector)
+    untrained_fake = testgan.Generator(nodes).detach().numpy()
     testgan.train(dataset, 2, 20)
-    trained_fake = testgan.Generator(noise).detach().numpy()
+    trained_fake = testgan.Generator(nodes).detach().numpy()
     untrained = abs(untrained_fake - dataset)[0]
     trained = abs(trained_fake - dataset)[0]
     assert any(untrained != trained)
@@ -46,7 +46,7 @@ def test_save_load():
     assert os.stat("testing_generator.pkl").st_size > 0
     assert os.stat("testing_critic.pkl").st_size > 0
     test = ganrunner.wGANgp(
-        "adam", noise_vector, nodes, layers, lambdas, 0.00001
+        "adam", nodes_vector, nodes, layers, lambdas, 0.00001
     )
     test.load_model("testing")
     assert all(generator_weight_save) == all(test.Generator.state_dict())
@@ -62,7 +62,7 @@ def test_build():
     assert len(testgan.Critic) == val
     assert len(testgan.Generator) == val
     assert testgan.Critic[0].in_features == data
-    assert testgan.Generator[0].in_features == noise_vector
+    assert testgan.Generator[0].in_features == nodes_vector
     assert testgan.Critic[2].in_features == nodes == testgan.Critic[0].out_features
     assert (
         testgan.Generator[2].in_features == nodes == testgan.Generator[0].out_features
