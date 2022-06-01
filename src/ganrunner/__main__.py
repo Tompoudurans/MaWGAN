@@ -39,13 +39,13 @@ import os
 #_# Steps\
 #_# Document all the parameters needed for the GAN
 @click.command()
+@click.option("--test",default=None,help="test the intallment")
 @click.option(
     "--filepath",
-    prompt="filepath? ",
     help=" enter the file name and location of the database and model",
 )
 @click.option(
-    "--epochs", prompt="epochs? ", help="choose how long that you want to train"
+    "--epochs", help="choose how long that you want to train"
 )
 @click.option(
     "--dataset",
@@ -84,13 +84,20 @@ def main(
     lambdas,
     sample,
     rate,
+    test
 ):
     """
     This is the code for "MaWGAN: a Generative Adversarial Network to create synthetic
     data from datasets with missing data", this script is the interface of the MaGAN
     It pre-processes data, trains gan and creates synthetic datasets.
     """
-#_# Tell user that the computer is processing the request
+    #_# check if testing for installment
+    if test != None:
+    #_#if installation is sucessfull then you should be able run to this point without error
+        print("installation is sucessfully")
+        #_# exit the script
+        return
+    #_# Tell user that the computer is processing the request
     click.echo("loading...")
     #_# Extract the extension of the file path
     filename, extention = filepath.split(".")
