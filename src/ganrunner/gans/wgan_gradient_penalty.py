@@ -3,11 +3,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch import autograd
-import time as t
-import matplotlib.pyplot as plt
 from .masker import copy_format
 import logging
-import os
 
 #___#---------------------------------------------------------------------------
 #___#
