@@ -165,7 +165,7 @@ class OwGAN(object):
         together = wfac + torch.cat((invfac, predic), dim=1)
         return together
 
-    def psudo_training(self, data, tf, tsf, tc, mc, mf, print_every_n_batches):
+    def psudo_training(self, data, tf, tsf, tc, mc, print_every_n_batches):
         """
         data_dim is the number
         """
@@ -343,7 +343,6 @@ class OwGAN(object):
         n_gen,
         n_critic,
         n_forcast,
-        forcast_batch,
         tsf,
         usegpu,
         lag
@@ -363,7 +362,6 @@ class OwGAN(object):
             tsf,
             n_critic,
             batch_size,
-            forcast_batch,
             print_every_n_batches,
         )
 
@@ -399,6 +397,7 @@ class OwGAN(object):
         """
         torch.save(self.Generator.state_dict(), filepath + "_generator.pkl")
         torch.save(self.Critic.state_dict(), filepath + "_critic.pkl")
+        torch.save(self.forcaster.state_dict(), filepath + "_forcat.pkl")
         print("Models saved ")
 
     def load_model(self, filepath):
