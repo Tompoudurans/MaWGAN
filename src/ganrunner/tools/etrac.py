@@ -7,7 +7,6 @@ This is a temporary script file.
 
 import pandas
 import scipy.fftpack as sff
-import matplotlib.pyplot as mp
 import numpy
 
 def exctract(timedata, fac=20):

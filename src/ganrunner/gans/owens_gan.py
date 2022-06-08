@@ -406,9 +406,13 @@ class OwGAN(object):
         """
         G_model_filename = filepath + "_generator.pkl"
         D_model_filename = filepath + "_critic.pkl"
+        F_model_filename = filepath + "_forcat.pkl"
         D_model_path = os.path.join(os.getcwd(), D_model_filename)
         G_model_path = os.path.join(os.getcwd(), G_model_filename)
+        F_model_path = os.path.join(os.getcwd(), F_model_filename)
         self.Critic.load_state_dict(torch.load(D_model_path))
         self.Generator.load_state_dict(torch.load(G_model_path))
+        self.forcaster.load_state_dict(torch.load(F_model_path))
         print("Generator model loaded from {}.".format(G_model_path))
         print("Critic model loaded from {}-".format(D_model_path))
+        print("forcaster model loaded from {}-".format(F_model_path))
