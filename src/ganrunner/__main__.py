@@ -73,6 +73,14 @@ import os
     type=float,
     help="choose the learing rate of the model",
 )
+
+@click.option(
+    "--usegpu",
+    default=0,
+    type=int,
+    help="set to 1 to use gpu",
+)
+
 def main(
     dataset,
     filepath,
@@ -84,6 +92,7 @@ def main(
     lambdas,
     sample,
     rate,
+    usegpu,
     test
 ):
     """
@@ -122,7 +131,7 @@ def main(
         #_# Exit the function
         return
     #_# Create the GAN using the parameters and train it
-    thegan, success = run(filename, epochs, parameters, successfully_loaded, database, batch)
+    thegan, success = run(filename, epochs, parameters, successfully_loaded, database, batch,bool(usegpu))
     #_# Create an empty variable so it does not produce errors
     fake = None
     #_# Check if the GAN has trained sucessfully
@@ -513,7 +522,7 @@ def parameters_handeling(filepath, parameters_list):
 
 #_# Steps\
 #_#
-def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegpu=False):
+def run(filepath, epochs, parameters, successfully_loaded, database, batch, usegpu):
     """
     Creates and trains a GAN from the parameters provided.
     It will load the weights of the GAN if they exist.
@@ -542,7 +551,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch,usegp
         checkII = checkI.isnull().sum().sum() > 0
         #_# Attempt to train the GAN
         try:
-            mygan.train(database, int(batch), epochs, checkII, step, usegpu=False)
+            mygan.train(database, int(batch), epochs, checkII, step, usegpu)
             #_# State that the training has failed to check parameters if the training failed
         except Exception as e:
             logging.exception(e)
