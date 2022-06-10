@@ -17,3 +17,4 @@ src/ganrunner.egg-info
 qdb/
 pacage/
 reg_time/
+*.pub
