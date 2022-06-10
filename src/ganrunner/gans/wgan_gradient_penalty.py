@@ -280,8 +280,6 @@ class wGANgp(object):
             #_# Allow the critic to be trained
             for p in self.Critic.parameters():
                 p.requires_grad = True
-            #d_loss_real = 0
-            #d_loss_synthetic = 0
             for d_iter in range(n_critic):
                 #_# reset Critic calculate_gradient_penaltyent
                 self.Critic.zero_grad()

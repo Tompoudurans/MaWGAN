@@ -131,7 +131,7 @@ def main(
         #_# Exit the function
         return
     #_# Create the GAN using the parameters and train it
-    thegan, success = run(filename, epochs, parameters, successfully_loaded, database, batch,bool(usegpu))
+    thegan, success = run(filename, epochs, parameters, successfully_loaded, database, batch, bool(usegpu))
     #_# Create an empty variable so it does not produce errors
     fake = None
     #_# Check if the GAN has trained sucessfully
@@ -551,7 +551,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch, useg
         checkII = checkI.isnull().sum().sum() > 0
         #_# Attempt to train the GAN
         try:
-            mygan.train(database, int(batch), epochs, checkII, step, usegpu)
+            mygan.train(database, int(batch), epochs, checkII, step, usegpu=usegpu)
             #_# State that the training has failed to check parameters if the training failed
         except Exception as e:
             logging.exception(e)
