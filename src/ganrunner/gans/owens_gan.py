@@ -121,6 +121,8 @@ class OwGAN(object):
         this creates a batch of fake data
         """
         z = torch.randn(batch_size, self.data_dim)
+        if self.usegpu:
+            z = z.cuda()
         fake_images = self.Generator(z)
         return fake_images  # .detach().numpy()
 
@@ -139,6 +141,17 @@ class OwGAN(object):
             series.append(middle[:self.input_dim].detach().numpy())
         series.append(predic.detach().numpy())
         return series
+
+
+    def create_series3(self,length_of_series):
+        batch_size = 1
+        w = self.create_fake(batch_size)[0]
+        for i in range(length_of_series):
+            b = torch.randn(self.input_dim)
+            to_forcat = torch.cat((w, b))
+            predic = self.forcaster(to_forcat)
+            w = torch.cat(w, predic)
+        return w.detach().numpy()
 
     def linear_sample(self, data):
         "select samples that are linearly dependent"
@@ -159,6 +172,10 @@ class OwGAN(object):
         end = self.data_dim - self.input_dim
         fac = torch.tensor([[1]*end + [0]*self.input_dim]*self.batch_size)
         invfac = torch.tensor([[0]*end]*self.batch_size)
+        if self.usegpu:
+            fac = fac.cuda()
+            invfac = invfac.cuda()
+            b = b.cuda()
         wfac = w*fac
         to_forcat = wfac + torch.cat((invfac, b), dim=1)
         predic = self.forcaster(to_forcat)
@@ -169,10 +186,14 @@ class OwGAN(object):
         """
         data_dim is the number
         """
+        if self.usegpu:
+            self.forcaster.cuda()
         # torch.autograd.set_detect_anomaly(True)
         d_loss_real, d_loss_fake = [0,0]
         data = torch.Tensor(data)
         nummask,bimask = make_mask(data)
+        if self.usegpu:
+            nummask = nummask.cuda()
         for s in range(tf):
             if s >= tsf:
                 flag = True
@@ -181,6 +202,8 @@ class OwGAN(object):
                 for t in range(tc):
                     self.Critic.zero_grad()
                     ubar = Variable(self.sample_type(data))
+                    if self.usegpu:
+                        ubar = ubar.cuda()
                     # for i in range(mc):
                     ubar[bimask[self.index]] = 0
                     initw = self.create_fake(self.batch_size)
@@ -275,8 +298,6 @@ class OwGAN(object):
                     f"iteration: {g_iter}/{epochs}, g_loss: {g_loss:.2f}, loss_fake: {d_loss_fake:.2f}, loss_real: {d_loss_real:.2f}"
                 )
             assert g_loss > 0 or g_loss < 0
-        self.Critic = self.Critic.cpu()
-        self.Generator = self.Generator.cpu()
         # Saving model and sampling images every 1000th generator iterations
 
     def critic_update(self, images, fake_images):
@@ -364,6 +385,10 @@ class OwGAN(object):
             batch_size,
             print_every_n_batches,
         )
+        if usegpu:
+            self.Critic = self.Critic.cpu()
+            self.Generator = self.Generator.cpu()
+            self.forcaster = self.forcaster.cpu()
 
     def extend_data(self, k, x, n):
         U = []
