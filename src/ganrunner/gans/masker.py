@@ -42,39 +42,8 @@ def make_mask(data):
     #_#if there is data missing in this location
     binary_mask = data.isnan()
     #_# Convert the binary mask to a numeral mask
-    inverse_mask = tensor(binary_mask, dtype=int)
+    inverse_mask = binary_mask.to(dtype=int)
     #_# Inverse the 0s and 1s so 0 is where the data is missing
     mask = 1 - inverse_mask
     #_# Outputs the numeral and binary mask
     return mask, binary_mask
-
-#-------------------------------------------------------------------------------
-#_#
-#__#2. Apply the mask
-#_#
-#__#Review Decision:
-#_#
-#_#Author Notes\
-#_#This function creates a mask from the template and applies it to the data.
-#_#This operation can be used in the gpu if the the usegpu flag is set to True.
-#_#Reviewer Notes\
-#_#
-#_#
-
-def copy_format(template, data, usegpu):
-    """
-    This function creates a mask from the template and applies it to the data.
-    """
-    #_#Steps\
-    #_# Create a mask see section 1
-    mask, binary_mask = make_mask(template)
-    #_# Applies the mask to the generated data
-    #_# The usegpu flag allows this operation to be made in the gpu
-    if usegpu:
-        masked_data = data * mask.cuda()
-    else:
-        masked_data = data * mask
-    #_# Replace missing values in the original dataset to 0
-    template[binary_mask] = 0
-    #_# Outputs both datasets
-    return template, masked_data
