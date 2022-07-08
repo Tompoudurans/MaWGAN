@@ -122,7 +122,7 @@ def main(
     epochs = int(epochs)
     #_# Attempt to load the dataset and pre-process the dataset
     try:
-        database, details = load_data(parameters[0], filepath, extention)
+        database, details, raw = load_data(parameters[0], filepath, extention)
     except Exception as e:
         #_# State if a file does not exist
         print("Data could not be loaded propely see logs for more info")
@@ -135,15 +135,16 @@ def main(
     #_# Create an empty variable so it does not produce errors
     fake = None
     #_# Check if the GAN has trained sucessfully
-    if success:
+    if success and sample > 0:
         #_# If it has trained sucessfully make a synthetic sample data
         fake = make_samples(
             thegan,
-            database,
+            raw,
             sample,
             filename,
             details,
             extention,
+            bool(usegpu),
         )
     #_# Output the GAN object and the synthetic data
     return thegan, fake
@@ -318,7 +319,7 @@ def load_data(sets, filepath, extention):
         #_# Pre-process the data
     database, details = tools.procsses_data(raw_data)
     #_# Output the database and the mapping
-    return database, details
+    return database, details, raw_data
 
 #-------------------------------------------------------------------------------
 #_#
@@ -395,7 +396,7 @@ def create_model(parameters, no_field):
 #_# Steps\
 #_#
 def make_samples(
-    mygan, database, batch, filepath, details, extention
+    mygan, database, batch, filepath, details, extention, usegpux
 ):
     """
     Creates a number of samples
@@ -416,10 +417,17 @@ def make_samples(
     #_# if the file format is db then save in db, if the file format is csv then save in csv
     if extention == "db":
         tools.save_sql(fullset, filepath + ".db")
-    elif extention == "csv":
+    if extention == "csv":
         fullset.to_csv(filepath + "_synthetic.csv", index=False)
+    #_# calculate ls score
+    if usegpux:
+        ls = tools.gpu_LS(database.to_numpy(),fullset.to_numpy())
     else:
-        print("I",end="")
+        ls = tools.LS(database.to_numpy(),fullset.to_numpy())
+    #_# calculate fid score
+    fid = tools.calculate_fid(database.dropna(),fullset)
+    #print comparison
+    print(" LS: ",ls,"\n FID:",fid)
     #_# Output the synthetic data
     return fullset
 
