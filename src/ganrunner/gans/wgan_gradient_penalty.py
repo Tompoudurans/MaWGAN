@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch import autograd
-from .masker import copy_format
+from .masker import make_mask
 import logging
 
 #___#---------------------------------------------------------------------------
@@ -264,9 +264,6 @@ class wGANgp(object):
         if self.usegpu:
             self.Critic = self.Critic.cuda()
             self.Generator = self.Generator.cuda()
-        #_#States if the 'hasmissing' flag in true
-        if hasmissing:
-            print("missing data mode on")
         #_#Save the batch size to the class object
         self.batch_size = batch_size
         #_# Convert data format so it can be processed (from numpy.array to torch.tensor)
@@ -275,6 +272,15 @@ class wGANgp(object):
         one = torch.tensor(1, dtype=torch.float)
         #_# Create a matrix of minus ones
         mone = one * -1
+        #_# mask the data
+        mask, binary_mask = make_mask(data_tensor)
+        #_# Apply the mask
+        data_tensor[binary_mask] = 0
+        #_# tranfer the original data to gpu if needed
+        if self.usegpu:
+            data_tensor = data_tensor.cuda()
+            #_# tranfer the mask to gpu if needed
+            mask =  mask.cuda()
         #_#Main traing loop
         for g_iter in range(epochs):
             #_# Allow the critic to be trained
@@ -284,8 +290,8 @@ class wGANgp(object):
                 #_# reset Critic calculate_gradient_penaltyent
                 self.Critic.zero_grad()
                 #_# sample dataset
-                sample = self.pick_sample(data_tensor)
-                org_data = Variable(sample)
+                sample_data, sample_mask = self.pick_sample(data_tensor,mask)
+                org_data = Variable(sample_data)
                 #_#create a random matrix with dimensions batch_size * data_dim
                 z = Variable(torch.randn(self.batch_size, self.data_dim))
                 #_# feed the random matrix into the generator, tranfer to gpu if needed
@@ -293,12 +299,8 @@ class wGANgp(object):
                     synthetic_data = self.Generator(z.cuda())
                 else:
                     synthetic_data = self.Generator(z)
-                #_# mask the data
-                if hasmissing:
-                    org_data, synthetic_data = copy_format(org_data, synthetic_data,self.usegpu)
-                #_# tranfer the mask data to gpu if needed
-                if self.usegpu:
-                    org_data = org_data.cuda()
+                #_# Applies the mask to the generated data
+                synthetic_data = synthetic_data * sample_mask
                 #_# feed the original data to the Critic
                 d_loss_real = self.Critic(org_data)
                 #_# calculate the mean of the outputs of the Critic
@@ -429,7 +431,7 @@ class wGANgp(object):
 #_#This function picks a sample of the data the size of a batch
 #_#Reviewer Notes\
 #_#
-    def pick_sample(self, data):
+    def pick_sample(self, data, mask):
         """
         This function picks a sample of the data the size of a batch
         """
@@ -439,7 +441,7 @@ class wGANgp(object):
         #_# Crop the index to the lentgh of the batch size
         index = perm[: self.batch_size]
         #_# Output the data selected by the random index
-        return data[index]
+        return data[index], mask[index]
 #-------------------------------------------------------------------------------
 #_#
 #__#10. Save the model

@@ -102,13 +102,13 @@ def procsses_data(database):
     """
     #_#Steps/
     #_#Encode categorical data
-    database, details = encoding(database)
+    encoded_data, details = encoding(database)
     #_# Save the variable names
-    col = database.columns
+    col = encoded_data.columns
     #_# Normalize the dataset
-    database, mean, std = get_norm(database)
+    normalise_data, mean, std = get_norm(encoded_data)
     #_# Ouput the preprocessed dataset and its details
-    return database, [mean, std, details, col]
+    return normalise_data, [mean, std, details, col], encoded_data 
 #-------------------------------------------------------------------------------
 #_#
 #__#6.Encoding
