@@ -11,7 +11,7 @@ import os
 #___#**Project:**         Masked Wasterstin generative adviersal network\
 #___#**Script:**          __main__.py\
 #___#**Author:**          Thomas Poudevigne\
-#___#**Date Created:**    ‎21 ‎July ‎2021\
+#___#**Date Created:**    21 July 2021\
 #___#**Reviewer:**        TBC\
 #___#**Devops Feature:**  #[don't know]\
 #___#**Devops Backlog:**  #[don't know]\
@@ -131,7 +131,7 @@ def main(
         #_# Exit the function
         return
     #_# Create the GAN using the parameters and train it
-    thegan, success = run(filename, epochs, parameters, successfully_loaded, database, batch, bool(usegpu))
+    thegan, success = run(filename, epochs, parameters, successfully_loaded, database, bool(usegpu))
     #_# Create an empty variable so it does not produce errors
     fake = None
     #_# Check if the GAN has trained sucessfully
@@ -414,15 +414,16 @@ def make_samples(
     try:
         #_# calculate ls score
         if usegpux:
-            ls = tools.gpu_LS(database.to_numpy(),generated_data.to_numpy())
+            ls = tools.gpu_LS(database.dropna().to_numpy(),generated_data.to_numpy())
         else:
-            ls = tools.LS(database.to_numpy(),generated_data.to_numpy())
+            ls = tools.LS(database.dropna().to_numpy(),generated_data.to_numpy())
         #_# calculate fid score
         fid = tools.calculate_fid(database.dropna(),generated_data)
-        #print comparison
+        #_#print comparison
         print(" LS: ",ls,"\n FID:",fid)
     except Exception as e:
-        print("comparison calculation failed")
+       print("comparison calculation failed")
+       logging.error("comparison calculation failed due to" + str(e))
     #_# Restore the categorical variables
     fullset = tools.decoding(generated_data, info)
     #_# Save the synthetic data in the same file format as the original,
@@ -533,7 +534,7 @@ def parameters_handeling(filepath, parameters_list):
 
 #_# Steps\
 #_#
-def run(filepath, epochs, parameters, successfully_loaded, database, batch, usegpu):
+def run(filepath, epochs, parameters, successfully_loaded, database, usegpu):
     """
     Creates and trains a GAN from the parameters provided.
     It will load the weights of the GAN if they exist.
@@ -562,7 +563,7 @@ def run(filepath, epochs, parameters, successfully_loaded, database, batch, useg
         checkII = checkI.isnull().sum().sum() > 0
         #_# Attempt to train the GAN
         try:
-            mygan.train(database, int(batch), epochs, checkII, step, usegpu=usegpu)
+            mygan.train(database, int(parameters[3]), epochs, checkII, step, usegpu=usegpu)
             #_# State that the training has failed to check parameters if the training failed
         except Exception as e:
             logging.exception(e)
