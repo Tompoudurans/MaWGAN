@@ -183,7 +183,7 @@ def unpack(p):
 #_# Steps\
 #_#
 
-def setup(parameters_list):
+def setup(parameters_list,sucess,loaded_parameters):
     """
     Creates new parameters
     """
@@ -205,6 +205,9 @@ def setup(parameters_list):
         if parameters_list[q] != None:
         #_# If the parameter exists put it in the waiting list to be added to the list of checked parameters
             param = parameters_list[q]
+        elif sucess:
+        #_#  If the parameters was loaded it added to the list of checked parameters
+            param = loaded_parameters[q]
         else:
             # If it does not exist, prompt to fill it in, parameters 1 and 2 are strings
             if q < 3:
@@ -242,11 +245,11 @@ def input_int(question):
     #_# Loop until the response to the question is an integer
     while True:
         try:
-#_# Ask the question
+            #_# Ask the question
             a = input(question)
-#_# Attempt to convert the answer to an integer
+            #_# Attempt to convert the answer to an integer
             answer = int(a)
-    #_# If failed, state that the answer must be an integer
+            #_# If failed, state that the answer must be an integer
         except Exception:
             print("the answer must be an integer")
             #_# Can exit programme by entering nothing
@@ -508,12 +511,11 @@ def parameters_handeling(filepath, parameters_list):
     Load parameters if they exist, otherwise saves new ones
     """
 #_# Load parameters from the existing file
-    parameters, successfully_loaded = load_parameters(filepath)
-    #_# If nothing is loaded, check if nothing is missing in the parameter list
-    if not successfully_loaded:
-        parameters = setup(parameters_list)
-        #_# Save the new parameters
-        save_parameters(parameters, filepath)
+    loaded_parameters, successfully_loaded = load_parameters(filepath)
+    #_# check if nothing is missing in the parameter list
+    parameters = setup(parameters_list,successfully_loaded,loaded_parameters)
+    #_# Save the new parameters
+    save_parameters(parameters, filepath)
     #_# Print the parameters
     print(parameters)
     #_# Output that the parameters and wether they have been sucessfully loaded
