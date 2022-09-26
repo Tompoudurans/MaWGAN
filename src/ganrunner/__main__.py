@@ -410,6 +410,8 @@ def make_samples(
     fullset = None
     #_# Create a batch of synthetic data
     generated_data = mygan.create_synthetic(batch)
+    # sample the dataset
+    data_sample = database.sample(batch)
     #_# Un-normalise the batch of synthetic data
     generated_data = tools.unnormalize(tools.pd.DataFrame(generated_data), mean, std)
     #_# Relabel the variables as the previous format could not label them
@@ -417,11 +419,11 @@ def make_samples(
     try:
         #_# calculate ls score
         if usegpux:
-            ls = tools.gpu_LS(database.dropna().to_numpy(),generated_data.to_numpy())
+            ls = tools.gpu_LS(data_sample.dropna().to_numpy(),generated_data.to_numpy())
         else:
-            ls = tools.LS(database.dropna().to_numpy(),generated_data.to_numpy())
+            ls = tools.LS(data_sample.dropna().to_numpy(),generated_data.to_numpy())
         #_# calculate fid score
-        fid = tools.calculate_fid(database.dropna(),generated_data)
+        fid = tools.calculate_fid(data_sample.dropna(),generated_data)
         #_#print comparison
         print(" LS: ",ls,"\n FID:",fid)
     except Exception as e:
