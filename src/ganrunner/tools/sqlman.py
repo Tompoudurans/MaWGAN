@@ -8,7 +8,7 @@ from scipy.linalg import sqrtm
 #___#**Project:**         Masked Wasterstin generative adviersal network\
 #___#**Script:**          sqlman.py\
 #___#**Author:**          Thomas Poudevigne\
-#___#**Date Created:**    ‎21 ‎July ‎2021\
+#___#**Date Created:**    21 July 2021\
 #___#**Reviewer:**        TBC\
 #___#**Devops Feature:**  #[don't know]\
 #___#**Devops Backlog:**  #[don't know]\
