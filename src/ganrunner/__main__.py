@@ -373,7 +373,7 @@ def create_model(parameters, no_field):
     #_# Umpack the rest of the parameters
     opti, nodes_dim, batch, number_of_layers = unpack(parameters)
     #_# Create the GAN class modelusing the list of parameters
-    mygan = gans.wGANgp(
+    mygan = gans.MaWGAN(
         optimiser=opti,
         number_of_variables=no_field,
         number_of_nodes=nodes_dim,
