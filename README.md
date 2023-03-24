@@ -19,7 +19,7 @@ If you use this code, please cite:
   publisher={MDPI}
 }
 ```
-Note: This code is used Green9's WGAN-gp code as a staring point which is now heavly modified 
+Acknowledgements: We would like to thank Green9 for open sourcing his excellent work on WGAN-GP: https://github.com/Zeleni9/pytorch-wgan, which inspired this project."
 
 ## Installation
 
