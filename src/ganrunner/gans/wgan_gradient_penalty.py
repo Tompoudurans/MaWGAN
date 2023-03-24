@@ -28,7 +28,7 @@ import logging
 #___#---------------------------------------------------------------------------
 
 
-class wGANgp(object):
+class MaWGAN(object):
 #-------------------------------------------------------------------------------
 #_#
 #__#1.Creates the GAN according to the parameters given
