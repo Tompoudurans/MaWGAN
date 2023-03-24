@@ -1,8 +1,25 @@
-# About
+
+# Pyhton code of MaWGAN
+
+## About
 
 This is the code for "MaWGAN: a Generative Adversarial Network to create synthetic
 data from datasets with missing data"
 https://orca.cardiff.ac.uk/id/eprint/148018/1/electronics-11-00837.pdf
+If you use this code, please cite:
+```
+@article{poudevigne2022mawgan,
+  title={MaWGAN: a generative adversarial network to create synthetic data from datasets with missing data},
+  author={Poudevigne-Durance, Thomas and Jones, Owen Dafydd and Qin, Yipeng},
+  journal={Electronics},
+  volume={11},
+  number={6},
+  pages={837},
+  year={2022},
+  publisher={MDPI}
+}
+```
+Note: This code is used Green9's WGAN-gp code as a staring point which is now heavly modified 
 
 ## Installation
 
