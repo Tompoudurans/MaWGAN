@@ -2,7 +2,7 @@ import subprocess
 import os
 from randomdatagen import generate_random_testing_data
 import numpy
-import ganrunner
+import Mawgan
 
 
 def test_gen_rand():
@@ -15,7 +15,7 @@ def test_break_set():
         [
             "python",
             "-m",
-            "ganrunner",
+            "Mawgan",
             "--filepath=flight.db",
             "--opti=adam",
             "--nodes=60",
@@ -36,7 +36,7 @@ def test_break_bulid():
         [
             "python",
             "-m",
-            "ganrunner",
+            "Mawgan",
             "--filepath=flight.db",
             "--opti=adam",
             "--nodes=60",
@@ -58,7 +58,7 @@ def test_normal_run():
         [
             "python",
             "-m",
-            "ganrunner",
+            "Mawgan",
             "--filepath=flight.db",
             "--opti=adam",
             "--nodes=30",
@@ -82,7 +82,7 @@ def test_reload():
         [
             "python",
             "-m",
-            "ganrunner",
+            "Mawgan",
             "--epochs=10",
             "--filepath=flight.db",
         ]

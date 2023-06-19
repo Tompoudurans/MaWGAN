@@ -1,2 +1,2 @@
-from ganrunner.tools import *
-from ganrunner.gans import *
+from Mawgan.tools import *
+from Mawgan.gans import *

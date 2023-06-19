@@ -1,7 +1,7 @@
 import math
 import numpy as np
-import ganrunner.tools as tools
-import ganrunner.gans as gans
+import Mawgan.tools as tools
+import Mawgan.gans as gans
 import click
 import logging
 import os

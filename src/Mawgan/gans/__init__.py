@@ -1,1 +1,1 @@
-from ganrunner.gans.wgan_gradient_penalty import MaWGAN
+from Mawgan.gans.Main_model import wGANgp
