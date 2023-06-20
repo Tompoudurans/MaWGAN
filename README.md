@@ -27,27 +27,25 @@ Acknowledgements: We would like to thank Green9 for open sourcing his excellent 
 
 To install, the following is assumed to be available:
 
-- Python 3.8+
+- Python 3.8
 - A recent version of git.
-
-If those are not available please get in touch with the maintainer for alternative ways of installing
 
 ### To install
 
 The following commands will download and install the software
 
-    $ git clone https://github.com/Tompoudurans/dcwwgan
-    $ cd dcwwgan
+    $ git clone https://github.com/Tompoudurans/MaWGAN
+    $ cd MaWGAN
     $ python setup.py develop
 
 
 To confirm installation was successful run the following:
 
-    $ python -m ganrunner --help
+    $ python -m Mawgan --help
 
 ### Test
 
-The tool is tested using the Python testing framework pyrest. To install pytest:
+The tool is tested using the Python testing framework pytest. To install pytest:
 
     $ python -m pip install pytest
 
@@ -58,29 +56,48 @@ To run the tests:
 
 ## To run the code
 
-$ python -m ganrunner <Options>
+$ python -m Mawgan <Options>
 
-filepath and epochs are maninitory, put the epochs to 0 to just read the the model
+you only need to put the filename and the epochs to read a pre-trained model. if put the epochs to 0 it will skip training phase of the code.
+
 
 ### Options
+    "--test"          none     "test the instalment"
+    "--filepath"      text     "enter the file name and location of the database and model"
+    "--epochs"        int      "choose how long that you want to train"
+    "--dataset"       text     "choose the dataset/table that the GAN will train on"
+    "--opti"          text     "choose the optimiser you want to use"
+    "--nodes"         int      "choose the number nodes per layer"
+    "--batch"         int      "choose how many datapoints is process when traing in one go"
+    "--layers"        int      "choose the number of layers of each network"
+    "--lambdas",      int      "learning penalty"
+    "--sample"        int      "choose the number of generated data"
+    "--rate"          float    "choose the learning rate of the model"
+    "--usegpu"        1/0      "set to 1 to use gpu"
 
-      --filepath TEXT   enter the file name and location of the database and model
-      --epochs TEXT     choose how long that you want to train
-      --dataset TEXT    choose the dataset/table that the GAN will train on
-      --opti TEXT       choose the optimiser you want to use
-      --node TEXT      choose the number nodes per layer
-      --batch TEXT      choose how many fake data you want to make in one go
-      --layers TEXT     choose the number of layers of each network
-      --lambdas FLOAT   learning penalty
-      --sample INTEGER  choose the number of generated data you want
-      --rate FLOAT      choose the learing rate of the model
-      --help            Show this message and exit.
+### data format
+
+this code accept both .db files and .csv files, missing values should be empty
+V [5,,4,2]
+X [5,NA,4,2]
+X [5,-,4,2]
+the data must have columns names but no index column, the data can be numerical or/and categorical. 
 
 examples:
 .db file without data missing, and displaying a compare graph
 
-    $ python -m ganrunner --model=wgangp --filepath=iris.db --opti=adam --nodes=100 --batch=100 --layers=5 --epochs=1000 --dataset=all --rate=0.0001 --lambdas=10 --sample=300
+    $ python -m Mawgan --filepath=iris.db --opti=adam --nodes=100 --batch=100 --layers=5 --epochs=1000 --dataset=all --rate=0.0001 --lambdas=10 --sample=300
 
 .csv file with data missing
 
-    $ python -m ganrunner --model=wgangp --filepath=10_Deprivation_percent.csv --opti=adam --nodes=200 --batch=300 --layers=5 --epochs=1000 --rate=0.0001 --lambdas=10 --sample=200
+    $ python -m Mawgan --filepath=10_Deprivation_percent.csv --opti=adam --nodes=200 --batch=300 --layers=5 --epochs=1000 --rate=0.0001 --lambdas=10 --sample=200
+
+##file discription
+
+src/.../gans/Main_model.py contain the main model
+src/.../gans/masker.py contain the masking algorithm
+src/.../tools/fid.py functions to calculate FID
+src/.../tools/sqlman.py read and write .db files
+src/.../tools/preprocess.py data ready for training
+test/ code to tests files in src with pytest
+env/ is the mass testing for the paper, done by running master.py
