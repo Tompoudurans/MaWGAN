@@ -1,7 +1,7 @@
 import math
 import numpy as np
-import ganrunner.tools as tools
-import ganrunner.gans as gans
+import Mawgan.tools as tools
+import Mawgan.gans as gans
 import click
 import logging
 import os
@@ -55,7 +55,7 @@ import os
 @click.option("--opti", default=None, help="choose the optimiser you want to use")
 @click.option("--nodes", default=None, help="choose the number nodes per layer")
 @click.option(
-    "--batch", default=None, help="choose how many fake data you want to make in one go"
+    "--batch", default=None, help="choose how many datapoints is process when traing in one go"
 )
 @click.option(
     "--layers", default=None, help="choose the number of layers of each network"
@@ -65,7 +65,7 @@ import os
     "--sample",
     default=1,
     type=int,
-    help="choose the number of generated data you want",
+    help="choose the number of generated data",
 )
 @click.option(
     "--rate",

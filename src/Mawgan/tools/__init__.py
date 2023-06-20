@@ -1,7 +1,7 @@
-from ganrunner.tools.fid import calculate_fid
-from ganrunner.tools.prepocessing import *
-from ganrunner.tools.sqlman import *
-from ganrunner.tools.compute_LS import *
+from Mawgan.tools.fid import calculate_fid
+from Mawgan.tools.prepocessing import *
+from Mawgan.tools.sqlman import *
+from Mawgan.tools.compute_LS import *
 import logging
 
 def setup_log(filepath):
