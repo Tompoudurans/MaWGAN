@@ -5,7 +5,7 @@ Created on Mon Jun  1 15:31:20 2020
 
 @author: c1751832
 """
-import ganrunner
+import Mawgan
 import numpy
 import os
 import torch
@@ -17,7 +17,7 @@ batch_size = 3
 nodes_vector = 3
 lambdas = 1
 dataset = numpy.array([[1.0, 1.2, 1.3], [1.2, 1.1, 1.3], [1.4, 1.2, 1.5]])
-testgan = ganrunner.MaWGAN(
+testgan = Mawgan.MaWGAN(
     "adam", nodes_vector, nodes, layers, lambdas, 0.00001
 )
 
@@ -45,7 +45,7 @@ def test_save_load():
     critic_weight_save = testgan.Critic.state_dict()
     assert os.stat("testing_generator.pkl").st_size > 0
     assert os.stat("testing_critic.pkl").st_size > 0
-    test = ganrunner.MaWGAN(
+    test = Mawgan.MaWGAN(
         "adam", nodes_vector, nodes, layers, lambdas, 0.00001
     )
     test.load_model("testing")
