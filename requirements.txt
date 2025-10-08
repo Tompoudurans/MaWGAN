@@ -1,4 +1,4 @@
-torch==2.7
+torch==2.8.0
 sqlalchemy==1.4.0
 pandas==1.4.2
 numpy
